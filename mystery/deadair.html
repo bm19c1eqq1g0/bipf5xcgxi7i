@@ -1,0 +1,315 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dead Air Escape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=IBM+Plex+Mono:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a late-night radio booth seen as two shelves (wall, desk); every object is a tile that opens a close-up. Single dark look by design. */
+:root{
+  --bg:#17110f; --panel:#221a16; --panel-2:#2c221d; --line:#3d3029;
+  --fg:#efe4d6; --muted:#a8968a; --amber:#f2a93b; --amber-dim:#7a5520;
+  --onair:#e5483a; --uv:#b58cff; --ok:#79c58b;
+  --display:"Rubik Mono One", "Arial Black", sans-serif;
+  --body:"Work Sans", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 48px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:14px}
+.lamp{font-family:var(--display);font-size:12px;letter-spacing:.08em;padding:6px 10px;border:2px solid var(--line);color:var(--muted);border-radius:4px;transition:all .4s}
+.lamp.live{color:#fff;background:var(--onair);border-color:var(--onair);box-shadow:0 0 18px var(--onair)}
+h1{font-family:var(--display);font-size:clamp(22px,4.5vw,34px);line-height:1;margin:0;letter-spacing:.02em;text-wrap:balance}
+h1 small{display:block;font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.12em;margin-top:6px}
+.meters{display:flex;gap:10px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.meter{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;min-width:84px}
+.meter span{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.meter b{color:var(--amber);font-weight:600;font-size:16px}
+.story{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;max-width:none}
+.story p{margin:0;max-width:70ch;color:var(--fg)}
+.story p+p{margin-top:8px;color:var(--muted)}
+.shelf-label{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.obj{appearance:none;font:inherit;color:inherit;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:transform .15s,border-color .15s;position:relative;min-width:0}
+.obj:hover{border-color:var(--amber-dim);transform:translateY(-2px)}
+.obj:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.obj svg{width:100%;height:72px;display:block}
+.obj .name{font-weight:600;font-size:14px}
+.obj .tag{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:var(--bg);color:var(--muted);letter-spacing:.08em}
+.obj .tag.open{color:var(--ok)}
+.obj .tag.locked{color:var(--onair)}
+.desk{border-top:6px solid #4a3528;padding-top:16px}
+.bar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+@media (max-width:640px){.bar{grid-template-columns:1fr}}
+.inv{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:52px}
+.inv .shelf-label{margin:0 6px 0 0}
+.item{font-family:var(--mono);font-size:12px;border:1px solid var(--amber-dim);color:var(--amber);border-radius:999px;padding:4px 10px;background:transparent;cursor:pointer}
+.item.on{background:var(--uv);border-color:var(--uv);color:#160d24}
+.empty{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 13px var(--body);border-radius:6px;padding:10px 14px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);cursor:pointer}
+.btn:hover{border-color:var(--amber-dim)}
+.btn.primary{background:var(--amber);color:#1d1206;border-color:var(--amber)}
+.btn.ghost{background:transparent}
+.log{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:150px;overflow:auto}
+.log div+div{margin-top:4px}
+.log b{color:var(--amber);font-weight:400}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(8,5,4,.78);display:flex;align-items:center;justify-content:center;
+  padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));z-index:20}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(560px,100%);max-height:100%;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal h2{font-family:var(--display);font-size:18px;margin:0;letter-spacing:.02em}
+.modal p{margin:0;max-width:62ch}
+.close{align-self:flex-end}
+.paper{background:#e9dcc3;color:#2a1d12;border-radius:4px;padding:16px;font-family:var(--mono);font-size:14px;transform:rotate(-.6deg);box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.paper ol{margin:6px 0 0;padding-left:20px}
+.sticky{background:#f3d65a;color:#2a2108;transform:rotate(1.2deg)}
+.poster{background:linear-gradient(160deg,#3b1f2b,#1f1420);border:1px solid var(--line);border-radius:6px;padding:24px;text-align:center;position:relative;overflow:hidden}
+.poster .big{font-family:var(--display);font-size:clamp(28px,8vw,48px);color:var(--amber);line-height:1}
+.poster .sub{font-family:var(--mono);color:var(--muted);margin-top:8px;font-size:12px;letter-spacing:.14em}
+.uvtext{font-family:var(--mono);font-size:22px;letter-spacing:.2em;color:var(--uv);text-shadow:0 0 12px var(--uv);margin-top:18px;opacity:0;transition:opacity .8s}
+.uvtext.show{opacity:1}
+.morse{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;font-family:var(--mono);font-size:13px}
+.morse div{background:var(--panel-2);border-radius:4px;padding:4px 8px;display:flex;justify-content:space-between}
+.morse b{color:var(--amber)}
+.faders{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:14px;background:#120d0b;border-radius:8px}
+.fader{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.track{width:14px;height:110px;background:#2b2119;border-radius:7px;position:relative}
+.knob{position:absolute;left:-9px;width:32px;height:16px;border-radius:3px}
+.fader b{font-size:18px;color:var(--fg)}
+.records{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:420px){.records{grid-template-columns:1fr}}
+.record{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:12px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0}
+.disc{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#2a1d12 0 14%,#d9a93e 15% 18%,#b88a25 19% 100%);box-shadow:inset 0 0 0 3px #8c6618}
+.record .t{font-weight:600;font-size:13px}
+.record .p{font-family:var(--mono);color:var(--amber);font-size:13px}
+.wheels{display:flex;gap:8px;justify-content:center}
+.wheel{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wheel button{width:44px;height:30px;border-radius:5px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);cursor:pointer;font-size:12px}
+.wheel output{width:44px;height:52px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:26px;font-weight:600;background:#0f0b09;border:1px solid var(--line);border-radius:5px;color:var(--amber)}
+.msg{font-family:var(--mono);font-size:13px;min-height:20px;text-align:center}
+.msg.bad{color:var(--onair)} .msg.good{color:var(--ok)}
+.dial{display:flex;flex-direction:column;gap:10px;align-items:center}
+.freq{font-family:var(--mono);font-size:40px;color:var(--amber);font-variant-numeric:tabular-nums;background:#0f0b09;border:1px solid var(--line);border-radius:6px;padding:6px 18px}
+.freq span{font-size:14px;color:var(--muted);margin-left:6px}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.fine{display:flex;gap:8px}
+.keypad{display:grid;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center}
+.keypad button{height:52px;font:600 20px var(--mono);border-radius:6px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);cursor:pointer}
+.screen{font-family:var(--mono);font-size:28px;letter-spacing:.3em;text-align:center;background:#0f0b09;border:1px solid var(--line);border-radius:6px;padding:8px;color:var(--amber);min-height:56px}
+.transcript{font-family:var(--mono);font-size:14px;background:#0f0b09;border-left:3px solid var(--amber);padding:12px 14px;color:var(--fg);border-radius:0 6px 6px 0}
+.hintbox{display:flex;flex-direction:column;gap:8px}
+.hint{background:var(--panel-2);border-radius:6px;padding:10px 12px;font-size:14px}
+.hint span{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em;display:block}
+.win{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.win .big{font-family:var(--display);font-size:clamp(26px,7vw,40px);color:var(--onair);text-shadow:0 0 20px var(--onair)}
+.stats{display:flex;gap:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="lamp" id="lamp">ON AIR</div>
+      <h1>Dead Air<small>WXRD · NIGHT SHIFT · 11:47 PM</small></h1>
+    </div>
+    <div class="meters">
+      <div class="meter"><span>Time</span><b id="timer">00:00</b></div>
+      <div class="meter"><span>Hints</span><b id="hintCount">0</b></div>
+      <div class="meter"><span>Solved</span><b id="progress">0/5</b></div>
+    </div>
+  </header>
+
+  <section class="story">
+    <p>You were the intern covering the overnight show at WXRD when the music cut out, the lights flickered, and the studio door locked itself. The station has gone silent. Nobody is coming until morning.</p>
+    <p>Get the station back on the air and find the code to the door. Tap anything in the booth to look closer. Teams of 2 to 4 work best; most groups escape in 20 to 40 minutes.</p>
+  </section>
+
+  <section>
+    <p class="shelf-label">The wall</p>
+    <div class="shelf" id="wall"></div>
+  </section>
+  <section class="desk">
+    <p class="shelf-label">The desk</p>
+    <div class="shelf" id="desk"></div>
+  </section>
+
+  <div class="bar">
+    <div class="inv" id="inv"></div>
+    <div class="actions">
+      <button class="btn primary" id="hintBtn" type="button">Get a hint</button>
+      <button class="btn ghost" id="resetBtn" type="button">Restart</button>
+    </div>
+  </div>
+  <div class="log" id="log" aria-live="polite"></div>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+(function(){
+const STORE='deadair-v1';
+const fresh=()=>({flags:{},inv:[],hints:0,start:Date.now(),end:null,uv:false,log:[["Booth","The door is locked. The transmitter is dark. Look around."]]});
+let S;
+try{S=JSON.parse(localStorage.getItem(STORE))||fresh()}catch(e){S=fresh()}
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}};
+
+const stageOf=()=>{const f=S.flags;return f.door?5:f.tx?4:f.played?3:f.case?2:f.drawer?1:0};
+
+const HINTS=[
+ ["The sticky note on the monitor tells you what the drawer code is made of.","The setlist on the clipboard gives an order of colors. The mixing board gives a number for each color.","Blue 3, Red 7, Green 1, Yellow 9. The drawer code is 3719."],
+ ["You found a UV flashlight. Turn it on in your inventory, then look at something on the wall.","Shine the UV light on the poster. The dots and dashes are Morse code; the chart on the wall decodes them.","· is E, -·-· is C, ···· is H, --- is O. The cassette case opens with ECHO."],
+ ["You have a tape now. Something on the desk can play it.","Put the tape in the tape deck and press play.","Open the tape deck while holding the tape and play it."],
+ ["The tape tells you how to find the frequency. Look at the framed records.","Add the three chart positions together for the whole number. Count the records for the decimal.","41 + 29 + 18 = 88, and there are 3 records. Tune the transmitter to 88.3."],
+ ["The transmitter's message talks about the moment the music died. What in the room stopped?","The wall clock stopped when the power cut out. Read the time it shows.","The clock reads 11:47. Enter 1147 on the door keypad."]
+];
+
+const ic={
+ poster:'<svg viewBox="0 0 100 72"><rect x="28" y="4" width="44" height="64" rx="2" fill="#3b1f2b" stroke="#6a3a4c"/><text x="50" y="34" text-anchor="middle" font-family="Rubik Mono One,sans-serif" font-size="11" fill="#f2a93b">WXRD</text><rect x="36" y="44" width="28" height="3" fill="#a8968a"/><rect x="40" y="51" width="20" height="3" fill="#a8968a"/></svg>',
+ morse:'<svg viewBox="0 0 100 72"><rect x="18" y="8" width="64" height="56" rx="3" fill="#2a201b" stroke="#5a463a"/><g fill="#f2a93b"><circle cx="30" cy="22" r="3"/><rect x="38" y="20" width="14" height="4"/><circle cx="30" cy="36" r="3"/><circle cx="40" cy="36" r="3"/><rect x="48" y="34" width="14" height="4"/><rect x="26" y="48" width="14" height="4"/><rect x="44" y="48" width="14" height="4"/><circle cx="66" cy="50" r="3"/></g></svg>',
+ clock:'<svg viewBox="0 0 100 72"><circle cx="50" cy="36" r="30" fill="#efe4d6" stroke="#5a463a" stroke-width="4"/><line x1="50" y1="36" x2="45" y2="18" stroke="#2a1d12" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="36" x2="28" y2="49" stroke="#2a1d12" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="36" r="3" fill="#e5483a"/></svg>',
+ records:'<svg viewBox="0 0 100 72"><g><circle cx="22" cy="36" r="16" fill="#c79a30"/><circle cx="22" cy="36" r="4" fill="#2a1d12"/><circle cx="50" cy="36" r="16" fill="#c79a30"/><circle cx="50" cy="36" r="4" fill="#2a1d12"/><circle cx="78" cy="36" r="16" fill="#c79a30"/><circle cx="78" cy="36" r="4" fill="#2a1d12"/></g></svg>',
+ door:'<svg viewBox="0 0 100 72"><rect x="30" y="4" width="40" height="66" fill="#4a3528" stroke="#6b4f3d"/><rect x="58" y="32" width="8" height="12" rx="1" fill="#120d0b"/><circle cx="62" cy="36" r="1.5" fill="#e5483a"/></svg>',
+ board:'<svg viewBox="0 0 100 72"><rect x="6" y="14" width="88" height="48" rx="4" fill="#120d0b"/><g><rect x="18" y="22" width="3" height="32" fill="#3b2e26"/><rect x="13" y="30" width="13" height="7" fill="#e5483a"/><rect x="36" y="22" width="3" height="32" fill="#3b2e26"/><rect x="31" y="42" width="13" height="7" fill="#4a8fe0"/><rect x="54" y="22" width="3" height="32" fill="#3b2e26"/><rect x="49" y="26" width="13" height="7" fill="#5fbf6e"/><rect x="72" y="22" width="3" height="32" fill="#3b2e26"/><rect x="67" y="36" width="13" height="7" fill="#e8c53a"/></g></svg>',
+ monitor:'<svg viewBox="0 0 100 72"><rect x="16" y="6" width="68" height="46" rx="3" fill="#120d0b" stroke="#5a463a"/><rect x="44" y="52" width="12" height="10" fill="#3b2e26"/><rect x="32" y="62" width="36" height="4" fill="#3b2e26"/><rect x="62" y="12" width="18" height="16" fill="#f3d65a" transform="rotate(6 71 20)"/></svg>',
+ clipboard:'<svg viewBox="0 0 100 72"><rect x="30" y="6" width="40" height="62" rx="3" fill="#8a6343"/><rect x="34" y="14" width="32" height="50" fill="#e9dcc3"/><rect x="42" y="3" width="16" height="7" rx="2" fill="#5a463a"/><g fill="#6b5a4a"><rect x="38" y="22" width="22" height="3"/><rect x="38" y="31" width="18" height="3"/><rect x="38" y="40" width="24" height="3"/><rect x="38" y="49" width="16" height="3"/></g></svg>',
+ drawer:'<svg viewBox="0 0 100 72"><rect x="14" y="16" width="72" height="44" rx="3" fill="#4a3528" stroke="#6b4f3d"/><rect x="38" y="34" width="24" height="6" rx="3" fill="#a8968a"/><rect x="42" y="46" width="16" height="8" fill="#120d0b"/></svg>',
+ case:'<svg viewBox="0 0 100 72"><rect x="20" y="18" width="60" height="38" rx="3" fill="#2c3a4a" stroke="#4a6078"/><rect x="40" y="46" width="20" height="8" fill="#120d0b"/><rect x="26" y="24" width="48" height="16" fill="#9fb3c8" opacity=".5"/></svg>',
+ deck:'<svg viewBox="0 0 100 72"><rect x="8" y="16" width="84" height="44" rx="4" fill="#2a201b" stroke="#5a463a"/><rect x="18" y="24" width="44" height="22" rx="2" fill="#120d0b"/><circle cx="32" cy="35" r="6" fill="none" stroke="#a8968a" stroke-width="2"/><circle cx="48" cy="35" r="6" fill="none" stroke="#a8968a" stroke-width="2"/><g fill="#f2a93b"><rect x="68" y="26" width="16" height="6" rx="1"/><rect x="68" y="36" width="16" height="6" rx="1"/></g></svg>',
+ tx:'<svg viewBox="0 0 100 72"><rect x="14" y="8" width="72" height="58" rx="3" fill="#1e2420" stroke="#3f4a43"/><rect x="22" y="16" width="56" height="16" fill="#0b0f0c"/><circle cx="36" cy="48" r="9" fill="#3f4a43"/><line x1="36" y1="48" x2="40" y2="41" stroke="#f2a93b" stroke-width="2"/><circle cx="66" cy="48" r="4" fill="#e5483a"/></svg>'
+};
+
+const OBJ={
+ wall:[["poster","Station poster"],["morse","Morse chart"],["clock","Wall clock"],["records","Gold records"],["door","Studio door"]],
+ desk:[["monitor","Monitor"],["clipboard","Clipboard"],["board","Mixing board"],["drawer","Desk drawer"],["case","Cassette case"],["deck","Tape deck"],["tx","Transmitter"]]
+};
+const tagFor=id=>{const f=S.flags;
+ if(id==="drawer")return f.drawer?["open","OPEN"]:["locked","LOCKED"];
+ if(id==="case")return f.case?["open","OPEN"]:["locked","LOCKED"];
+ if(id==="door")return f.door?["open","OPEN"]:["locked","LOCKED"];
+ if(id==="tx")return f.tx?["open","LIVE"]:["locked","OFF"];
+ return null};
+
+const $=s=>document.querySelector(s);
+function render(){
+ for(const shelf of ["wall","desk"]){
+  $("#"+shelf).innerHTML=OBJ[shelf].map(([id,n])=>{const t=tagFor(id);
+   return `<button class="obj" type="button" data-id="${id}">${t?`<span class="tag ${t[0]}">${t[1]}</span>`:""}${ic[id]}<span class="name">${n}</span></button>`}).join("");
+ }
+ const inv=$("#inv");
+ inv.innerHTML='<p class="shelf-label">Inventory</p>'+(S.inv.length?S.inv.map(i=>i==="UV flashlight"
+   ?`<button type="button" class="item ${S.uv?"on":""}" data-item="uv">UV flashlight · ${S.uv?"on":"off"}</button>`
+   :`<span class="item">${i}</span>`).join(""):'<span class="empty">Nothing yet</span>');
+ $("#hintCount").textContent=S.hints;
+ $("#progress").textContent=stageOf()+"/5";
+ $("#lamp").classList.toggle("live",!!S.flags.tx);
+ $("#log").innerHTML=S.log.slice().reverse().map(([a,b])=>`<div><b>${a}</b> · ${b}</div>`).join("");
+ save();
+}
+const note=(a,b)=>{S.log.push([a,b]);render()};
+
+function tick(){const end=S.end||Date.now();const s=Math.floor((end-S.start)/1000);
+ $("#timer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+setInterval(tick,1000);tick();
+
+const scrim=$("#scrim"),modal=$("#modal");
+let lastFocus=null;
+function open(html,after){lastFocus=document.activeElement;modal.innerHTML=`<button class="btn ghost close" type="button" data-close>Close</button>`+html;scrim.hidden=false;after&&after();modal.querySelector("[data-close]").focus()}
+function close(){scrim.hidden=true;lastFocus&&lastFocus.focus&&lastFocus.focus()}
+scrim.addEventListener("click",e=>{if(e.target===scrim||e.target.closest("[data-close]"))close()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!scrim.hidden)close()});
+
+function wheelLock(chars,len,onTry){
+ const vals=Array(len).fill(0);
+ const html=`<div class="wheels">${vals.map((_,i)=>`<div class="wheel"><button type="button" data-w="${i}" data-d="1" aria-label="Wheel ${i+1} up">▲</button><output id="w${i}">${chars[0]}</output><button type="button" data-w="${i}" data-d="-1" aria-label="Wheel ${i+1} down">▼</button></div>`).join("")}</div>
+ <div class="actions" style="justify-content:center"><button class="btn primary" type="button" id="tryLock">Try the lock</button></div><div class="msg" id="lockMsg"></div>`;
+ const wire=()=>{modal.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const i=+b.dataset.w;vals[i]=(vals[i]+ +b.dataset.d+chars.length)%chars.length;$("#w"+i).textContent=chars[vals[i]]});
+  $("#tryLock").onclick=()=>onTry(vals.map(v=>chars[v]).join(""))};
+ return [html,wire];
+}
+const ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ",DIG="0123456789";
+const MORSE={A:"·-",B:"-···",C:"-·-·",D:"-··",E:"·",F:"··-·",G:"--·",H:"····",I:"··",J:"·---",K:"-·-",L:"·-··",M:"--",N:"-·",O:"---",P:"·--·",Q:"--·-",R:"·-·",S:"···",T:"-",U:"··-",V:"···-",W:"·--",X:"-··-",Y:"-·--",Z:"--··"};
+
+const VIEW={
+ poster(){open(`<h2>Station poster</h2><div class="poster"><div class="big">WXRD</div><div class="sub">THE NIGHT SHIFT · WE NEVER SLEEP</div><div class="uvtext ${S.uv?"show":""}">· &nbsp;/&nbsp; -·-· &nbsp;/&nbsp; ···· &nbsp;/&nbsp; ---</div></div>
+  <p>${S.uv?"Under the UV light, glowing marks appear across the bottom of the poster.":"A faded promo poster. The paper has a strange sheen near the bottom edge."}</p>`);
+  if(S.uv&&!S.flags.sawUV){S.flags.sawUV=1;note("Poster","Hidden dots and dashes glow under UV light.")}},
+ morse(){open(`<h2>Morse chart</h2><p>Taped to the wall by an old engineer. A dot is a short beep, a dash is a long one.</p><div class="morse">${Object.entries(MORSE).map(([k,v])=>`<div><b>${k}</b>${v}</div>`).join("")}</div>`)},
+ clock(){open(`<h2>Wall clock</h2><div style="display:flex;justify-content:center">${ic.clock.replace('viewBox','width="180" height="130" viewBox')}</div><p>The second hand isn't moving. It stopped at 11:47, the exact moment the power cut and the music died.</p>`)},
+ records(){open(`<h2>Gold records</h2><p>Framed hits the station broke first. Each plaque lists the song's peak chart position.</p><div class="records">
+  <div class="record"><div class="disc"></div><div class="t">Midnight Static</div><div class="p">Peaked at #41</div></div>
+  <div class="record"><div class="disc"></div><div class="t">Low Signal</div><div class="p">Peaked at #29</div></div>
+  <div class="record"><div class="disc"></div><div class="t">Feedback Loop</div><div class="p">Peaked at #18</div></div></div>`)},
+ monitor(){open(`<h2>Monitor</h2><p>The screen is black, but a sticky note is stuck to the corner.</p><div class="paper sticky">Drawer code = the faders, in the order of tonight's setlist.<br>— Dee</div>`)},
+ clipboard(){open(`<h2>Clipboard</h2><div class="paper">TONIGHT'S SETLIST<ol><li>Blue Hour</li><li>Red Line</li><li>Green Room</li><li>Yellow Static</li></ol></div>`)},
+ board(){const f=[["#e5483a",7,.25],["#4a8fe0",3,.6],["#5fbf6e",1,.1],["#e8c53a",9,.45],["#d8d0c4",5,.8]];
+  open(`<h2>Mixing board</h2><p>Each colored fader has a channel number printed under it.</p><div class="faders">${f.map(([c,n,p])=>`<div class="fader"><div class="track"><div class="knob" style="background:${c};top:${p*94}px"></div></div><b>${n}</b></div>`).join("")}</div>`)},
+ drawer(){if(S.flags.drawer){open(`<h2>Desk drawer</h2><p>The drawer is open and empty now. You already took the UV flashlight.</p>`);return}
+  const [h,w]=wheelLock(DIG,4,code=>{if(code==="3719"){S.flags.drawer=1;S.inv.push("UV flashlight");note("Drawer","Unlocked. You found a UV flashlight.");open(`<h2>Desk drawer</h2><p class="msg good">Click. The drawer slides open.</p><p>Inside: a small UV flashlight. Turn it on from your inventory, then look around.</p>`)}else{$("#lockMsg").className="msg bad";$("#lockMsg").textContent="The lock doesn't budge."}});
+  open(`<h2>Desk drawer</h2><p>A four-digit combination lock.</p>`+h,w)},
+ case(){if(S.flags.case){open(`<h2>Cassette case</h2><p>Open and empty. You took the tape.</p>`);return}
+  const [h,w]=wheelLock(ALPHA,4,code=>{if(code==="ECHO"){S.flags.case=1;S.inv.push("Tape: Side B");note("Cassette case","Unlocked with ECHO. You found a tape.");open(`<h2>Cassette case</h2><p class="msg good">The latch pops open.</p><p>Inside is one cassette, hand-labeled <b>SIDE B · FOR WHOEVER IS STUCK HERE</b>.</p>`)}else{$("#lockMsg").className="msg bad";$("#lockMsg").textContent="Wrong word. The latch stays shut."}});
+  open(`<h2>Cassette case</h2><p>A locked case with four letter wheels.</p>`+h,w)},
+ deck(){const has=S.inv.includes("Tape: Side B");
+  if(!has&&!S.flags.played){open(`<h2>Tape deck</h2><p>An old cassette player. The slot is empty. You need a tape.</p>`);return}
+  open(`<h2>Tape deck</h2><p>${S.flags.played?"You rewind the tape and play it again.":"You slide the tape in and press play. A voice crackles through the speakers."}</p>
+  <div class="transcript">"If you're hearing this, the transmitter's knocked off frequency again. Add up the chart positions on the wall. That's your number. The decimal? Count the records. Get us back on air."</div>`);
+  if(!S.flags.played){S.flags.played=1;note("Tape deck","The tape explains how to find the frequency.")}},
+ tx(){if(S.flags.tx){open(`<h2>Transmitter</h2><p>Broadcasting on 88.3 FM. The speaker repeats a message.</p><div class="transcript">"WXRD is back on the air. To the intern: the door opens at the moment the music died."</div>`);return}
+  let v=98.0;
+  open(`<h2>Transmitter</h2><p>The power light is on, but it's broadcasting static. Tune it to the right frequency.</p>
+  <div class="dial"><div class="freq" id="fq">98.0<span>FM</span></div>
+  <input id="fqr" type="range" min="88" max="108" step="0.1" value="98" aria-label="Frequency">
+  <div class="fine"><button class="btn" type="button" id="dn">−0.1</button><button class="btn" type="button" id="up">+0.1</button><button class="btn primary" type="button" id="tune">Transmit</button></div>
+  <div class="msg" id="lockMsg"></div></div>`,()=>{
+   const r=$("#fqr"),show=()=>{$("#fq").innerHTML=v.toFixed(1)+"<span>FM</span>";r.value=v};
+   r.oninput=()=>{v=+r.value;show()};
+   $("#dn").onclick=()=>{v=Math.max(88,Math.round((v-.1)*10)/10);show()};
+   $("#up").onclick=()=>{v=Math.min(108,Math.round((v+.1)*10)/10);show()};
+   $("#tune").onclick=()=>{if(v.toFixed(1)==="88.3"){S.flags.tx=1;note("Transmitter","Back on air at 88.3 FM.");VIEW.tx()}else{$("#lockMsg").className="msg bad";$("#lockMsg").textContent="Just static at "+v.toFixed(1)+"."}};
+  })},
+ door(){if(S.flags.door){win();return}
+  let code="";
+  open(`<h2>Studio door</h2><p>A keypad glows next to the handle. Four digits.</p><div class="screen" id="scr">____</div>
+  <div class="keypad">${[1,2,3,4,5,6,7,8,9,"C",0,"OK"].map(k=>`<button type="button" data-k="${k}">${k}</button>`).join("")}</div><div class="msg" id="lockMsg"></div>`,()=>{
+   const upd=()=>$("#scr").textContent=(code+"____").slice(0,4);
+   modal.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+    if(k==="C")code="";else if(k==="OK"){if(code==="1147"&&S.flags.tx){S.flags.door=1;S.end=Date.now();note("Door","Unlocked. You escaped.");win();return}
+     $("#lockMsg").className="msg bad";$("#lockMsg").textContent=code==="1147"?"The keypad has no power. Get the station back on air first.":"Access denied.";code=""}
+    else if(code.length<4)code+=k;upd()})})}
+};
+
+function win(){tick();const s=Math.floor(((S.end||Date.now())-S.start)/1000);
+ const t=Math.floor(s/60)+" min "+(s%60)+" s";
+ const rank=S.hints===0?"Station Manager":S.hints<=3?"Lead DJ":S.hints<=7?"Producer":"Intern (still employed)";
+ open(`<div class="win"><div class="big">YOU'RE OUT</div><p>The door swings open just as the morning host walks in, coffee in hand, with WXRD playing loud in the hallway.</p>
+ <div class="stats"><div class="meter"><span>Time</span><b>${t}</b></div><div class="meter"><span>Hints</span><b>${S.hints}</b></div></div>
+ <p>Your rank: <b style="color:var(--amber)">${rank}</b></p><button class="btn primary" type="button" id="again">Play again</button></div>`,()=>{$("#again").onclick=reset})}
+
+function reset(){S=fresh();close();render();tick()}
+
+document.addEventListener("click",e=>{
+ const o=e.target.closest(".obj");if(o){VIEW[o.dataset.id]();return}
+ const it=e.target.closest("[data-item=uv]");if(it){S.uv=!S.uv;note("Inventory",S.uv?"UV flashlight on.":"UV flashlight off.")}
+});
+$("#hintBtn").onclick=()=>{const st=stageOf();if(st>=5){open(`<h2>Hints</h2><p>You already escaped.</p>`);return}
+ S.flags["h"+st]=S.flags["h"+st]||0;
+ const shown=S.flags["h"+st];
+ const body=()=>HINTS[st].slice(0,S.flags["h"+st]).map((h,i)=>`<div class="hint"><span>HINT ${i+1}${i===2?" · ANSWER":""}</span>${h}</div>`).join("");
+ const draw=()=>{open(`<h2>Hints</h2><p>Each hint gets more direct. The third one gives the answer.</p><div class="hintbox">${body()||'<p class="empty">No hints used for this step yet.</p>'}</div>
+  ${S.flags["h"+st]<3?`<button class="btn primary" type="button" id="more">Reveal hint ${S.flags["h"+st]+1}</button>`:""}`,()=>{const m=$("#more");if(m)m.onclick=()=>{S.flags["h"+st]++;S.hints++;render();draw()}})};
+ draw();
+};
+let armed=false;
+$("#resetBtn").onclick=()=>{const b=$("#resetBtn");if(!armed){armed=true;b.textContent="Tap again to restart";setTimeout(()=>{armed=false;b.textContent="Restart"},3000);return}armed=false;b.textContent="Restart";reset()};
+
+render();
+})();
+</script>
+
+<a href="../index.html#mystery" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;font:700 13px/1 system-ui,sans-serif;color:#fff;background:rgba(20,27,38,.85);border-radius:999px;padding:8px 12px;text-decoration:none">All games</a>
+</body></html>

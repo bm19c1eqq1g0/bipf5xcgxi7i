@@ -1,0 +1,512 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Alderwood Affair</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Special+Elite&display=swap">
+<style>
+/* Layout: a snowbound lodge at night. Header band with falling snow, sticky case tabs, then one working view at a time. Evidence appears as typed index cards. */
+:root{
+  --night:#0e1920;
+  --panel:#15232c;
+  --panel-2:#1b2c37;
+  --line:#2b404d;
+  --snow:#e9eff2;
+  --muted:#93a8b4;
+  --lamp:#f0b44a;
+  --lamp-ink:#1d1405;
+  --paper:#efe5cf;
+  --paper-line:#d9ccae;
+  --ink:#2a241b;
+  --red:#e3735c;
+  --green:#7cc79a;
+  --s-margot:#c98fd0;
+  --s-desmond:#7fa6e0;
+  --s-ines:#e0a072;
+  --s-theo:#86c9b8;
+  --s-okafor:#d9c46a;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-type:"Special Elite", "Courier New", Courier, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--night)}
+body{color:var(--snow);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible+label{outline:2px solid var(--lamp);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+
+/* Header */
+.top{position:relative;overflow:hidden;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0a141a 0%,var(--night) 100%)}
+#snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.top-in{position:relative;padding-block:36px 26px;display:grid;gap:12px}
+.eyebrow{margin:0;font-family:var(--f-type);color:var(--lamp);font-size:13px;letter-spacing:.06em}
+h1{font-size:clamp(38px,7vw,68px);font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--lamp)}
+.dek{margin:0;max-width:58ch;color:var(--muted);font-size:17px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:14px;font-variant-numeric:tabular-nums}
+.chip b{color:var(--lamp)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel-2);padding:9px 16px;border-radius:10px;font-weight:600;font-size:15px;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--lamp);color:var(--lamp-ink);border-color:var(--lamp)}
+.btn.primary:hover{background:#f6c46a}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(14,25,32,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.tabs-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:14px 14px 11px;font-weight:600;color:var(--muted);white-space:nowrap;font-size:15px}
+.tab[aria-current="true"]{color:var(--snow);border-bottom-color:var(--lamp)}
+.tab:hover{color:var(--snow)}
+.tab .n{font-family:var(--f-type);font-size:12px;color:var(--lamp);margin-right:6px}
+
+main{padding-block:28px 64px}
+.view-head{display:grid;gap:6px;margin-bottom:22px}
+.view-head h2{font-size:clamp(26px,4vw,34px);font-weight:700}
+.view-head p{margin:0;color:var(--muted);max-width:62ch}
+
+/* Briefing */
+.brief{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:start}
+.brief .story p{margin:0 0 14px;font-size:18px;max-width:60ch}
+.brief .story p:first-child::first-letter{font-family:var(--f-display);font-weight:800;font-size:3.1em;float:left;line-height:.85;margin:6px 10px 0 0;color:var(--lamp)}
+.radio{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px}
+.radio h3{font-size:18px}
+.radio ul{margin:0;padding-left:18px;display:grid;gap:8px;color:var(--muted)}
+.radio ul b{color:var(--snow);font-weight:600}
+.facts{font-family:var(--f-type);font-size:14px;display:grid;gap:6px;padding:14px;border-radius:10px;background:var(--panel-2);font-variant-numeric:tabular-nums}
+.facts div{display:flex;gap:12px}
+.facts span:first-child{color:var(--lamp);min-width:3.6em}
+.cast{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+
+/* Portraits */
+.mono{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:18px;color:var(--night);flex:none;background:var(--c)}
+.mono.lg{width:72px;height:72px;font-size:26px}
+.person{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);text-align:left;min-width:0}
+.person .who{min-width:0}
+.person .who b{display:block;font-weight:700}
+.person .who span{color:var(--muted);font-size:14px}
+
+/* Search */
+.search{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
+.rooms{display:grid;gap:6px}
+.room-btn{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid transparent;background:none;color:var(--muted);font-weight:600}
+.room-btn:hover{background:var(--panel);color:var(--snow)}
+.room-btn[aria-current="true"]{background:var(--panel);border-color:var(--line);color:var(--snow)}
+.room-btn .ct{font-family:var(--f-type);font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.room-btn .ct.done{color:var(--green)}
+.room{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:18px;min-width:0}
+.room h3{font-size:26px}
+.room .tag{font-family:var(--f-type);color:var(--red);font-size:13px;margin-bottom:4px}
+.room > p{margin:0;color:var(--muted);max-width:60ch}
+.objects{display:flex;flex-wrap:wrap;gap:10px}
+.obj{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px dashed var(--muted);background:transparent;font-weight:600;font-size:15px;transition:background .15s,border-color .15s}
+.obj::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lamp);box-shadow:0 0 0 4px rgba(240,180,74,.18)}
+.obj:hover{background:var(--panel-2);border-color:var(--lamp)}
+.obj.seen{border-style:solid;border-color:var(--line);color:var(--muted)}
+.obj.seen::before{background:var(--green);box-shadow:none}
+.obj.active{border-color:var(--lamp);color:var(--snow);background:var(--panel-2)}
+
+/* Evidence card */
+.card{background:var(--paper);color:var(--ink);border-radius:4px;padding:20px 22px 22px;font-family:var(--f-type);font-size:16px;line-height:1.6;position:relative;
+  background-image:repeating-linear-gradient(transparent 0 25px,var(--paper-line) 25px 26px);background-position:0 46px;box-shadow:0 10px 30px rgba(0,0,0,.35);transform:rotate(-.4deg);max-width:62ch}
+.card .no{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.08em;color:#8a5a26;margin-bottom:8px}
+.card h4{margin:0 0 6px;font-family:var(--f-type);font-weight:400;font-size:19px}
+.card p{margin:0}
+.card.pop{animation:drop .35s ease-out}
+@keyframes drop{from{transform:translateY(-10px) rotate(-2deg);opacity:.4}to{transform:rotate(-.4deg);opacity:1}}
+.placeholder{border:1px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted);font-size:15px}
+
+/* Interview */
+.suspects{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.suspects .person{flex-direction:column;text-align:center;padding:14px 8px;cursor:pointer;border-width:2px}
+.suspects .person[aria-current="true"]{border-color:var(--c);background:var(--panel-2)}
+.suspects .person .who span{font-size:13px}
+.interview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:22px;align-items:start}
+.profile{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:16px}
+.profile-head{display:flex;gap:16px;align-items:center}
+.profile-head h3{font-size:24px}
+.profile-head p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.profile .intro{margin:0;color:var(--muted)}
+.qs{display:grid;gap:8px}
+.q{text-align:left;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;font-size:15px}
+.q:hover{border-color:var(--lamp)}
+.q.new{border-color:var(--lamp)}
+.q.new::after{content:" NEW";font-family:var(--f-type);font-size:11px;color:var(--lamp);font-weight:400}
+.locked{padding:10px 14px;border-radius:10px;border:1px dashed var(--line);color:var(--muted);font-size:14px}
+.transcript{display:grid;gap:14px}
+.ex{display:grid;gap:8px}
+.ex .ask{justify-self:end;max-width:85%;background:var(--lamp);color:var(--lamp-ink);padding:9px 14px;border-radius:14px 14px 4px 14px;font-weight:600;font-size:15px}
+.ex .ans{justify-self:start;max-width:92%;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c);padding:12px 16px;border-radius:4px 14px 14px 14px}
+.ex .ans b{display:block;font-size:13px;color:var(--c);margin-bottom:2px}
+
+/* Notebook */
+.nb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.nb section{display:grid;gap:12px;min-width:0}
+.nb h3{font-size:20px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.nb h3 small{font-family:var(--f-type);font-size:13px;color:var(--muted);font-weight:400}
+.ded{display:grid;gap:4px;padding:14px 16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--k)}
+.ded .k{font-family:var(--f-type);font-size:12px;letter-spacing:.06em;color:var(--k)}
+.ded.lie{--k:var(--red)}
+.ded.alibi{--k:var(--green)}
+.ded.fact{--k:var(--lamp)}
+.ded.ghost{border-style:dashed;border-left-style:dashed;color:var(--muted);--k:var(--line)}
+.timeline{list-style:none;margin:0;padding:0;display:grid;position:relative}
+.timeline::before{content:"";position:absolute;left:58px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.timeline li{display:grid;grid-template-columns:48px 1fr;gap:22px;padding:6px 0;position:relative}
+.timeline li::after{content:"";position:absolute;left:54px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--panel-2);border:2px solid var(--muted)}
+.timeline li.key::after{background:var(--lamp);border-color:var(--lamp)}
+.timeline time{font-family:var(--f-type);font-size:14px;color:var(--lamp);text-align:right;font-variant-numeric:tabular-nums;padding-top:2px}
+.ev-list{display:grid;gap:8px}
+.ev{display:grid;gap:2px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.ev b{font-size:15px}
+.ev span{color:var(--muted);font-size:14px}
+.ev small{font-family:var(--f-type);color:var(--lamp);font-size:12px}
+
+/* Accuse */
+.acc{display:grid;gap:26px;max-width:820px}
+.acc fieldset{border:0;margin:0;padding:0;display:grid;gap:10px}
+.acc legend{font-family:var(--f-display);font-weight:700;font-size:20px;margin-bottom:10px;padding:0}
+.acc legend small{display:block;font-family:var(--f-body);font-weight:400;color:var(--muted);font-size:15px;margin-top:2px}
+.opts{display:grid;gap:8px}
+.opts.who{grid-template-columns:repeat(5,minmax(0,1fr))}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt label{display:flex;gap:12px;align-items:center;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;height:100%}
+.opt.who label{flex-direction:column;text-align:center;gap:8px;font-weight:600;font-size:14px}
+.opt label:hover{border-color:var(--muted)}
+.opt input:checked+label{border-color:var(--lamp);background:var(--panel-2)}
+.opt .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.opt input:checked+label .dot{border-color:var(--lamp);background:radial-gradient(var(--lamp) 0 4px,transparent 5px)}
+.warn{margin:0;color:var(--muted);font-size:15px}
+.verdict{display:grid;gap:20px;max-width:760px}
+.stamp{justify-self:start;font-family:var(--f-type);font-size:clamp(26px,5vw,38px);padding:8px 18px;border:3px solid var(--k);color:var(--k);border-radius:6px;transform:rotate(-3deg);letter-spacing:.06em}
+.stamp.ok{--k:var(--green)}
+.stamp.bad{--k:var(--red)}
+.score{display:flex;flex-wrap:wrap;gap:10px}
+.score .chip.miss{color:var(--muted);text-decoration:line-through}
+.solution{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:12px}
+.solution p{margin:0;max-width:64ch}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:20;background:var(--paper);color:var(--ink);font-family:var(--f-type);padding:14px 18px;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.5);width:min(520px,calc(100% - 32px));font-size:15px}
+.toast b{display:block;font-size:12px;letter-spacing:.08em;color:#8a5a26;font-weight:400}
+
+@media (max-width:860px){
+  .brief,.interview,.nb{grid-template-columns:minmax(0,1fr)}
+  .search{grid-template-columns:minmax(0,1fr)}
+  .rooms{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px}
+  .room-btn{white-space:nowrap;border-color:var(--line)}
+  .suspects,.opts.who{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:480px){
+  .suspects,.opts.who{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .room{padding:16px}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div class="wrap top-in">
+    <p class="eyebrow">CASE FILE 001 · ALDERWOOD LODGE · SATURDAY, 11:40 PM</p>
+    <h1>The Alderwood <span>Affair</span></h1>
+    <p class="dek">A snowbound murder mystery. Search the lodge, question five suspects, and name the killer before the snowplow arrives at dawn.</p>
+    <div class="stats">
+      <span class="chip" id="statEv"></span>
+      <span class="chip" id="statDed"></span>
+      <button class="btn" id="hintBtn" type="button">Get a hint</button>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Case sections">
+  <div class="wrap tabs-in" id="tabs"></div>
+</nav>
+<main class="wrap" id="view"></main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const ROOMS=[
+ {id:"study",name:"The Study",tag:"CRIME SCENE",desc:"Warm, and smelling of pipe smoke and old paper. Victor was found slumped over this desk at 10:15. Nothing has been moved.",items:["s_mug","s_thermos","s_letter","s_pen","s_will","s_door"]},
+ {id:"conserv",name:"Conservatory",desc:"A glass room full of ferns and lemon trees, freezing cold tonight. One door leads to the study, another to the billiard room.",items:["c_heater","c_prints","c_vial"]},
+ {id:"billiard",name:"Billiard Room",desc:"Green felt, leather chairs and a stone fireplace. Desmond says he spent the whole evening in here.",items:["b_fire","b_rack","b_damp"]},
+ {id:"hall",name:"Main Hall",desc:"The coat bench, the grand staircase, and a narrow door down to the cellar.",items:["h_bag","h_cellar"]},
+ {id:"kitchen",name:"Kitchen",desc:"Copper pots, a wood stove, and an old intercom panel that buzzes through to every room.",items:["k_notepad","k_candles"]},
+ {id:"library",name:"Library",desc:"Two storeys of books. A huge jigsaw puzzle covers the reading table.",items:["l_sketch","l_puzzle"]},
+ {id:"guest",name:"Guest Wing",desc:"The upstairs bedrooms. Margot left her door open, and Desmond's briefcase lies open on his dresser.",items:["g_laptop","g_offer"]}
+];
+const CLUES={
+ s_mug:{label:"Victor's mug",title:"Victor's mug",text:"Half-drunk cocoa, gone cold. Under the chocolate there's a sharp, bitter smell. Dr. Okafor knew it at once: crushed heart medication."},
+ s_thermos:{label:"Thermos jug",title:"The thermos jug",text:"Still half full. It smells only of chocolate and cinnamon. Whatever was in Victor's mug went into the mug, not the pot Ines brought up."},
+ s_letter:{label:"Letter on the blotter",title:"Unsent letter",text:"In Victor's handwriting: “Desmond — I've been through the accounts. $200,000 is missing. You have until Monday to explain it, or I call the auditors. — V.”"},
+ s_pen:{label:"Under the desk",title:"Fountain pen",text:"A silver fountain pen engraved D.P. The cap is off and the nib is still wet with ink. Whoever dropped it, dropped it tonight."},
+ s_will:{label:"Folder marked “Lawyer”",title:"Victor's will",text:"A copy of Victor's will. His shares in Halloway Games all go to his niece, Margot."},
+ s_door:{label:"Side door",title:"Side door to the conservatory",text:"Unlatched. The rug just inside is dotted with drops of melted snow."},
+ c_heater:{label:"Space heater",title:"Space heater",text:"Switched ON and still warm. Taped to it, in Victor's handwriting: “DO NOT USE. TRIPS THE BREAKER EVERY TIME. —V.H.”",t:[[600,"The lights go out. It wasn't the storm.",1]]},
+ c_prints:{label:"Snow on the tiles",title:"Footprints",text:"Snow has blown in through a cracked pane. Fresh prints from a man's leather dress shoe cross the drift: from the billiard-room door to the study door, and back again."},
+ c_vial:{label:"The fern pot",title:"Empty vial",text:"Pushed into the soil: a small empty glass vial. Label: “Dr. R. Okafor — heart medication — for V. Halloway.”"},
+ b_fire:{label:"Fireplace",title:"Billiard-room fireplace",text:"Stone cold. The ashes are grey and undisturbed under a fine layer of dust. Nobody lit a fire in here tonight."},
+ b_rack:{label:"Billiard table",title:"Billiard table",text:"All fifteen balls sit tight in the wooden triangle. The cue chalk is still in its wrapper. No game was played."},
+ b_damp:{label:"Carpet by the side door",title:"Damp carpet",text:"The carpet by the door to the conservatory has two damp, shoe-shaped patches."},
+ h_bag:{label:"Doctor's bag",title:"Dr. Okafor's bag",text:"Her medical bag sits on the bench under the coats, clasp open. Anyone walking through the hall could reach inside."},
+ h_cellar:{label:"Cellar door",title:"Cellar stairs",text:"The breaker panel is at the bottom. On the dusty steps: one set of slipper prints, going down and coming back up. Victor was wearing slippers tonight."},
+ k_notepad:{label:"Notepad by the intercom",title:"Ines's notepad",text:"In Ines's neat writing: “9:58 — Mr H. on intercom. Just poured his cocoa, says it's perfect. No more interruptions tonight.”",t:[[598,"Victor on intercom: just poured his cocoa, it tastes perfect",1]]},
+ k_candles:{label:"Candle saucers",title:"Candle stubs",text:"Three candle stubs on three saucers, each burned down about a finger's width. Three people sat here by candlelight during the blackout."},
+ l_sketch:{label:"Theo's sketchbook",title:"Theo's sketchbook",text:"Pages of drawings for a board game called Lantern Keep. Across one page, pressed hard enough to tear: “He stole it. He'll regret this.”"},
+ l_puzzle:{label:"The big jigsaw",title:"Lighthouse jigsaw",text:"A 1,000-piece lighthouse, two-thirds done. Theo's phone beside it shows a progress photo taken at 9:52 PM.",t:[[592,"Theo photographs the jigsaw in the library"]]},
+ g_laptop:{label:"Margot's laptop",title:"Margot's call log",text:"Video call with “Priya” from 9:35 to 10:14 PM. Thirty-nine minutes, unbroken, running on battery straight through the blackout.",t:[[575,"Margot's video call begins"],[614,"Margot's video call ends"]]},
+ g_offer:{label:"Desmond's briefcase",title:"The Northline offer",text:"An offer from Northline Toys to buy Halloway Games. Clipped to it, a private note promising Desmond a $1.5 million bonus once the sale goes through. The sale needs Victor's signature."}
+};
+const SUS=[
+ {id:"margot",name:"Margot Halloway",short:"Margot",role:"Victor's niece, lead designer",ini:"MH",intro:"Red-eyed and pacing. She found the body.",qs:[
+  {id:"m1",q:"Where were you between 9:30 and 10:15?",a:"In my room, on a video call with my fiancée Priya in Halifax. When the lights died my laptop kept going on battery, so we just kept talking. Afterward I went down to say goodnight to Uncle Vic. That's when I found him."},
+  {id:"m2",q:"How did you get along with Victor?",a:"He taught me everything I know about games. He was about to make me creative director. Desmond hated that idea."},
+  {id:"m3",q:"Did you notice anything strange tonight?",a:"Just after the lights went out I heard the cellar door bang and Uncle Vic's slippers on the stairs. He always resets the breaker himself. He calls that panel “the old dragon.”"},
+  {id:"m4",req:["s_will"],q:"You inherit all of his shares.",a:"I know how that looks. I'd give every one of them back to have him here. Check my laptop. The call log will show you exactly where I was."}]},
+ {id:"desmond",name:"Desmond Pike",short:"Desmond",role:"Co-founder and money man",ini:"DP",intro:"Calm, polished, still in his good leather shoes. Keeps checking his watch.",qs:[
+  {id:"d1",q:"Where were you between 9:30 and 10:15?",a:"The billiard room, the whole time. I had a nice fire going and practiced my shots. When the lights went out I just sat by the fire until they came back on."},
+  {id:"d2",q:"When did you last see Victor?",a:"At dinner, around seven. I didn't go near the study after that. Victor liked his privacy and I respected it."},
+  {id:"d3",q:"Were you and Victor arguing about something?",a:"Arguing is a strong word. Northline Toys wants to buy the company. I think it's a wonderful deal. Victor was being sentimental."},
+  {id:"d4",req:["s_pen"],q:"Your pen was under Victor's desk. The ink was still wet.",a:"My pen? I… must have dropped it this afternoon. Yes. We signed some papers at four o'clock."},
+  {id:"d5",req:["b_fire"],q:"The billiard-room fireplace was never lit.",a:"Did I say fire? I meant the lamp. It was cozy. Honestly, why does it matter?"},
+  {id:"d6",req:["s_letter"],q:"Victor wrote that $200,000 is missing.",a:"A bookkeeping mix-up. Victor had been getting muddled with numbers lately. I'd have sorted it out on Monday."},
+  {id:"d7",req:["c_prints"],q:"Someone in leather dress shoes crossed the conservatory.",a:"Lots of people own shoes. …Fine. I stepped into the conservatory for some air. The billiard room was stuffy. I didn't go any farther than the door."},
+  {id:"d8",req:["c_heater"],q:"Did you switch on the conservatory heater?",a:"I have no idea what you're talking about. The storm knocked the power out. Everybody knows that."}]},
+ {id:"ines",name:"Ines Calder",short:"Ines",role:"Housekeeper and cook",ini:"IC",intro:"Has run Alderwood for twelve years. Furious anyone would think she'd hurt him.",qs:[
+  {id:"i1",q:"Where were you between 9:30 and 10:15?",a:"In my kitchen. I made his cocoa at 9:30, with cinnamon the way he likes it, and carried a thermos and a mug up at 9:40. He was alone, frowning at some papers. From 9:45 Dr. Okafor kept me company while I washed up.",t:[[570,"Ines makes the cocoa"],[580,"Ines brings the thermos and mug to the study"],[585,"Dr. Okafor joins Ines in the kitchen"]]},
+  {id:"i2",q:"What happened when the lights went out?",a:"Ten o'clock on the dot. I lit candles. Young Theo came in a minute later asking for one. Mr. Halloway went down to reset the breaker himself, like always. He won't let anyone else touch that panel. Lights were back at 10:06.",t:[[600,"Victor leaves the study to reset the breaker",1],[601,"Theo joins Ines and Dr. Okafor in the kitchen"]]},
+  {id:"i3",req:["s_mug"],q:"His cocoa was poisoned.",a:"Not in my kitchen it wasn't. I tasted that pot myself before I poured it, and I'm still standing, aren't I?"},
+  {id:"i4",req:["c_heater"],q:"Tell me about the conservatory heater.",a:"That heater! Nobody touches it. It blows the breaker every single time. Mr. Pike was standing right there last Christmas when Mr. Halloway taped that sign on it."},
+  {id:"i5",req:["b_rack"],q:"Did anyone play billiards tonight?",a:"I racked those balls myself at six o'clock. If they're still in the triangle, nobody played."}]},
+ {id:"theo",name:"Theo Varga",short:"Theo",role:"Junior game designer",ini:"TV",intro:"Twenty-seven, nervous, ink on his fingers. Keeps saying he didn't do anything.",qs:[
+  {id:"t1",q:"Where were you between 9:30 and 10:15?",a:"In the library, working on the lighthouse jigsaw. When the lights went out I felt my way to the kitchen for a candle and stayed there with Ines and the doctor until the power came back."},
+  {id:"t2",q:"Did you see anyone on your way to the library?",a:"Around 9:45, crossing the main hall, I saw Mr. Pike by the coat bench. He jumped when he saw me. Said he was looking for his scarf.",t:[[585,"Theo sees Desmond at the coat bench, by the doctor's bag",1]]},
+  {id:"t3",q:"What did you think of Victor?",a:"Brilliant. Also impossible. He'd shout at you, then fix your whole game in five minutes. I really wanted him to like my work."},
+  {id:"t4",req:["l_sketch"],q:"Your sketchbook says “He'll regret this.”",a:"Okay. Yes. Victor took my game, Lantern Keep, and called it his own. I was furious. But I'd already hired a lawyer. I wanted to beat him in court, not hurt him."}]},
+ {id:"okafor",name:"Dr. Ruth Okafor",short:"Dr. Okafor",role:"Victor's doctor and old friend",ini:"RO",intro:"Steady hands, quiet voice. She's the one who knew it wasn't natural.",qs:[
+  {id:"o1",q:"Where were you between 9:30 and 10:15?",a:"I left my bag on the hall bench around 9:45 and went to help Ines in the kitchen. I was there through the whole blackout, until I heard Margot scream."},
+  {id:"o2",q:"What happened to Victor?",a:"His heart stopped. That bitter smell in his mug is his own heart medication. The right amount helps him. A whole vial, crushed in at once, is deadly."},
+  {id:"o3",req:["h_bag"],q:"Your bag was left open in the hall.",a:"I carry Victor's medicine in it. The vial was full at dinner. It makes me sick that someone used it."},
+  {id:"o4",req:["h_bag"],q:"Did anyone ask you about that medicine?",a:"Desmond did, over dessert. He asked how much of it would be “too much.” He said he worried Victor was careless with his pills. I thought it was kind of him to ask."}]}
+];
+const DEDS=[
+ {id:"x1",type:"fact",needs:["s_thermos","k_notepad"],text:"The cocoa was fine at 9:58. The poison went into the mug after that, not in the kitchen."},
+ {id:"x2",type:"fact",needs:["h_cellar","i2"],text:"At 10:00 Victor went down to the cellar. For six minutes the study was dark and empty."},
+ {id:"x3",type:"fact",needs:["c_heater","i4"],text:"The blackout wasn't the storm. Someone switched on the heater to trip the breaker, and Desmond knew exactly what it would do."},
+ {id:"x4",type:"lie",needs:["s_pen","d2"],text:"Desmond says he never went near the study after dinner, but his pen was under Victor's desk with wet ink."},
+ {id:"x5",type:"lie",needs:["b_fire","d1"],text:"Desmond says he sat by the billiard-room fire. That fire was never lit."},
+ {id:"x6",type:"lie",needs:["b_rack","d1"],text:"Desmond says he practiced his shots. The balls were never taken out of the rack."},
+ {id:"x7",type:"alibi",needs:["g_laptop","m1"],text:"Margot was on an unbroken video call from 9:35 to 10:14. She couldn't have reached the study."},
+ {id:"x8",type:"alibi",needs:["k_candles","t1","i2"],text:"Theo, Ines and Dr. Okafor were together in the kitchen for the whole blackout."},
+ {id:"x9",type:"fact",needs:["t2","o4"],text:"Desmond asked how much medicine would be “too much,” then was seen by the doctor's open bag at 9:45."}
+];
+const FIXED=[[600,"Lights go out across the lodge",1],[606,"Lights come back on"],[615,"Margot finds Victor in the study",1]];
+const ACC={
+ how:[{id:"heater",t:"Switched on the conservatory heater to trip the breaker, so Victor would leave the study"},{id:"thermos",t:"Poisoned the thermos in the kitchen before it went upstairs"},{id:"visit",t:"Visited Victor openly and slipped it in while he wasn't looking"},{id:"storm",t:"Got lucky when the storm knocked out the power"}],
+ src:[{id:"bag",t:"Took the vial from Dr. Okafor's open bag in the hall"},{id:"pantry",t:"Found something in the kitchen pantry"},{id:"cabinet",t:"Took Victor's pills from his bathroom cabinet"},{id:"brought",t:"Brought it to the lodge in their luggage"}],
+ why:[{id:"money",t:"To hide the missing $200,000 and save the Northline deal"},{id:"inherit",t:"To inherit Victor's shares"},{id:"revenge",t:"Revenge for a stolen game idea"},{id:"job",t:"Fear of losing their job"}]
+};
+const ANSWER={who:"desmond",how:"heater",src:"bag",why:"money"};
+const WRONG={
+ margot:"Margot had the biggest motive on paper, but her video call ran unbroken from 9:35 to 10:14, straight through the blackout. She was never near the study.",
+ ines:"Ines made the cocoa, but she tasted it herself, the thermos was clean, and she spent the whole blackout in the kitchen with Dr. Okafor and Theo.",
+ theo:"Theo was angry enough to write a threat, but at 10:01 he walked into the kitchen for a candle and stayed until the lights came back.",
+ okafor:"It was her medicine, but Dr. Okafor never left the kitchen. Someone else took the vial from her open bag."
+};
+const TOTAL=Object.keys(CLUES).length;
+const KEY="alderwood-affair-v1";
+const fresh=()=>({view:"brief",room:"study",last:null,suspect:"margot",found:[],asked:[],seenQ:[],acc:{who:null,how:null,src:null,why:null},verdict:null});
+let S=fresh();
+
+function load(d){if(d&&d.found){S=Object.assign(fresh(),d);}}
+try{const raw=localStorage.getItem(KEY);if(raw)load(JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const has=id=>S.found.includes(id)||S.asked.includes(id);
+const sus=id=>SUS.find(s=>s.id===id);
+const roomOf=cid=>ROOMS.find(r=>r.items.includes(cid));
+const clueNo=cid=>String(Object.keys(CLUES).indexOf(cid)+1).padStart(2,"0");
+const fmt=m=>{const h=Math.floor(m/60),mm=m%60;return (h>12?h-12:h)+":"+String(mm).padStart(2,"0");};
+const ded=()=>DEDS.filter(d=>d.needs.every(has));
+const cvar=id=>"--c:var(--s-"+id+")";
+
+const TABS=[["brief","Briefing"],["search","Search the lodge"],["interview","Interview"],["notebook","Notebook"],["accuse","Accuse"]];
+function renderTabs(){
+ document.getElementById("tabs").innerHTML=TABS.map((t,i)=>`<button class="tab" type="button" data-go="${t[0]}" aria-current="${S.view===t[0]}"><span class="n">0${i+1}</span>${t[1]}</button>`).join("");
+ document.getElementById("statEv").innerHTML=`Evidence <b>${S.found.length}</b> / ${TOTAL}`;
+ document.getElementById("statDed").innerHTML=`Deductions <b>${ded().length}</b> / ${DEDS.length}`;
+}
+
+function vBrief(){
+ return `<div class="brief">
+  <div class="story">
+   <p>The storm closed the mountain road at dusk. Until the snowplow gets through at dawn, nobody comes into Alderwood Lodge and nobody leaves.</p>
+   <p>Your great-uncle Victor Halloway, founder of Halloway Games, invited five people up for his 68th birthday weekend. At 10:15 PM your cousin Margot found him slumped over his desk in the study. Dr. Okafor says his heart stopped, and that it was no accident: his cocoa mug smells sharp and bitter.</p>
+   <p>Over a crackling radio, Constable Bea Lindqvist asks you, Jordan, to do what she can't. Search the lodge. Talk to everyone. Work out who did it, how, and why, before the trail goes cold.</p>
+   <div class="row" style="margin-top:20px"><button class="btn primary" type="button" data-go="search">Start at the crime scene</button><button class="btn" type="button" data-go="interview">Meet the suspects</button></div>
+  </div>
+  <aside class="radio">
+   <h3>What everyone agrees on</h3>
+   <div class="facts"><div><span>9:40</span><span>Ines takes cocoa up to Victor</span></div><div><span>10:00</span><span>Every light in the lodge goes out</span></div><div><span>10:06</span><span>Lights come back on</span></div><div><span>10:15</span><span>Margot finds Victor</span></div></div>
+   <h3>How to solve it</h3>
+   <ul><li><b>Search</b> each room. Every clue goes into your notebook.</li><li><b>Interview</b> the suspects. New evidence unlocks new questions.</li><li><b>Check your notebook.</b> Lies and alibis appear when two facts connect.</li><li><b>Accuse</b> when you can explain who, how, and why.</li></ul>
+  </aside>
+ </div>
+ <div class="cast">${SUS.map(s=>`<div class="person" style="${cvar(s.id)}"><div class="mono">${s.ini}</div><div class="who"><b>${s.name}</b><span>${s.role}</span></div></div>`).join("")}</div>`;
+}
+
+function card(cid,pop){
+ const c=CLUES[cid];
+ return `<article class="card${pop?" pop":""}"><div class="no"><span>EVIDENCE #${clueNo(cid)}</span><span>${roomOf(cid).name.toUpperCase()}</span></div><h4>${c.title}</h4><p>${c.text}</p></article>`;
+}
+function vSearch(){
+ const r=ROOMS.find(x=>x.id===S.room);
+ const list=ROOMS.map(x=>{const n=x.items.filter(i=>S.found.includes(i)).length;return `<button class="room-btn" type="button" data-room="${x.id}" aria-current="${x.id===S.room}"><span>${x.name}</span><span class="ct${n===x.items.length?" done":""}">${n}/${x.items.length}</span></button>`;}).join("");
+ const objs=r.items.map(i=>`<button class="obj${S.found.includes(i)?" seen":""}${S.last===i?" active":""}" type="button" data-clue="${i}">${CLUES[i].label}</button>`).join("");
+ const showing=S.last&&r.items.includes(S.last)?card(S.last,S._pop):`<div class="placeholder">Pick something to examine. Anything you find is filed in your notebook.</div>`;
+ S._pop=false;
+ return `<div class="view-head"><h2>Search the lodge</h2><p>Seven rooms. Twenty-one pieces of evidence. Some matter, some are there to mislead you.</p></div>
+ <div class="search"><nav class="rooms" aria-label="Rooms">${list}</nav>
+ <section class="room">${r.tag?`<div><div class="tag">${r.tag}</div><h3>${r.name}</h3></div>`:`<h3>${r.name}</h3>`}<p>${r.desc}</p><div class="objects">${objs}</div>${showing}</section></div>`;
+}
+
+function vInterview(){
+ const s=sus(S.suspect);
+ const strip=SUS.map(x=>{const fresh=x.qs.some(q=>!S.asked.includes(q.id)&&(q.req||[]).every(has)&&q.req&&!S.seenQ.includes(q.id));return `<button class="person" type="button" data-sus="${x.id}" style="${cvar(x.id)}" aria-current="${x.id===S.suspect}"><div class="mono">${x.ini}</div><div class="who"><b>${x.short}${fresh?" •":""}</b><span>${x.role}</span></div></button>`;}).join("");
+ const open=s.qs.filter(q=>(q.req||[]).every(has)&&!S.asked.includes(q.id));
+ const locked=s.qs.filter(q=>!(q.req||[]).every(has)).length;
+ open.forEach(q=>{if(q.req&&!S.seenQ.includes(q.id))q._new=true;});
+ const qs=open.map(q=>`<button class="q${q._new?" new":""}" type="button" data-q="${q.id}">${q.q}</button>`).join("");
+ open.forEach(q=>{delete q._new;if(q.req&&!S.seenQ.includes(q.id))S.seenQ.push(q.id);});
+ const tr=s.qs.filter(q=>S.asked.includes(q.id)).sort((a,b)=>S.asked.indexOf(b.id)-S.asked.indexOf(a.id)).map(q=>`<div class="ex"><div class="ask">${q.q}</div><div class="ans"><b>${s.short}</b>${q.a}</div></div>`).join("");
+ return `<div class="view-head"><h2>Interview the suspects</h2><p>Everyone in the lodge had a reason to be angry with Victor. Find out who also had the chance.</p></div>
+ <div class="suspects">${strip}</div>
+ <div class="interview" style="${cvar(s.id)}">
+  <section class="profile"><div class="profile-head"><div class="mono lg">${s.ini}</div><div><h3>${s.name}</h3><p>${s.role}</p></div></div><p class="intro">${s.intro}</p>
+   <div class="qs">${qs||`<div class="placeholder">You've asked everything you can for now.</div>`}${locked?`<div class="locked">${locked} more question${locked>1?"s":""} unlock${locked>1?"":"s"} when you find the right evidence.</div>`:""}</div></section>
+  <section class="transcript">${tr||`<div class="placeholder">Ask ${s.short} a question to start the interview.</div>`}</section>
+ </div>`;
+}
+
+function vNotebook(){
+ const got=ded();
+ const dl=DEDS.map(d=>got.includes(d)?`<div class="ded ${d.type}"><span class="k">${d.type==="lie"?"CAUGHT IN A LIE":d.type==="alibi"?"ALIBI CONFIRMED":"KEY FACT"}</span><span>${d.text}</span></div>`:"").join("");
+ const ghosts=DEDS.length-got.length;
+ const tl=[...FIXED];
+ Object.keys(CLUES).forEach(k=>{if(S.found.includes(k)&&CLUES[k].t)tl.push(...CLUES[k].t);});
+ SUS.forEach(s=>s.qs.forEach(q=>{if(S.asked.includes(q.id)&&q.t)tl.push(...q.t);}));
+ const seen=new Set();const tlu=tl.filter(e=>{const k=e[0]+e[1];if(seen.has(k))return false;seen.add(k);return true;}).sort((a,b)=>a[0]-b[0]);
+ const ev=ROOMS.flatMap(r=>r.items.filter(i=>S.found.includes(i)).map(i=>`<div class="ev"><small>#${clueNo(i)} · ${r.name}</small><b>${CLUES[i].title}</b><span>${CLUES[i].text}</span></div>`)).join("");
+ return `<div class="view-head"><h2>Detective's notebook</h2><p>Deductions appear on their own when two pieces of evidence or testimony connect.</p></div>
+ <div class="nb">
+  <section><h3>Deductions <small>${got.length} of ${DEDS.length}</small></h3>${dl}${ghosts?`<div class="ded ghost"><span class="k">STILL HIDDEN</span><span>${ghosts} more deduction${ghosts>1?"s":""} to make. Search more rooms and ask follow-up questions.</span></div>`:""}
+   <h3 style="margin-top:14px">Timeline <small>Saturday night</small></h3><ol class="timeline">${tlu.map(e=>`<li class="${e[2]?"key":""}"><time>${fmt(e[0])}</time><span>${e[1]}</span></li>`).join("")}</ol></section>
+  <section><h3>Evidence <small>${S.found.length} of ${TOTAL}</small></h3><div class="ev-list">${ev||`<div class="placeholder">Nothing yet. Start by searching the study.</div>`}</div></section>
+ </div>`;
+}
+
+function opts(name,list,cls){
+ return `<div class="opts ${cls||""}">${list.map(o=>`<div class="opt ${cls||""}"><input type="radio" name="${name}" id="${name}-${o.id}" value="${o.id}" ${S.acc[name]===o.id?"checked":""}><label for="${name}-${o.id}">${o.html||`<span class="dot"></span><span>${o.t}</span>`}</label></div>`).join("")}</div>`;
+}
+function vAccuse(){
+ if(S.verdict)return vVerdict();
+ const ready=S.acc.who&&S.acc.how&&S.acc.src&&S.acc.why;
+ const whoList=SUS.map(s=>({id:s.id,html:`<span class="mono" style="${cvar(s.id)}">${s.ini}</span><span>${s.name}</span>`}));
+ return `<div class="view-head"><h2>Make your accusation</h2><p>The constable will only make an arrest if you can explain the whole crime. You get one try.</p></div>
+ <form class="acc" id="accForm">
+  <fieldset><legend>Who killed Victor Halloway?</legend>${opts("who",whoList,"who")}</fieldset>
+  <fieldset><legend>How did they get to his cocoa?<small>Victor was in the study all evening, except for one moment.</small></legend>${opts("how",ACC.how)}</fieldset>
+  <fieldset><legend>Where did the poison come from?</legend>${opts("src",ACC.src)}</fieldset>
+  <fieldset><legend>Why did they do it?</legend>${opts("why",ACC.why)}</fieldset>
+  ${S.found.length<12?`<p class="warn">You've found ${S.found.length} of ${TOTAL} pieces of evidence. You can accuse now, but more searching will make your case stronger.</p>`:""}
+  <div class="row"><button class="btn primary" type="submit" ${ready?"":"disabled"}>Make the accusation</button><button class="btn" type="button" data-go="notebook">Review my notebook first</button></div>
+ </form>`;
+}
+function vVerdict(){
+ const a=S.acc,ok=a.who===ANSWER.who;
+ const parts=[["Culprit",a.who===ANSWER.who,40],["Method",a.how===ANSWER.how,20],["Poison",a.src===ANSWER.src,20],["Motive",a.why===ANSWER.why,20]];
+ const score=parts.reduce((t,p)=>t+(p[1]?p[2]:0),0);
+ const rank=!ok?"The killer walks free":score===100?"Chief Inspector material":score>=80?"Sharp detective":score>=60?"Good instincts":"Lucky guess";
+ return `<div class="verdict">
+  <div class="stamp ${ok?"ok":"bad"}">${ok?"CASE CLOSED":"WRONG SUSPECT"}</div>
+  <div class="view-head" style="margin:0"><h2>${rank}</h2><p>${ok?`At dawn the snowplow arrives, and Constable Lindqvist arrests Desmond Pike. Your score: ${score} out of 100.`:`${WRONG[a.who]} Meanwhile, the real killer packs his bags for the first plow out.`}</p></div>
+  <div class="score">${parts.map(p=>`<span class="chip${p[1]?"":" miss"}">${p[1]?"✓":"✗"} ${p[0]}</span>`).join("")}<span class="chip">Evidence found <b>${S.found.length}/${TOTAL}</b></span></div>
+  ${S.showSol?`<section class="solution"><h3>What really happened</h3>
+   <p>Desmond Pike had been quietly taking money from Halloway Games, and Victor had found out. Victor was also refusing the Northline sale, which would have paid Desmond a $1.5 million bonus and buried the missing $200,000 for good.</p>
+   <p>At dessert, Desmond asked Dr. Okafor how much of Victor's medicine would be “too much.” At 9:45 he took the vial from her open bag in the hall, which is when Theo spotted him at the coat bench.</p>
+   <p>He also knew what everyone in the house knew: the conservatory heater trips the breaker, and Victor always resets it himself. At 10:00 he switched it on. The lodge went dark, and Victor went down to the cellar.</p>
+   <p>Desmond crossed the conservatory in his leather shoes, slipped through the side door, and emptied the vial into Victor's freshly poured cocoa, dropping his pen in the dark. He pushed the empty vial into the fern pot on the way back, tracking snow both ways. At 10:06 Victor came back and finished his cocoa.</p>
+   <p>His alibi, a quiet evening of billiards by the fire, fell apart on a cold fireplace and a rack of balls nobody had touched.</p></section>`:""}
+  <div class="row">${S.showSol?"":`<button class="btn primary" type="button" data-act="sol">Reveal what really happened</button>`}<button class="btn" type="button" data-act="reset">Start a new investigation</button></div>
+ </div>`;
+}
+
+function render(){
+ renderTabs();
+ const v={brief:vBrief,search:vSearch,interview:vInterview,notebook:vNotebook,accuse:vAccuse}[S.view]();
+ document.getElementById("view").innerHTML=v;
+ save();
+}
+
+let tt;
+function toast(head,msg){const t=document.getElementById("toast");t.innerHTML=`<b>${head}</b>${msg}`;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true;},5200);}
+function newDeds(before){const now=ded();now.filter(d=>!before.includes(d)).forEach(d=>toast(d.type==="lie"?"CAUGHT IN A LIE":d.type==="alibi"?"ALIBI CONFIRMED":"NEW DEDUCTION",d.text));}
+function hint(){
+ const H=[
+  [()=>!S.found.includes("s_mug"),"Start at the crime scene. Search everything in the study."],
+  [()=>!S.found.includes("s_door"),"The study has a second way in. Look at the side door."],
+  [()=>!S.found.includes("c_heater"),"Follow the side door into the conservatory. Something in there is still warm."],
+  [()=>!S.asked.includes("d1"),"Ask everyone where they were between 9:30 and 10:15."],
+  [()=>!S.asked.includes("i4"),"Ask Ines about the heater you found. Who knew what it would do?"],
+  [()=>!S.found.includes("b_fire"),"Desmond says he was in the billiard room. Does the room agree with him?"],
+  [()=>!S.found.includes("h_bag"),"Where did the poison come from? Check the main hall."],
+  [()=>!S.asked.includes("o4"),"Ask Dr. Okafor whether anyone showed interest in Victor's medicine."],
+  [()=>!S.found.includes("g_laptop"),"Margot has the biggest motive on paper. Can anything prove where she was?"],
+  [()=>!S.found.includes("k_candles"),"Who was in the kitchen during the blackout? Look for proof."],
+  [()=>true,"Ask yourself who was alone when the lights went out, and who lied about it. Then head to Accuse."]
+ ];
+ toast("HINT",H.find(h=>h[0]())[1]);
+}
+
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b)return;
+ const before=ded();
+ if(b.id==="hintBtn"){hint();return;}
+ if(b.dataset.go){S.view=b.dataset.go;render();window.scrollTo({top:document.querySelector(".tabs").offsetTop,behavior:"smooth"});return;}
+ if(b.dataset.room){S.room=b.dataset.room;S.last=null;render();return;}
+ if(b.dataset.clue){const id=b.dataset.clue;const isNew=!S.found.includes(id);if(isNew)S.found.push(id);S.last=id;S._pop=true;render();if(isNew)newDeds(before);return;}
+ if(b.dataset.sus){S.suspect=b.dataset.sus;render();return;}
+ if(b.dataset.q){if(!S.asked.includes(b.dataset.q))S.asked.push(b.dataset.q);render();newDeds(before);return;}
+ if(b.dataset.act==="sol"){S.showSol=true;render();return;}
+ if(b.dataset.act==="reset"){S=fresh();render();window.scrollTo({top:0,behavior:"smooth"});return;}
+});
+document.addEventListener("change",e=>{
+ if(e.target.name&&e.target.name in S.acc){S.acc[e.target.name]=e.target.value;save();const btn=document.querySelector("#accForm [type=submit]");if(btn)btn.disabled=!(S.acc.who&&S.acc.how&&S.acc.src&&S.acc.why);}
+});
+document.addEventListener("submit",e=>{
+ if(e.target.id==="accForm"){e.preventDefault();S.verdict=true;render();window.scrollTo({top:document.querySelector(".tabs").offsetTop,behavior:"smooth"});}
+});
+
+function start(data){if(data&&data.S)load(data.S);render();}
+if(window.claude&&window.claude.hot&&window.claude.hot.snapshot){window.claude.hot.snapshot(()=>({S}));}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+
+/* Snow */
+const cv=document.getElementById("snow"),cx=cv.getContext("2d");
+const still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let flakes=[],W=0,H=0;
+function size(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);
+ flakes=Array.from({length:Math.round(W/9)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.5,s:Math.random()*.6+.25,w:Math.random()*Math.PI*2}));}
+function draw(){cx.clearRect(0,0,W,H);cx.fillStyle="rgba(233,239,242,.75)";
+ for(const f of flakes){cx.globalAlpha=.35+f.r/4;cx.beginPath();cx.arc(f.x,f.y,f.r,0,Math.PI*2);cx.fill();
+  if(!still){f.y+=f.s;f.w+=.01;f.x+=Math.sin(f.w)*.35-.15;if(f.y>H+4){f.y=-4;f.x=Math.random()*W;}if(f.x<-4)f.x=W+4;}}
+ cx.globalAlpha=1;if(!still)requestAnimationFrame(draw);}
+size();draw();window.addEventListener("resize",()=>{size();if(still)draw();});
+})();
+</script>
+
+<a href="../index.html#mystery" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;font:700 13px/1 system-ui,sans-serif;color:#fff;background:rgba(20,27,38,.85);border-radius:999px;padding:8px 12px;text-decoration:none">All games</a>
+</body></html>
