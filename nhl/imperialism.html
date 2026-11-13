@@ -1,0 +1,816 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NHL Imperialism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: the map is the rink (left), the bench holds wheels + scoreboard (right); lower row = standings + conquest log. Stacks on phones. */
+:root{
+  --ice:#EDF2F5; --board:#FFFFFF; --ink:#15212B; --muted:#5A6A77; --line:#CCD7DF;
+  --ocean:#D5E3EC; --coast:#22394A; --border:rgba(14,22,30,.62);
+  --goal:#C8102E; --blue:#1F4FA3; --rim:#22394A; --slot:#DCE5EB;
+  --sb:#0C141B; --sbtext:#E8F0F5; --led:#FFC447; --sbmuted:#8496A4;
+  --display:"Saira Extra Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Chakra Petch",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ice:#0A1117; --board:#111B23; --ink:#E5EDF2; --muted:#8C9EAC; --line:#22313C;
+  --ocean:#0E2130; --coast:#9DB5C7; --border:rgba(6,10,14,.7);
+  --goal:#E2324A; --blue:#5C8BE0; --rim:#2C4254; --slot:#1A2731;
+  --sb:#05090C; --sbtext:#E8F0F5; --led:#FFC447; --sbmuted:#7E909E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ice:#0A1117; --board:#111B23; --ink:#E5EDF2; --muted:#8C9EAC; --line:#22313C;
+  --ocean:#0E2130; --coast:#9DB5C7; --border:rgba(6,10,14,.7);
+  --goal:#E2324A; --blue:#5C8BE0; --rim:#2C4254; --slot:#1A2731;
+  --sb:#05090C; --sbtext:#E8F0F5; --led:#FFC447; --sbmuted:#7E909E; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--ice);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 40px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px}
+.eyebrow{margin:0;font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--goal);font-weight:600}
+h1{margin:2px 0 4px;font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,6vw,4rem);line-height:.9;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.lede{margin:0;max-width:62ch;color:var(--muted)}
+.stats{display:flex;gap:22px;margin:0;flex-wrap:wrap}
+.stats div{display:flex;flex-direction:column}
+.stats dt{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stats dd{margin:0;font-family:var(--display);font-weight:700;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.rink{height:10px;position:relative;border-top:3px solid var(--goal)}
+.rink::before,.rink::after{content:"";position:absolute;top:-3px;width:22%;height:3px;background:var(--blue)}
+.rink::before{left:18%}.rink::after{right:18%}
+
+.arena{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);gap:18px;align-items:start}
+@media (max-width:1000px){.arena{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--board);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+h2{margin:0 0 10px;font-family:var(--display);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:.03em}
+
+.mapcard{background:var(--board);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.mapstack{position:relative;width:100%;border-radius:8px;overflow:hidden}
+.mapstack canvas{display:block;width:100%;height:auto}
+#ov{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.mapnote{margin:8px 4px 2px;color:var(--muted);font-size:.85rem}
+#tip{position:absolute;pointer-events:none;background:var(--board);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:.84rem;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px;display:flex;flex-direction:column;gap:1px}
+#tip b{font-family:var(--display);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em}
+#tip span{color:var(--muted)}
+#champ{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,10,14,.45);padding:16px}
+.champcard{background:var(--board);border-radius:14px;border-top:8px solid var(--tc,var(--goal));padding:20px 22px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.champcard .eyebrow{color:var(--muted)}
+.champcard h3{margin:4px 0 6px;font-family:var(--display);font-size:2.4rem;line-height:1;text-transform:uppercase}
+.champcard p{margin:0 0 12px;color:var(--muted)}
+.champcard ul{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:1fr auto;gap:2px 12px;text-align:left;font-size:.9rem}
+
+.bench{display:flex;flex-direction:column;gap:14px;min-width:0}
+.steps{display:flex;gap:6px;list-style:none;margin:0 0 10px;padding:0}
+.steps li{flex:1;text-align:center;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 4px;border-radius:6px;background:var(--slot);color:var(--muted)}
+.steps li.on{background:var(--ink);color:var(--board)}
+.go{width:100%;border:0;border-radius:10px;padding:13px 16px;background:var(--goal);color:#fff;font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;transition:transform .12s, filter .12s}
+.go:hover{filter:brightness(1.08)}
+.go:active{transform:translateY(1px)}
+.go:disabled{filter:grayscale(.6) brightness(.85);cursor:progress}
+.go:focus-visible,.chip:focus-visible,select:focus-visible,.srow:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.chip{border:1px solid var(--line);background:var(--board);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .85rem var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.row label{display:flex;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)}
+select{font:600 .85rem var(--body);padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--board);color:var(--ink)}
+.row .ghost{margin-left:auto}
+
+.wheels{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wheel{display:flex;flex-direction:column;gap:6px;min-width:0}
+.wlabel{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center}
+.wbox{position:relative}
+.wbox canvas{width:100%;height:auto;display:block}
+.pin{position:absolute;left:50%;top:-2px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--goal);filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.wres{text-align:center;font-family:var(--display);font-weight:700;font-size:1.15rem;text-transform:uppercase;min-height:1.5em;line-height:1.2}
+.hint{margin:-4px 2px 0;color:var(--muted);font-size:.8rem}
+
+.board{background:var(--sb);color:var(--sbtext);border-radius:12px;padding:12px 12px 10px;transition:box-shadow .2s}
+.board.flash{animation:flash .9s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 0 var(--fc)}30%{box-shadow:0 0 0 6px var(--fc)}100%{box-shadow:0 0 0 0 transparent}}
+.sbrow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.sbt{display:flex;flex-direction:column;align-items:center;gap:2px;border-top:4px solid var(--tc,#33414c);padding-top:6px;min-width:0}
+.sbab{font-family:var(--display);font-weight:800;font-size:1.9rem;line-height:1}
+.sbnm{font-size:.72rem;color:var(--sbmuted);text-transform:uppercase;letter-spacing:.08em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sbsog{font-family:var(--mono);font-size:.75rem;color:var(--sbmuted)}
+.sbsog b{color:var(--sbtext);font-variant-numeric:tabular-nums}
+.sbmid{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 6px}
+.sbscore{font-family:var(--mono);font-weight:700;font-size:2.6rem;line-height:1;color:var(--led);font-variant-numeric:tabular-nums;letter-spacing:.04em;text-shadow:0 0 12px rgba(255,196,71,.35)}
+.sbclock{font-family:var(--mono);font-size:.9rem;font-variant-numeric:tabular-nums;color:var(--sbtext);background:#000;border-radius:5px;padding:1px 8px}
+.sbmsg{margin-top:9px;font-size:.84rem;color:var(--sbmuted);text-align:center;min-height:1.3em}
+.sbmsg b{color:var(--sbtext)}
+
+.pbp ol,.lower ol{list-style:none;margin:0;padding:0}
+#pbp{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+#pbp li{display:grid;grid-template-columns:4.6rem 1fr;gap:8px;font-size:.84rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+#pbp time{font-family:var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;font-size:.78rem}
+#pbp li.g span{font-weight:600}
+#pbp .tag{display:inline-block;padding:0 6px;border-radius:4px;background:var(--tc);color:var(--tt,#fff);font-family:var(--display);font-weight:700;letter-spacing:.03em;margin-right:5px}
+#pbp .empty{color:var(--muted);display:block;border:0}
+
+.lower{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.lower{grid-template-columns:minmax(0,1fr)}}
+.shead,.srow{display:grid;grid-template-columns:14px minmax(0,1fr) 3.2rem 2.6rem 2.2rem;gap:8px;align-items:center}
+.shead{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 6px 6px;border-bottom:1px solid var(--line)}
+.shead span:nth-child(n+3),.srow .n{text-align:right;font-variant-numeric:tabular-nums}
+#stand{display:flex;flex-direction:column;max-height:520px;overflow:auto}
+.srow{padding:6px;border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit;text-align:left;width:100%}
+.srow:hover{background:var(--slot)}
+.srow .sw{width:14px;height:14px;border-radius:3px;background:var(--tc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.srow .tn{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow.out{opacity:.5}
+.srow.out .tn{font-weight:500}
+.srow .by{color:var(--muted);font-weight:500;font-size:.8rem}
+.roster{padding:6px 8px 10px 28px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:2px 10px;font-size:.84rem}
+.roster .pos{font-family:var(--mono);color:var(--muted);font-size:.75rem}
+.roster .ovr{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.roster .via{color:var(--goal);font-size:.75rem;margin-left:4px}
+.roster .depth{color:var(--muted)}
+.roster .dtag{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:4px}
+#hist{display:flex;flex-direction:column;gap:8px;max-height:520px;overflow:auto}
+#hist li{display:grid;grid-template-columns:2.4rem 1fr;gap:8px;font-size:.86rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+#hist .gn{font-family:var(--mono);color:var(--muted);font-size:.78rem}
+#hist .res{font-weight:700;font-family:var(--display);font-size:1.05rem;letter-spacing:.02em}
+#hist .sub{color:var(--muted)}
+#hist .empty{display:block;color:var(--muted);border:0}
+footer{color:var(--muted);font-size:.8rem}
+@media (prefers-reduced-motion: reduce){.board.flash{animation:none}.go{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">32 franchises · one continent</p>
+      <h1>NHL Imperialism</h1>
+      <p class="lede">Spin for an attacking team, spin for a direction, then play the game against whoever borders them that way. The winner annexes the loser's territory and signs the one player who helps its lineup most. Last team standing owns Canada and the United States.</p>
+    </div>
+    <dl class="stats">
+      <div><dt>Teams left</dt><dd id="stTeams">32</dd></div>
+      <div><dt>Games played</dt><dd id="stGames">0</dd></div>
+      <div><dt>Largest empire</dt><dd id="stLead">—</dd></div>
+    </dl>
+  </header>
+  <div class="rink" aria-hidden="true"></div>
+
+  <main class="arena">
+    <section class="mapcard" aria-label="Territory map">
+      <div class="mapstack">
+        <canvas id="map"></canvas>
+        <canvas id="ov"></canvas>
+        <div id="tip" hidden></div>
+        <div id="champ" hidden></div>
+      </div>
+      <p class="mapnote">States and provinces with one team belong wholly to it. Those with several teams are split between them, and those with none go to the nearest team in the same country. Hover for details, click to open a roster. Hawaii is in the inset.</p>
+    </section>
+
+    <aside class="bench">
+      <div class="panel">
+        <ol class="steps"><li data-s="team">1 · Team</li><li data-s="dir">2 · Direction</li><li data-s="game">3 · Game</li></ol>
+        <button id="go" class="go" type="button">Spin the team wheel</button>
+        <div class="row">
+          <button id="auto" class="chip" type="button" aria-pressed="false">Auto-play</button>
+          <label for="speed">Speed
+            <select id="speed">
+              <option value="broadcast">Broadcast</option>
+              <option value="fast">Fast</option>
+              <option value="instant">Instant</option>
+            </select>
+          </label>
+          <button id="reset" class="chip ghost" type="button">Restart</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="wheels">
+          <div class="wheel">
+            <div class="wlabel">Attacking team</div>
+            <div class="wbox"><canvas id="wTeam" width="420" height="420"></canvas><span class="pin"></span></div>
+            <div class="wres" id="rTeam">Spin to pick</div>
+          </div>
+          <div class="wheel">
+            <div class="wlabel">Direction</div>
+            <div class="wbox"><canvas id="wDir" width="420" height="420"></canvas><span class="pin"></span></div>
+            <div class="wres" id="rDir">Waiting</div>
+          </div>
+        </div>
+      </div>
+      <p class="hint">The direction wheel only shows compass points where the attacker borders a rival.</p>
+
+      <div class="board" id="board">
+        <div class="sbrow">
+          <div class="sbt" id="sbA"><span class="sbab">—</span><span class="sbnm">Away</span><span class="sbsog">SOG <b>0</b></span></div>
+          <div class="sbmid">
+            <div class="sbscore"><span id="scA">0</span>:<span id="scH">0</span></div>
+            <div class="sbclock"><span id="per">1st</span> <span id="clk">20:00</span></div>
+          </div>
+          <div class="sbt" id="sbH"><span class="sbab">—</span><span class="sbnm">Home</span><span class="sbsog">SOG <b>0</b></span></div>
+        </div>
+        <div class="sbmsg" id="sbmsg">Spin the wheels to set a matchup.</div>
+      </div>
+
+      <div class="panel pbp">
+        <h2>Play-by-play</h2>
+        <ol id="pbp"><li class="empty">Goals and penalties appear here once the puck drops.</li></ol>
+      </div>
+    </aside>
+  </main>
+
+  <section class="lower">
+    <div class="panel">
+      <h2>Standings</h2>
+      <div class="shead"><span></span><span>Team</span><span>Terr.</span><span>OVR</span><span>W</span></div>
+      <div id="stand"></div>
+    </div>
+    <div class="panel">
+      <h2>Conquest log</h2>
+      <ol id="hist"><li class="empty">No games yet.</li></ol>
+    </div>
+  </section>
+
+  <footer>Rosters are each team's top six forwards, three defencemen and starting goalie from the NHL's 2026–27 opening-night rosters, updated for trades through Nov. 1, 2026 (including Connor Hellebuyck to New Jersey, Shane Wright to Nashville and Matthew Wood to Seattle). Ratings are game estimates, not official numbers. Each game dresses six forwards, four defencemen and one goalie, and scoring is tuned to recent NHL averages of about three goals per team. State and province shapes: Highcharts map collection, simplified.</footer>
+</div>
+
+<script>
+(()=>{
+const D=Math.PI/180, TAU=Math.PI*2;
+const $=s=>document.querySelector(s);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ---------------- Teams (2026-27 opening-night rosters + trades through Nov 1, 2026) ---------------- */
+const T=(ab,name,c,lon,lat,r)=>({ab,name,c,at:[lon,lat],r});
+const TEAMS=[
+T('ANA','Anaheim Ducks','#FC4C02',-117.88,33.81,[['Leo Carlsson','C',86],['Cutter Gauthier','LW',85],['Troy Terry','RW',82],['Beckett Sennecke','RW',81],['Mikael Granlund','C',81],['Frank Vatrano','RW',78],['Jackson LaCombe','D',83],['Pavel Mintyukov','D',80],['Nick Jensen','D',77],['Lukas Dostal','G',84]]),
+T('BOS','Boston Bruins','#FFB81C',-71.06,42.37,[['David Pastrnak','RW',92],['Morgan Geekie','LW',84],['JJ Peterka','RW',84],['Elias Lindholm','C',81],['Pavel Zacha','C',81],['Casey Mittelstadt','C',79],['Charlie McAvoy','D',87],['Hampus Lindholm','D',81],['Nikita Zadorov','D',79],['Jeremy Swayman','G',85]]),
+T('BUF','Buffalo Sabres','#003087',-78.88,42.88,[['Tage Thompson','C',87],['Josh Doan','RW',82],['Josh Norris','C',82],['Jack Quinn','RW',81],['Jiri Kulich','C',80],['Zach Benson','LW',80],['Rasmus Dahlin','D',89],['Owen Power','D',82],['Olen Zellweger','D',79],['Ukko-Pekka Luukkonen','G',83]]),
+T('CGY','Calgary Flames','#C8102E',-114.05,51.04,[['Matt Coronato','RW',83],['Yegor Sharangovich','C',80],['Morgan Frost','C',80],['Joel Farabee','LW',79],['Connor Zary','LW',79],['Mikael Backlund','C',79],['Zayne Parekh','D',81],['Simon Nemec','D',81],['Kevin Bahl','D',79],['Dustin Wolf','G',87]]),
+T('CAR','Carolina Hurricanes','#CE1126',-78.72,35.80,[['Sebastian Aho','C',89],['Seth Jarvis','RW',86],['Andrei Svechnikov','RW',85],['Nikolaj Ehlers','LW',84],['Logan Stankoven','C',84],['Jackson Blake','RW',84],['Jaccob Slavin','D',86],["K'Andre Miller",'D',82],['Shayne Gostisbehere','D',81],['Pyotr Kochetkov','G',82]]),
+T('CHI','Chicago Blackhawks','#CF0A2C',-87.67,41.88,[['Connor Bedard','C',90],['Frank Nazar','C',82],['Tyler Bertuzzi','LW',80],['Teuvo Teravainen','RW',79],['Patrick Kane','RW',79],['Anton Frondell','C',79],['Alex Vlasic','D',83],['Bowen Byram','D',81],['Artyom Levshunov','D',80],['Spencer Knight','G',85]]),
+T('COL','Colorado Avalanche','#6F263D',-105.01,39.75,[['Nathan MacKinnon','C',97],['Martin Necas','RW',88],['Brock Nelson','C',83],['Nazem Kadri','C',83],['Artturi Lehkonen','LW',82],['Gabriel Landeskog','LW',81],['Cale Makar','D',96],['Devon Toews','D',84],['Brent Burns','D',78],['Mackenzie Blackwood','G',85]]),
+T('CBJ','Columbus Blue Jackets','#002654',-83.01,39.97,[['Adam Fantilli','C',85],['Matthew Knies','LW',84],['Sean Monahan','C',82],['Valeri Nichushkin','RW',82],['Dmitri Voronkov','LW',81],['Kent Johnson','LW',80],['Zach Werenski','D',92],['Ivan Provorov','D',81],['Denton Mateychuk','D',80],['Jet Greaves','G',82]]),
+T('DAL','Dallas Stars','#006847',-96.81,32.79,[['Mikko Rantanen','RW',93],['Jason Robertson','LW',89],['Wyatt Johnston','C',88],['Roope Hintz','C',86],['Matt Duchene','C',83],['Tyler Seguin','C',80],['Miro Heiskanen','D',90],['Thomas Harley','D',87],['Esa Lindell','D',79],['Jake Oettinger','G',88]]),
+T('DET','Detroit Red Wings','#CE1126',-83.06,42.34,[['Lucas Raymond','LW',88],['Dylan Larkin','C',87],['Alex DeBrincat','RW',86],['Marco Kasper','C',81],['J.T. Compher','C',79],['Andrew Copp','C',78],['Moritz Seider','D',87],['Axel Sandin-Pellikka','D',80],['Justin Faulk','D',80],['John Gibson','G',83]]),
+T('EDM','Edmonton Oilers','#FF4C00',-113.50,53.55,[['Connor McDavid','C',98],['Leon Draisaitl','C',96],['Ryan Nugent-Hopkins','C',83],['Zach Hyman','LW',82],['Isaac Howard','LW',79],['Vasily Podkolzin','RW',79],['Evan Bouchard','D',88],['Mattias Ekholm','D',81],['Jake Walman','D',80],['Tristan Jarry','G',81]]),
+T('FLA','Florida Panthers','#C8102E',-80.33,26.16,[['Matthew Tkachuk','LW',92],['Aleksander Barkov','C',92],['Sam Reinhart','RW',90],['Brady Tkachuk','LW',88],['Sam Bennett','C',85],['Carter Verhaeghe','LW',84],['Gustav Forsling','D',86],['Seth Jones','D',84],['Aaron Ekblad','D',84],['Jacob Markstrom','G',82]]),
+T('LAK','Los Angeles Kings','#111111',-118.27,34.04,[['Artemi Panarin','LW',89],['Adrian Kempe','RW',87],['Quinton Byfield','C',84],['Kevin Fiala','LW',84],['Alex Laferriere','RW',80],['Trevor Moore','LW',80],['Drew Doughty','D',82],['Brandt Clarke','D',82],['Mikey Anderson','D',80],['Darcy Kuemper','G',85]]),
+T('MIN','Minnesota Wild','#154734',-93.10,44.94,[['Kirill Kaprizov','LW',95],['Matt Boldy','LW',89],['Joel Eriksson Ek','C',85],['Danila Yurov','C',79],['Blake Coleman','LW',79],['Ryan Hartman','RW',78],['Quinn Hughes','D',93],['Brock Faber','D',86],['Jonas Brodin','D',82],['Jesper Wallstedt','G',85]]),
+T('MTL','Montreal Canadiens','#AF1E2D',-73.57,45.50,[['Nick Suzuki','C',88],['Cole Caufield','RW',88],['Ivan Demidov','RW',86],['Juraj Slafkovsky','LW',85],['Kirby Dach','C',80],['Chris Kreider','LW',80],['Lane Hutson','D',90],['Noah Dobson','D',84],['Mike Matheson','D',81],['Jakub Dobes','G',83]]),
+T('NSH','Nashville Predators','#FFB81C',-86.78,36.16,[['Filip Forsberg','LW',87],['Steven Stamkos','C',83],["Ryan O'Reilly",'C',83],['Jonathan Marchessault','RW',81],['Shane Wright','C',80],['Mavrik Bourque','C',79],['Roman Josi','D',87],['Brady Skjei','D',81],['Nicolas Hague','D',78],['Juuse Saros','G',85]]),
+T('NJD','New Jersey Devils','#CE1126',-74.17,40.73,[['Jack Hughes','C',92],['Jesper Bratt','LW',89],['Nico Hischier','C',88],['Timo Meier','RW',84],['Cody Glass','C',79],['Stefan Noesen','RW',79],['Luke Hughes','D',85],['Dougie Hamilton','D',84],['Brett Pesce','D',80],['Connor Hellebuyck','G',94]]),
+T('NYI','New York Islanders','#00539B',-73.73,40.71,[['Mathew Barzal','C',85],['Bo Horvat','C',84],['Calum Ritchie','C',79],['Kyle Palmieri','RW',79],['Anthony Duclair','LW',79],['Brayden Schenn','C',79],['Matthew Schaefer','D',88],['Alexander Romanov','D',81],['Ryan Pulock','D',80],['Ilya Sorokin','G',89]]),
+T('NYR','New York Rangers','#0038A8',-73.99,40.75,[['Mika Zibanejad','C',85],['J.T. Miller','C',84],['Pavel Dorofeyev','RW',83],['Alexis Lafreniere','RW',82],['Will Cuylle','LW',80],['Gabe Perreault','LW',80],['Adam Fox','D',87],['Vladislav Gavrikov','D',82],['Marcus Pettersson','D',80],['Igor Shesterkin','G',92]]),
+T('OTT','Ottawa Senators','#C52032',-75.93,45.30,[['Tim Stutzle','C',89],['Drake Batherson','RW',84],['William Eklund','LW',83],['Dylan Cozens','C',82],['Shane Pinto','C',81],['Claude Giroux','RW',80],['Jake Sanderson','D',89],['Thomas Chabot','D',83],['Jordan Spence','D',79],['Linus Ullmark','G',86]]),
+T('PHI','Philadelphia Flyers','#F74902',-75.17,39.90,[['Travis Konecny','RW',86],['Matvei Michkov','RW',85],['Trevor Zegras','C',83],['Owen Tippett','RW',82],['Tyson Foerster','RW',81],['Porter Martone','RW',80],['Travis Sanheim','D',84],['Cam York','D',81],['Jamie Drysdale','D',80],['Dan Vladar','G',82]]),
+T('PIT','Pittsburgh Penguins','#FCB514',-79.99,40.44,[['Sidney Crosby','C',92],['Evgeni Malkin','C',83],['Rickard Rakell','RW',83],['Bryan Rust','RW',83],['Egor Chinakhov','RW',79],['Tommy Novak','C',78],['Erik Karlsson','D',85],['Kris Letang','D',79],['Samuel Girard','D',79],['Sergei Murashov','G',80]]),
+T('SJS','San Jose Sharks','#006D75',-121.90,37.33,[['Macklin Celebrini','C',93],['Will Smith','C',85],['Michael Misa','C',81],['Tyler Toffoli','RW',80],['Collin Graf','RW',79],['Mason Marchment','LW',79],['Sam Dickinson','D',81],['Dmitry Orlov','D',80],['Darnell Nurse','D',79],['Yaroslav Askarov','G',83]]),
+T('SEA','Seattle Kraken','#001628',-122.35,47.62,[['Jared McCann','LW',82],['Matty Beniers','C',82],['Berkly Catton','C',81],['Kaapo Kakko','RW',80],['Jordan Eberle','RW',80],['Matthew Wood','RW',79],['Vince Dunn','D',84],['Brandon Montour','D',83],['Ryker Evans','D',79],['Joey Daccord','G',85]]),
+T('STL','St. Louis Blues','#002F87',-90.20,38.63,[['Robert Thomas','C',87],['Mason McTavish','C',84],['Pavel Buchnevich','LW',83],['Dylan Holloway','LW',82],['Jimmy Snuggerud','RW',81],['Jake Neighbours','LW',80],['Colton Parayko','D',85],['Philip Broberg','D',82],['Cam Fowler','D',81],['Jordan Binnington','G',83]]),
+T('TBL','Tampa Bay Lightning','#002868',-82.45,27.94,[['Nikita Kucherov','RW',96],['Brayden Point','C',89],['Jake Guentzel','LW',88],['Brandon Hagel','LW',88],['Anthony Cirelli','C',85],['Gage Goncalves','C',79],['Victor Hedman','D',85],['J.J. Moser','D',83],['John Carlson','D',82],['Andrei Vasilevskiy','G',92]]),
+T('TOR','Toronto Maple Leafs','#00205B',-79.38,43.64,[['Auston Matthews','C',93],['William Nylander','RW',90],['Kirill Marchenko','RW',86],['John Tavares','C',84],['Gavin McKenna','LW',82],['Easton Cowan','RW',79],['Morgan Rielly','D',82],['Jake McCabe','D',80],['Chris Tanev','D',80],['Anthony Stolarz','G',85]]),
+T('UTA','Utah Mammoth','#6CACE4',-111.90,40.77,[['Clayton Keller','RW',87],['Dylan Guenther','RW',86],['Logan Cooley','C',86],['Vincent Trocheck','C',84],['Nick Schmaltz','C',84],['Barrett Hayton','C',80],['Mikhail Sergachev','D',87],['MacKenzie Weegar','D',83],['John Marino','D',79],['Karel Vejmelka','G',85]]),
+T('VAN','Vancouver Canucks','#00205B',-123.11,49.28,[['Elias Pettersson','C',85],['Marco Rossi','C',82],['Brock Boeser','RW',82],['Jake DeBrusk','LW',81],['Jonathan Lekkerimaki','RW',78],['Brendan Gallagher','RW',77],['Filip Hronek','D',83],['Zeev Buium','D',81],['Tom Willander','D',79],['Kevin Lankinen','G',81]]),
+T('VGK','Vegas Golden Knights','#B4975A',-115.18,36.10,[['Jack Eichel','C',92],['Mitch Marner','RW',91],['Mark Stone','RW',85],['Tomas Hertl','C',84],['Ivan Barbashev','LW',82],['William Karlsson','C',82],['Shea Theodore','D',85],['Noah Hanifin','D',84],['Rasmus Andersson','D',84],['Adin Hill','G',84]]),
+T('WSH','Washington Capitals','#C8102E',-77.02,38.90,[['Tom Wilson','RW',86],['Dylan Strome','C',85],['Jordan Kyrou','RW',85],['Alex Ovechkin','LW',84],['Aliaksei Protas','LW',84],['Alex Tuch','RW',84],['Jakob Chychrun','D',85],['Martin Fehervary','D',82],['Cole Hutson','D',80],['Logan Thompson','G',89]]),
+T('WPG','Winnipeg Jets','#041E42',-97.14,49.89,[['Kyle Connor','LW',89],['Mark Scheifele','C',88],['Gabriel Vilardi','C',84],['Cole Perfetti','C',82],['Dawson Mercer','RW',80],['Nino Niederreiter','RW',78],['Josh Morrissey','D',87],['Dylan Samberg','D',82],['Neal Pionk','D',80],['Stuart Skinner','G',80]])
+];
+const N=TEAMS.length;
+const IDX=Object.fromEntries(TEAMS.map((t,i)=>[t.ab,i]));
+const hexRGB=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const RGB=TEAMS.map(t=>hexRGB(t.c));
+const TXT=RGB.map(([r,g,b])=>(0.299*r+0.587*g+0.114*b)>150?'#111111':'#FFFFFF');
+const HAWAII_ORIG=IDX.SJS;
+
+/* ---------------- Geography ----------------
+   States and provinces: Highcharts map collection (usa-and-canada), simplified to ~0.1 degree.
+   Format per region: KEY:ring;ring  where a ring is x0,y0 then deltas, x = -lon*10, y = lat*10. */
+const REGION_DATA="CA:1242,420,-42,0,0,-30,-54,-40,-5,-7,4,-4,0,-2,2,-3,0,-3,-2,-1,2,-3,24,-2,4,8,7,5,2,-1,1,3,7,2,2,-2,8,0,-8,0,-1,3,14,3,-1,5,7,6,7,9,-2,2,6,4,1,6,-5,-3,5,6,0,-3,4,2,2,5,6,4,2,9,5,6,-3,6,1,10|OR:1200,420,42,0,4,8,-5,11,-2,17,1,6,-11,-1,-2,-4,-4,-1,-5,1,-6,-1,-10,1,-12,3,-21,0,-4,-4,7,-11,0,-2,-3,-1,1,-22,30,0|ND:1014,490,-42,0,-6,-31,75,0,0,31,-27,0|SK:1014,490,86,0,0,110,-80,0,0,-42,-6,-68|MT:1100,490,-59,0,-1,-40,71,0,0,-5,2,2,2,-1,15,-1,9,12,4,-2,2,1,-1,11,2,-1,11,8,0,3,3,3,0,10,-60,0|AZ:1146,350,1,11,-6,-1,-1,10,-50,0,0,-57,20,0,38,12,-3,5,2,1,0,3,-2,3,0,2,-4,4,5,7|NV:1140,370,1,-10,6,1,-1,-11,54,40,0,30,-60,0,0,-50|AL:874,305,3,-2,7,1,1,15,-4,30,1,1,-26,0,-4,-21,-3,-6,2,-5,-1,-8,26,0,-2,-5|NM:1065,318,17,0,0,-5,8,0,0,57,-60,0,1,-50,36,0,-2,-2|CO:1030,370,60,0,0,40,-69,0,-1,-40,10,0|WY:1041,410,70,0,0,40,-70,0,0,-40|WI:921,468,-3,-1,-8,2,-9,-6,-19,-3,-4,-3,1,-3,-3,-3,4,-5,-10,7,7,-14,2,-6,-1,-8,28,0,4,2,3,12,15,9,-1,6,2,2,-2,3,-4,2,0,6,-2,1|KS:1020,400,-67,0,-4,-2,2,-3,-5,-4,0,-21,74,0,0,30|NE:953,400,67,0,1,10,20,0,0,20,-56,0,-4,-2,-8,1,-8,-4,-6,-12,-1,-7,-5,-6|OK:1020,370,-74,0,-2,-16,1,-18,7,4,7,-1,4,-2,6,3,2,-3,6,3,3,-1,1,2,4,0,7,1,1,2,4,0,3,2,0,19,30,0,0,5,-10,0|MI:835,417,33,1,-4,5,-2,7,3,6,-2,11,-7,5,1,-3,-3,0,0,3,-4,2,1,2,-3,2,-13,-4,-2,-3,2,-1,-2,-3,1,-4,5,-3,0,-3,-2,-1,-8,5,-2,-2,-3,-9,1,-4,1,0,2,1,7,-10;845,465,-4,0,2,-3,-7,-3,11,2,0,-2,8,2,8,-1,4,-3,-1,2,4,-2,0,2,6,-8,3,3,-1,3,4,3,19,3,3,3,-18,6,-2,-2,-8,-2,-2,-3,-8,0,-4,2,-13,1,2,-3,-6,0|AK:1370,590,-9,-5,0,-2,5,1,1,-2,16,9,15,4,-3,2,1,2,7,-2,11,2,-1,1,15,1,11,-1,10,3,-2,4,4,-5,5,3,5,0,5,-3,0,3,-8,1,3,2,3,-1,4,3,5,0,6,-2,2,3,1,-3,-2,-3,3,-3,-4,-1,5,-1,8,0,15,-7,12,-2,1,2,-10,5,5,-2,4,2,-6,7,1,2,-9,3,-5,-1,-4,1,9,3,11,-3,10,-8,1,-3,6,-3,2,2,2,-3,4,-1,1,-4,-5,1,-4,-3,8,-3,5,-5,4,0,7,-4,3,0,5,-6,3,0,17,-7,-3,0,5,-3,8,-2,3,0,15,-4,3,2,4,-5,3,-1,3,3,2,-4,2,2,3,-3,0,3,-8,3,-7,5,-12,1,-9,6,-8,2,-3,0,1,2,-10,6,-2,9,-4,4,11,-3,4,2,-1,3,4,-3,-1,-3,3,-1,5,5,3,-1,4,3,8,-6,11,1,-5,2,4,5,-4,2,7,9,1,-4,11,-2,5,0,0,2,13,6,-7,2,-8,0,-3,-2,-2,2,17,1,-2,1,5,2,0,-1,5,3,-1,1,4,1,-4,1,3,1,-5,1,1,2,-8,4,-3,6,-5,2,-8,-3,-11,4,-10,1,-4,2,2,5,4,2,-6,2,4,3,19,-5,4,2,15,-2,12,2,8,6,-9,1,20,3,-13,5,-23,5,-8,0,0,-5,-18,-1,-3,3,-6,-1,5,2,4,-1,0,2,7,4,-3,1,-7,-5,-4,0,-4,-1,-6,0,0,1,7,2,6,-2,4,2,-1,4,19,0,5,5,23,8,-3,5,-19,0,-12,5,1,3,-13,6,-2,-1,-9,1,-11,5,-17,0,-12,5,-12,-1,5,-2,-5,-1,-4,2,-6,-1,0,-2,-13,1,-11,-1,4,-2,-9,0,3,-2,-25,1,-17,-3,-19,0,-6,-2,-20,1,-23,-4,0,-94,-10,-1,-9,1,0,-3,-15,-8,-2,-3,-4,1;1313,560,4,-1,3,-4,3,3,-4,4,13,10,4,0,-3,2,9,8,4,0,8,11,-3,-9,8,0,2,5,1,-2,8,3,-4,2,-3,4,-8,2,-5,-3,1,-1,-17,-10,-16,-18,-17,-5,-1,-8,4,-4,5,-1,0,9,3,3,-2,-6,2,-2,2,1,-1,-4,3,1,1,8,-4,2;1540,565,7,0,-6,1,-3,6,3,-1,1,-2,3,1,2,4,-5,3,-2,-1,-5,4,-7,-1,1,-1,-4,2,-2,-6,7,1,-3,-2,4,0,6,-3,3,-3,0,-2;1356,574,2,0,8,6,-8,3,-9,-3,-1,-5,10,3,-2,-3,-2,1,-5,-3,-2,-11,7,6,-2,2,4,2,0,-2,2,3,-2,1;1321,553,-2,-5,2,-1,4,4,4,-1,-1,3,3,0,-3,-6,6,8,2,-3,2,2,-6,5,1,2,0,-1,6,-1,-5,3,2,1,-4,0,-11,-10;1338,567,3,-8,3,9,-6,0,1,3,-9,-2,-1,-3,-1,2,-3,-2,3,-1,6,3,-3,-3,6,0,1,2;1699,631,15,2,3,5,-30,-5,11,-3,1,1;1345,573,3,8,-6,0,-3,-3,0,-5,7,-3,-1,3|OH:835,417,-10,-3,-8,1,-12,5,0,-13,4,-11,6,-2,4,-5,2,1,2,-6,3,0,3,3,4,-1,9,2,2,3,4,0,0,26,-13,0|BC:1238,600,-38,0,0,-61,-2,-5,-10,-3,-6,-7,-2,1,-4,-4,-3,1,-4,-5,-2,1,-11,-9,-8,-5,-1,-8,-6,-6,89,1,1,-1,2,5,2,-1,6,2,-2,2,7,0,1,3,3,-1,-1,3,4,2,3,-1,10,1,-2,3,1,2,5,-2,8,4,0,10,3,3,1,-2,-1,6,3,-5,1,7,6,2,1,3,-4,1,-2,3,7,-6,12,9,0,4,-5,6,1,8,17,5,16,18,21,14,8,-2,3,-4,8,-3,2,3,15,8,-153,0;1246,494,-8,-2,-5,-3,0,-4,2,-2,12,3,5,2,-4,2,5,-1,9,4,4,4,2,-1,16,12,-5,1,-14,-4,-13,-1,0,-5,-6,-5;1323,532,4,1,-2,1,5,1,0,7,-7,-1,-2,-2,-4,3,2,-8,3,-2,-4,0,-2,-2,0,-3,-6,-6,1,-1,15,11,-3,1|NU:1020,600,0,42,72,6,15,7,18,0,82,25,0,16,-27,-6,-20,-2,3,1,-4,1,-14,-3,-6,-3,1,-2,12,0,-1,-2,4,-1,-4,-1,-27,-1,-14,1,-9,3,-4,-4,-6,0,-3,-3,-1,2,-7,-3,1,-4,-5,-3,2,4,-4,-2,2,7,4,2,0,-4,1,2,-2,6,-11,0,-4,3,-7,0,-1,2,15,-3,4,1,1,-2,12,1,-5,3,-20,3,-8,-2,0,-3,-4,-1,-4,3,2,-4,-4,-2,-10,1,-12,-4,-8,0,-8,1,-15,-1,-8,1,7,3,-5,0,-5,-3,-5,-1,-5,1,6,2,4,-1,3,1,3,4,-10,0,3,1,-7,0,-2,-2,-6,-1,3,-2,-9,3,6,-8,-4,-1,2,-1,-6,1,-4,-5,-1,4,5,4,-2,4,-6,-1,-15,6,3,0,-1,3,3,1,2,-2,5,0,0,2,-5,1,1,2,-6,2,7,0,3,2,3,-1,13,3,4,4,-4,3,4,2,-1,5,-5,1,-3,-1,-2,2,5,1,-8,3,-6,1,5,0,1,5,5,3,0,8,-4,4,-16,2,-35,-3,17,-11,5,-1,18,1,-7,-3,10,-5,-1,-3,-2,1,-12,-4,-1,-6,-14,-6,10,-1,-6,-1,10,-3,-11,-2,-3,3,-1,-2,-12,-2,4,0,-2,-2,9,1,-9,-4,2,-5,-3,-2,-6,4,0,4,-4,2,-4,0,-9,-4,-2,-5,6,0,-1,-5,-9,-6,-9,2,-8,13,-9,0,4,1,-7,2,8,2,0,6,-26,-1,-6,-4,-8,-2,5,-2,-6,-1,1,-2,7,-2,5,1,-4,-6,-9,-4,3,-5,4,0,14,-7,16,6,-8,-2,-4,-5,16,1,1,3,14,-2,-9,-2,15,-9,5,0,18,7,14,-1,-11,-1,-10,-5,-21,-2,11,-9,7,-2,6,1,-2,-2,5,2,2,1,0,-2,9,-6,11,3,-10,-3,-2,-3,8,-3,10,0,-4,-3,7,0,4,-7,9,-3,-2,-2,10,-13,72,0;649,638,-3,-9,7,1,-7,-6,32,13,-1,-3,13,3,-26,-13,-1,-5,54,13,-4,4,9,4,5,-1,13,8,7,-3,11,2,4,-3,17,1,2,6,-8,2,1,3,-17,-3,-22,3,10,7,-22,9,7,11,12,5,2,-3,3,5,8,1,11,-3,0,3,-10,1,1,2,34,12,5,-1,-7,-5,29,2,-9,-4,7,3,42,0,7,2,6,-2,-5,4,21,1,9,6,-23,-1,27,5,-9,18,-13,4,-27,1,16,-10,-6,-10,-12,-5,11,-1,-11,0,-4,3,15,5,-5,3,-13,-3,15,6,-2,4,-13,-2,10,4,-24,5,-13,0,-12,-10,7,-5,-6,-1,-6,4,-11,-6,-1,5,-8,-2,6,4,-15,1,-27,-6,9,-4,-15,1,4,-3,-7,-1,-6,3,-11,-2,-5,-2,11,-3,-8,-1,9,-1,-15,3,-3,-2,9,-8,-4,5,-11,3,6,-3,-9,2,-12,-2,18,-7,-15,3,8,-4,-14,5,-10,-6,6,1,3,-3,-5,1,-8,-4,23,2,-13,-4,1,-2,13,0,-22,-4,-3,-4,-4,3,1,-3,-16,0,4,-2,-13,-3,10,-3,-12,2,-6,-2,4,-3,-7,1,-4,-3,0,3,-10,-3,2,-3,10,-2,-6,-2,6,-3,12,-2,-2,-6,9,4,2,-2,8,9,15,5,5,0,-3,-2,8,2,-7,-6,7,0,6,3,-15,-11,-19,-6,4,-2,-12,-5,0,-5,6,5;756,782,13,0,-10,-2,23,0,1,-6,34,0,1,-2,-24,0,0,-3,-15,1,15,-7,17,-2,1,4,25,-1,5,2,2,-3,32,0,9,5,4,-4,6,5,-26,4,13,5,-20,0,-17,-5,-20,7,14,-5,14,1,-5,7,27,-2,-9,7,-38,-1,-13,3,10,-1,23,1,-14,0,31,8,0,5,-27,-1,-32,-6,-9,1,18,0,17,6,-66,5,23,1,-20,6,43,-9,17,-1,-9,3,24,-3,23,1,-9,3,-34,3,37,-2,12,-4,20,4,-46,3,51,-3,1,3,-19,2,25,-1,-9,2,23,0,-39,5,-33,-1,20,1,-9,4,-66,-7,35,6,-6,3,-15,-1,10,2,-31,-1,8,3,-34,-4,15,4,-13,1,-35,-4,10,2,-20,2,-8,-2,0,2,-44,-2,22,-3,-52,2,-21,-6,88,-10,-56,3,77,-14,-15,0,8,-4,27,2,-10,-4,42,0,-1,-2,-28,-1,0,-2,36,2,-20,-1,22,-3,-16,2,-20,-3,18,-2,-14,-1,5,-2;1100,725,0,5,-14,-4,-9,-10,-4,3,7,15,-11,-1,-15,-5,-8,-17,-15,-6,-21,-3,3,-6,2,3,2,-3,5,2,6,-3,7,1,-7,-2,-8,1,-1,-9,4,1,-3,3,26,-1,18,3,2,3,7,-5,17,-3,37,-2,10,7,29,3,5,5,-42,0,0,-2,-29,2,0,25;894,762,18,0,-20,-4,-3,-4,-3,3,-22,-3,-27,4,-26,0,-15,-3,8,-5,-10,-1,24,-4,13,3,11,-3,43,0,0,4,14,-4,9,4,7,-3,16,18,27,0,10,6,-31,-1,-10,-3,-13,1,-20,-5;810,635,15,2,5,5,23,-11,5,6,14,-1,-10,5,-3,17,-4,1,-7,-7,-2,3,-28,-10,2,-5,-15,0,-3,-2,8,-3;943,811,-10,3,-43,-12,-8,-1,-5,3,-5,-8,-16,0,-7,-3,26,-6,7,3,6,-8,12,4,-5,-4,25,0,9,3,-12,1,15,0,11,4,-39,2,53,2,-14,4,16,-1,8,5,-26,0,25,1,-10,4,-11,-1,10,3,-12,2;980,715,12,-2,36,15,-8,3,-7,-4,-8,0,-2,6,13,2,-14,4,-10,-2,-19,2,-3,-3,14,-6,-16,-1,-2,-11,14,-3;989,766,-12,-1,-1,-13,20,-2,11,4,-9,3,28,-2,1,2,-13,1,4,7,-20,-6,9,7,10,0,-15,1,-11,-2,-2,1;1100,759,-7,2,7,4,-12,4,-3,-9,-27,0,2,-9,40,-3,0,7,-11,0,11,4;958,687,7,-3,31,6,-21,9,-6,-4,-7,1,-4,-7,-6,0,6,-2;1046,786,-11,-1,0,3,6,2,9,-2,4,5,-17,1,-42,-8,-5,-7,16,0,21,5,18,-1,1,3;808,733,0,4,-27,0,-19,-6,1,-3,29,0,16,5;773,677,-6,6,-16,-1,3,-8,16,-2,3,5;936,747,17,1,0,-3,10,5,-18,10,-9,-13;831,628,-10,2,-2,-3,18,-6,2,4,-8,3;981,788,-33,-4,3,-4,20,-1,7,1,-9,1,15,4,-3,3;1066,737,-21,-1,8,-7,17,6,-4,2|NT:1020,600,218,0,8,7,0,3,7,-2,6,1,10,-1,2,7,9,2,5,4,6,0,1,4,6,4,-2,2,5,2,-3,2,3,3,6,2,4,4,7,0,-1,1,9,3,-3,2,4,2,-5,4,4,4,8,-1,6,11,22,0,2,19,-10,-2,6,4,-2,2,-13,1,-2,3,-5,-2,5,-3,-29,8,-2,-2,-6,3,-7,0,-2,2,-1,-3,30,-7,8,-5,-7,0,2,3,-12,4,-7,-2,-7,4,-12,2,-1,-2,-10,6,3,3,-29,-13,-4,7,-6,2,1,-5,-4,0,3,-3,-12,1,-2,3,-16,0,-7,-2,0,-16,-82,-25,-18,0,-15,-7,-72,-6,0,-42;1100,725,0,-25,29,-2,0,2,42,0,-3,-4,6,4,-4,1,-53,2,18,4,33,-2,14,3,2,2,-26,6,18,-2,5,3,10,-1,-9,10,-36,8,-6,-3,6,-5,-9,0,-7,4,-18,-3,5,-4,-10,3,-7,-1;1238,738,10,6,-32,2,-26,-6,-16,2,-21,-7,50,-13,3,-7,25,-4,10,6,18,3,-21,18;1100,755,0,-7,30,-4,14,3,-35,6,31,-2,0,3,10,-4,2,2,5,-2,18,2,-3,3,-22,2,22,-1,-23,3,18,0,-12,6,-31,-3,-11,-7,-13,0;1211,767,-23,7,-16,-1,-8,3,-10,-3,15,-9,11,0,-3,4,8,-1,14,-8,10,3,1,-3,14,0,4,3,-17,5;1100,781,2,-6,19,-2,11,6,-32,2|AB:1200,600,-100,0,0,-110,41,0,6,6,1,8,8,5,11,9,2,-1,4,5,3,-1,4,4,2,-1,6,7,10,3,2,5,0,61|MA:712,417,2,3,21,1,-2,6,-20,0,-5,2,-2,-3,4,-3,-3,-1,-2,-4,-6,-1,9,-2,-1,2,4,-2,1,2|VT:733,427,0,9,1,0,-1,14,-18,0,2,-6,3,-1,4,-8,1,-8,8,0|MN:896,480,14,-5,13,-8,0,-6,4,-2,2,-3,-2,-2,1,-6,-15,-9,-1,-4,53,0,0,18,4,3,-3,3,0,4,6,27,-20,0,0,4,-4,-1,-1,-5,-10,-3,-4,1,-6,-1,-3,-3,-4,1,-6,-3,-5,2,-1,-1,-12,-1|WA:1232,462,9,2,-2,3,2,2,6,13,-1,2,-6,-2,-12,-1,-4,-7,4,0,2,-3,-3,0,-4,3,0,5,4,3,-1,2,6,1,-6,3,1,2,-57,0,-1,-30,21,0,12,-3,10,-1,6,1,5,-1,4,1,2,4,3,1|ID:1170,490,-10,0,0,-10,-3,-3,0,-3,-11,-8,-2,1,1,-11,-2,-1,-4,2,-9,-12,-15,1,-2,1,-2,-2,0,-25,59,0,-1,22,3,1,0,2,-7,11,5,8,0,26|AR:940,330,0,6,5,0,-1,18,2,11,-44,0,-1,-2,3,-3,-7,0,9,-16,5,-4,1,-3,0,-7,28,0|TX:945,336,-5,0,0,-16,-5,-10,3,-10,3,-3,6,-2,0,2,3,-2,-3,-2,22,-13,5,-8,-3,-12,3,-1,17,5,1,3,3,4,0,5,8,7,4,8,7,7,9,1,4,-2,4,-7,10,3,4,4,5,10,17,13,-36,0,-1,45,-30,0,0,-19,-3,-2,-4,0,-1,-2,-7,-1,-4,0,-1,-2,-3,1,-6,-3,-2,3,-6,-3,-4,2,-7,1,-7,-4|RI:718,420,-4,0,-2,-5,6,-2,0,7|FL:874,305,2,5,-26,0,-1,-3,-27,-1,-1,-2,-2,4,-4,-1,-3,-10,-7,-12,0,-5,-4,-10,0,-11,4,-8,0,1,6,-1,2,6,4,2,1,5,3,0,0,5,2,0,4,5,-3,4,4,0,-2,11,11,10,3,2,4,-1,6,-4,7,5,8,3,10,-1,-1,2|MS:884,304,9,0,2,-2,3,5,-1,3,19,0,-3,9,-4,4,2,2,1,12,-9,13,-21,0,-1,-1,4,-30,-1,-15|UT:1111,420,0,-10,-21,0,0,-40,50,0,0,50,-29,0|NC:831,350,12,0,0,3,-17,8,-5,0,-4,5,-57,0,-2,-5,3,1,6,-3,-9,1,-1,-2,4,-4,5,1,0,-4,3,-1,-6,-1,14,-5,3,-6,6,1,11,9,11,0,3,4,12,0,8,-2|GA:843,350,-12,0,3,-3,-5,-2,-3,-5,-11,-10,-4,-9,-2,-1,4,-5,0,-2,2,-1,0,-5,4,1,2,-4,1,2,27,1,1,3,1,8,-2,5,3,6,4,21,-13,0|VA:759,366,1,1,0,-2,77,1,-6,1,-11,8,-2,-2,-6,-1,-9,3,-7,11,-3,-2,-3,5,-1,-1,-5,4,-1,2,-5,-3,-1,2,-6,-4,3,-5,-4,0,-1,-2,-7,-3,1,-3,6,4,-7,-6,2,0,-1,-4,-3,-1,-1,-3|TN:837,366,-20,0,4,-5,5,0,9,-5,3,0,5,-3,0,-3,60,0,-7,15,-16,0,-2,1,-41,0|IA:958,406,3,12,5,10,-1,3,1,4,-54,0,-2,-8,-8,-6,2,-5,6,-2,0,-5,4,-5,3,2,41,0|MD:771,389,6,4,1,3,3,1,4,-2,3,1,7,-4,0,5,-37,0,-1,-12,-6,0,3,-5,2,0,7,5,-3,1,3,2,-2,1,2,2,-4,5,6,-7,-2,-8,10,4,-4,4,2,0|DE:751,385,6,0,1,12,-2,1,-2,0,2,-2,-2,-5,-3,-3,0,-3|MO:953,400,5,6,-41,0,-3,-2,0,-7,-6,-4,-2,-4,-5,-1,3,-5,-8,-6,-1,-4,-4,-3,0,-3,4,-2,1,1,1,-6,7,0,-3,3,1,2,44,0,0,26,5,4,-2,3,4,2|PA:750,400,8,-3,47,0,0,23,-7,3,0,-3,-45,0,-6,-6,4,-4,0,-4,-4,-4,3,-2|NJ:747,414,-8,-4,4,-5,-3,-2,1,-6,8,-8,6,6,-1,3,-7,4,4,4,0,4,-4,4|NY:747,414,6,6,45,0,0,3,-9,5,2,5,-10,1,-6,-1,-8,0,-5,3,2,5,-11,8,-6,1,-14,0,1,-14,-1,0,0,-9,3,-17,4,-2,-1,2,8,4;735,409,-9,1,-3,1,-1,-1,-2,3,1,-3,9,-3,12,-2,-7,4|LA:940,330,-28,0,-1,-5,-2,-2,4,-4,3,-9,-19,0,1,-3,-3,-5,7,2,2,-3,-4,-1,-4,1,-3,-2,4,-3,-2,-2,-5,-2,1,-1,10,4,0,-3,1,-1,3,2,4,-2,4,2,0,2,2,0,4,3,2,-2,-3,-1,14,3,6,-1,-1,9,-2,4,5,10,0,10|NH:707,431,1,-2,5,-2,12,0,1,2,-6,14,-3,1,-4,9,-2,0,-1,-17,-3,-5|ME:711,453,-2,-1,-5,5,-4,10,-7,7,-4,-2,-7,1,-4,-3,0,-12,-4,-2,1,-3,-6,-5,3,-2,9,-1,3,-3,0,3,2,-2,4,1,1,-3,7,-4,2,2,7,-8,3,5,1,17|SD:966,459,3,-3,-4,-3,0,-18,1,0,-1,-4,1,-3,-1,-3,8,4,8,-1,4,2,56,0,0,29,-75,0|CT:718,413,11,-1,7,-2,-1,11,-17,-1,0,-7|IL:878,425,-3,-8,2,-26,-2,-3,5,-7,1,-6,4,-1,0,-3,4,1,2,-2,4,3,1,4,8,6,-3,5,5,1,2,4,6,4,1,5,-5,7,0,5,-6,2,-2,5,4,4,-28,0|IN:875,417,-2,-1,-5,2,-20,0,0,-30,6,-1,0,-2,7,-5,2,1,4,-2,12,0,1,-1,0,3,-5,7,2,3,-2,3,0,23|KY:894,365,-5,7,-4,-1,0,3,-4,1,-2,4,-7,-1,-9,3,-2,-1,-7,5,0,2,-6,1,0,3,-4,0,-2,-3,-9,-2,-4,1,-6,-10,-3,-2,11,-8,6,-1,41,0,2,-1,14,0|WV:826,384,-3,0,-2,6,-2,-1,-4,5,-6,2,-4,11,0,-10,-10,0,0,-5,-7,4,-3,-1,-4,2,-3,-1,-1,-3,1,-2,5,3,1,-2,5,-4,1,1,3,-5,3,2,7,-11,9,-3,6,1,5,4,3,5,0,2|DC:770,388,1,1,-2,0,1,-1|ON:743,452,27,-12,6,0,19,-3,3,-4,-5,-1,-2,1,-2,-4,13,-1,3,-2,9,0,4,-3,8,-3,5,1,0,2,-7,0,2,3,-2,4,-7,4,0,7,-4,5,0,4,4,3,-4,0,0,-3,-3,0,-1,-4,-1,1,-7,-2,-4,3,4,3,-1,2,3,1,5,5,8,2,25,2,0,2,4,0,1,4,2,1,-2,3,4,3,-1,4,8,0,4,2,3,6,9,0,10,2,-7,-2,4,0,6,-3,-3,2,2,1,2,-4,1,2,4,-2,4,-4,12,1,1,1,5,-2,6,3,4,-1,3,3,6,1,4,-1,10,3,1,5,4,1,0,34,-63,41,-9,-5,-4,-4,-19,-4,-3,-2,-8,-2,-7,1,-16,-2,1,-9,-3,-4,0,-5,2,-3,-9,-9,-8,-4,-2,-3,-9,-5,-1,-38,-7,-8,-10,-1,-7,-4,-2,1,-2,-3,-7,-2,-13,3,-2,-1,-1,-4|QC:638,559,-1,-5,-4,0,3,-5,5,-3,10,4,6,-3,10,5,0,-5,7,4,-3,-4,2,-2,2,1,3,-2,0,-4,-5,-4,-4,-2,1,-3,4,0,-1,-2,-4,-2,-5,3,-1,-7,-3,-2,-5,0,-3,-3,-4,0,-3,-2,-2,1,-2,10,-5,1,-2,-1,7,-2,-3,-2,-1,-3,-66,0,0,-6,6,1,6,-2,18,-11,7,1,9,-2,2,1,19,1,26,0,7,-5,3,-5,7,0,10,-5,11,-13,11,-7,-8,2,-14,12,-25,9,-10,2,-11,-2,-3,-3,2,-4,10,-4,5,2,15,-3,2,1,8,-1,0,-3,7,-3,2,1,7,-7,4,-10,5,-5,4,1,2,-3,32,0,-9,4,5,-2,1,4,2,1,13,-3,7,2,2,3,2,-1,7,4,10,1,7,8,1,5,0,33,-2,-1,2,7,-2,2,-4,-5,-1,4,2,2,-5,6,5,6,0,10,4,2,4,5,-14,3,-13,7,-4,4,-2,7,6,12,15,7,-1,2,-7,4,0,4,-5,1,-1,2,5,4,-2,1,7,4,-7,6,6,4,1,4,-7,3,-27,-4,-11,3,-16,-6,1,-2,-5,-1,2,-2,-5,-3,-11,0,-4,-3,-4,3,-1,-3,4,-3,-2,-3,2,-2,-2,-1,0,-6,-4,-1,3,-1,0,-2,4,-1,-1,-2,-5,3,-5,0,-6,-4,-6,-1,1,-3,-21,10,1,2,-3,0,1,4,-4,3,-2,4,-4,-1,4,-7,-5,-1,1,-2,-4,-5,-4,1,-2,-2,5,0,-2,-2,6,-3,-3,-4,-4,-1,4,-10,-2,-2,2,-1,-1,-3,-5,-1,3,-1;622,491,14,3,3,3,5,1,-3,2,-16,-4,-6,-2,-2,-3,5,0|NB:643,458,2,1,3,-3,11,-4,10,-1,6,2,-1,3,4,2,0,12,4,3,7,-1,2,1,-7,3,0,3,-8,1,-2,-1,-10,2,-6,-2,-2,-2,-4,1,-5,0,7,-7,-6,0,1,-2,-4,-7,-7,-1,5,-3|NS:643,458,-3,2,-15,-4,-6,3,0,-2,-6,-1,2,4,-9,10,-2,0,-1,-4,6,-7,-2,-2,-3,3,4,0,-5,3,-5,-1,0,-2,6,-4,9,0,-3,-3,1,-1,6,0,14,-5,5,0,0,-2,7,1,0,-3,5,-5,9,-3,2,3,2,-1,1,4,-2,5,-17,7,1,-2,-8,3,13,0,-6,4|NL:636,549,-3,5,4,0,1,5,-3,1,5,1,1,3,-2,1,2,2,-4,10,4,1,3,4,-6,3,2,2,-5,0,2,2,4,-1,4,5,-1,2,5,1,-3,5,3,2,-3,0,-18,-16,5,-2,-7,0,1,-3,-11,-7,4,-2,-6,-2,0,-5,5,2,0,-2,-7,-2,9,0,-7,0,5,-2,-8,0,0,-4,-8,0,2,-1,-3,-3,5,-4,-9,3,0,-2,-8,1,-1,-3,-11,-2,-5,-2,28,-7,2,-5,-13,4,-2,2,-7,2,1,1,-8,0,-3,-5,4,-1,-10,2,1,-1,-8,-2,-1,-4,4,-1,-4,-4,5,-1,-6,-1,2,-1,-1,-2,14,-7,0,6,66,0,1,3,3,2,-7,2,2,1,5,-1,2,-10,2,-1,3,2,4,0,3,3,5,0,3,2,1,7,5,-3,4,2,1,2,-4,0,-1,3,4,2,5,4,-2,2,2,2,-3,2,-2,-1,-2,2,3,4,-7,-4,0,5,-10,-5,-6,3,-10,-4,-4,0,2,2,-3,1;555,499,6,-2,-2,-2,-7,-1,1,-2,-5,1,-4,3,1,-3,-5,2,-5,-3,4,-2,0,-4,-9,0,5,-4,3,-5,-2,-2,-3,5,-4,1,4,-5,-1,-2,-4,4,-2,-3,3,-7,7,-2,0,6,5,-4,1,1,-3,5,3,5,10,-10,7,0,0,2,-4,0,-4,5,3,1,0,-2,5,0,-1,1,4,0,7,-1,11,2,11,-1,3,3,-10,6,9,0,-4,2,-2,-1,-3,5,-3,-1,1,4,-3,1,0,2,-6,10,-4,2,-2,4,-9,3,1,-1,-5,1,2,-3,4,1,-4,-4,1,1,10,-11,1,-4,-6,6,-7,-3|MB:1014,490,6,68,0,42,-72,0,0,-10,-4,-3,-12,0,-8,-13,3,-4,-17,3,-21,-4,63,-41,0,-38,62,0|SC:786,339,3,-3,3,-4,17,-12,2,1,4,9,11,10,3,5,5,2,-3,3,-8,2,-12,0,-3,-4,-11,0,-11,-9|YT:1364,689,-2,-19,-22,0,-6,-11,-8,1,-4,-4,4,-8,-25,-10,-10,-17,-6,0,-14,-6,-2,-7,-23,2,-8,-10,153,0,0,3,19,0,0,94,-46,-8|PE:632,464,-12,1,4,-1,1,-4,3,0,1,2,7,0,1,2,4,0,0,2,3,1,-4,4,1,-3,-4,-3,-1,1,-4,-2";
+const RNAME={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'District of Columbia',FL:'Florida',GA:'Georgia',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',
+  AB:'Alberta',BC:'British Columbia',MB:'Manitoba',NB:'New Brunswick',NL:'Newfoundland and Labrador',NS:'Nova Scotia',NT:'Northwest Territories',NU:'Nunavut',ON:'Ontario',PE:'Prince Edward Island',QC:'Quebec',SK:'Saskatchewan',YT:'Yukon'};
+const CANADA=new Set(['AB','BC','MB','NB','NL','NS','NT','NU','ON','PE','QC','SK','YT']);
+const CAN_TEAMS=['CGY','EDM','MTL','OTT','TOR','VAN','WPG'].map(a=>IDX[a]);
+const US_TEAMS=TEAMS.map((_,i)=>i).filter(i=>!CAN_TEAMS.includes(i));
+/* One team in the state/province: it gets all of it. */
+const SINGLE={MA:'BOS',NC:'CAR',IL:'CHI',CO:'COL',OH:'CBJ',TX:'DAL',MI:'DET',MN:'MIN',TN:'NSH',NJ:'NJD',MO:'STL',WA:'SEA',UT:'UTA',NV:'VGK',DC:'WSH',QC:'MTL',BC:'VAN',MB:'WPG'};
+/* Several teams: split inside the state/province around these fan-base anchors. */
+const MULTI={CA:{ANA:[-116.6,33.4],LAK:[-118.9,35.0],SJS:[-121.3,38.6]},NY:{BUF:[-78.3,42.6],NYR:[-74.6,42.4],NYI:[-72.9,40.85]},
+  PA:{PIT:[-79.8,40.7],PHI:[-75.8,40.4]},FL:{TBL:[-82.6,28.6],FLA:[-80.6,26.6]},AB:{EDM:[-114,55],CGY:[-113.5,50.5]},ON:{TOR:[-80.5,45.0],OTT:[-76.3,45.3]}};
+const REGIONS=REGION_DATA.split('|').map(s=>{const [k,body]=s.split(':');
+  const rings=body.split(';').map(r=>{const v=r.split(',').map(Number);const out=[];let x=v[0],y=v[1];out.push([-x/10,y/10]);
+    for(let i=2;i<v.length;i+=2){x+=v[i];y+=v[i+1];out.push([-x/10,y/10]);}return out;});
+  return {k,name:RNAME[k]||k,can:CANADA.has(k),rings};});
+const LAKES=[
+[[-125.0,65.0],[-122.0,65.5],[-118.5,66.5],[-120.5,67.0],[-123.5,66.5]],
+[[-117.0,61.0],[-114.0,61.5],[-111.0,62.6],[-114.0,62.3],[-116.0,61.5]],
+[[-97.0,50.4],[-96.3,51.5],[-97.7,53.8],[-98.6,53.6],[-97.2,51.8]]
+];
+const HAWAII=[
+[[-155.9,20.25],[-155.1,19.9],[-154.8,19.5],[-155.6,18.9],[-156.05,19.7]],
+[[-156.7,21.0],[-156.0,20.8],[-156.0,20.6],[-156.45,20.6],[-156.7,20.85]],
+[[-157.3,21.2],[-156.7,21.15],[-156.75,21.05],[-157.25,21.1]],
+[[-158.3,21.55],[-157.95,21.7],[-157.65,21.3],[-158.1,21.3]],
+[[-159.8,22.1],[-159.4,22.23],[-159.3,21.95],[-159.6,21.88]]
+];
+
+/* Albers equal-area conic */
+const L0=-100*D, P0=50*D, P1=35*D, P2=65*D;
+const nA=(Math.sin(P1)+Math.sin(P2))/2, CA=Math.cos(P1)**2+2*nA*Math.sin(P1), R0=Math.sqrt(CA-2*nA*Math.sin(P0))/nA;
+const fwd=(lon,lat)=>{const r=Math.sqrt(CA-2*nA*Math.sin(lat*D))/nA, th=nA*(lon*D-L0);return [r*Math.sin(th),R0-r*Math.cos(th)];};
+const inv=(x,y)=>{const dy=R0-y, r=Math.hypot(x,dy), th=Math.atan2(x,dy);return [(L0+th/nA)/D, Math.asin(Math.max(-1,Math.min(1,(CA-r*r*nA*nA)/(2*nA))))/D];};
+
+const W=1200, PAD=16, CS=3;
+let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;
+REGIONS.forEach(R=>R.rings.forEach(p=>p.forEach(([lo,la])=>{const [x,y]=fwd(lo,la);mnx=Math.min(mnx,x);mxx=Math.max(mxx,x);mny=Math.min(mny,y);mxy=Math.max(mxy,y);})));
+const SC=(W-2*PAD)/(mxx-mnx), H=Math.ceil((mxy-mny)*SC+2*PAD);
+const toS=(lo,la)=>{const [x,y]=fwd(lo,la);return [(x-mnx)*SC+PAD,(mxy-y)*SC+PAD];};
+const fromS=(sx,sy)=>inv((sx-PAD)/SC+mnx, mxy-(sy-PAD)/SC);
+/* Long straight borders (the 49th and 60th parallels) must curve with the projection, so add points every half degree. */
+const densify=ring=>{const out=[];for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length];out.push(a);
+  const n=Math.floor(Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]))/0.5);for(let k=1;k<n;k++)out.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]);}return out;};
+const RS=REGIONS.map(R=>R.rings.map(p=>densify(p).map(q=>toS(q[0],q[1]))));
+const LAKESS=LAKES.map(p=>p.map(q=>toS(q[0],q[1])));
+
+const GW=Math.ceil(W/CS), GH=Math.ceil(H/CS), NC=GW*GH;
+const regionOf=new Int16Array(NC).fill(-1);
+/* Scanline fill: set every cell whose centre lies inside the ring. */
+function scanFill(ring,val){
+  let y0=1e9,y1=-1e9;ring.forEach(p=>{y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});
+  const gy0=Math.max(0,Math.floor(y0/CS-.5)),gy1=Math.min(GH-1,Math.ceil(y1/CS));
+  for(let gy=gy0;gy<=gy1;gy++){const cy=(gy+.5)*CS,xs=[];
+    for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>cy)!==(b[1]>cy))xs.push(a[0]+(cy-a[1])*(b[0]-a[0])/(b[1]-a[1]));}
+    xs.sort((a,b)=>a-b);
+    for(let k=0;k+1<xs.length;k+=2){const gx0=Math.max(0,Math.ceil(xs[k]/CS-.5)),gx1=Math.min(GW-1,Math.floor(xs[k+1]/CS-.5));
+      for(let gx=gx0;gx<=gx1;gx++)regionOf[gy*GW+gx]=val;}}
+}
+RS.forEach((rings,r)=>rings.forEach(ring=>scanFill(ring,r)));
+/* Close hairline gaps that simplification left between neighbouring states. */
+for(let pass=0;pass<2;pass++)for(let gy=1;gy<GH-1;gy++)for(let gx=1;gx<GW-1;gx++){const i=gy*GW+gx;if(regionOf[i]>=0)continue;
+  const l=regionOf[i-1],r=regionOf[i+1],u=regionOf[i-GW],d=regionOf[i+GW];
+  if(l>=0&&r>=0)regionOf[i]=l;else if(u>=0&&d>=0)regionOf[i]=u;}
+LAKESS.forEach(ring=>scanFill(ring,-1));
+
+const orig=new Uint8Array(NC), land=new Uint8Array(NC), clon=new Float32Array(NC), clat=new Float32Array(NC);
+const geoDist=(lo,la,p)=>{const dx=(lo-p[0])*Math.cos((la+p[1])/2*D),dy=la-p[1];return dx*dx+dy*dy;};
+function teamFor(r,lo,la){
+  const k=REGIONS[r].k;
+  if(SINGLE[k])return IDX[SINGLE[k]];
+  let pool;
+  if(MULTI[k])pool=Object.entries(MULTI[k]).map(([ab,p])=>[IDX[ab],p]);
+  else pool=(REGIONS[r].can?CAN_TEAMS:US_TEAMS).map(i=>[i,TEAMS[i].at]);
+  let best=pool[0][0],bd=1e18;pool.forEach(([i,p])=>{const d=geoDist(lo,la,p);if(d<bd){bd=d;best=i;}});return best;
+}
+for(let i=0;i<NC;i++){const r=regionOf[i];if(r<0)continue;
+  const [lo,la]=fromS((i%GW+.5)*CS,(Math.floor(i/GW)+.5)*CS);land[i]=1;clon[i]=lo;clat[i]=la;orig[i]=teamFor(r,lo,la);}
+/* Water cells take the colour of the nearest land cell, so coastline pixels never show a stray colour. */
+const nearLand=new Int32Array(NC).fill(-1);{const q=[];for(let i=0;i<NC;i++)if(land[i]){nearLand[i]=i;q.push(i);}
+  for(let h=0;h<q.length;h++){const i=q[h],x=i%GW;for(const j of [x>0?i-1:-1,x<GW-1?i+1:-1,i-GW,i+GW]){if(j<0||j>=NC||nearLand[j]>=0)continue;nearLand[j]=nearLand[i];q.push(j);}}}
+
+const pathOf=rings=>{const p=new Path2D();rings.forEach(r=>{r.forEach(([x,y],k)=>k?p.lineTo(x,y):p.moveTo(x,y));p.closePath();});return p;};
+const landPath=pathOf(RS.flat());
+const lakePath=pathOf(LAKESS);
+const HB={x:PAD+6,y:H-PAD-100,w:150,h:94};
+const hS=(lo,la)=>[HB.x+10+(lo+160.2)/6.0*(HB.w-20), HB.y+16+(22.5-la)/3.8*(HB.h-24)];
+const hawaiiPath=new Path2D();HAWAII.forEach(p=>{p.forEach((q,k)=>{const [x,y]=hS(q[0],q[1]);k?hawaiiPath.lineTo(x,y):hawaiiPath.moveTo(x,y)});hawaiiPath.closePath();});
+
+/* ---------------- State ---------------- */
+let owner, rosters, wins, history, gameNo, phase, attacker, defender, dirLabel, anim, labels, arrow, selected, champion;
+const og=new Uint8Array(NC);
+function resetState(){
+  owner=TEAMS.map((_,i)=>i);
+  rosters=TEAMS.map(t=>t.r.map(p=>({name:p[0],pos:p[1],ovr:p[2],from:t.ab})));
+  wins=Array(N).fill(0);history=[];gameNo=0;phase='team';attacker=-1;defender=-1;dirLabel='';anim=null;arrow=null;selected=-1;champion=-1;
+  buildOwn();
+}
+const buildOwn=()=>{for(let i=0;i<NC;i++)og[i]=owner[orig[i]];};
+const alive=()=>[...new Set(owner)].sort((a,b)=>a-b);
+const terr=t=>owner.filter(o=>o===t).length;
+const cellOwner=i=>(anim&&anim.d[i]>=0&&anim.d[i]>anim.th)?anim.loser:og[i];
+
+/* Lineup model: 6 forwards, 4 defence, 1 goalie dress. Empty slots are filled by replacement-level players. */
+const grp=p=>p.pos==='G'?'G':p.pos==='D'?'D':'F';
+const WF=[1,.95,.9,.85,.8,.75], WD=[1,.9,.8,.7], REPL={F:76,D:75,G:74};
+function lineupOf(r){const by={F:[],D:[],G:[]};r.forEach(p=>by[grp(p)].push(p));
+  for(const k in by)by[k].sort((a,b)=>b.ovr-a.ovr);return {F:by.F.slice(0,6),D:by.D.slice(0,4),G:by.G.slice(0,1)};}
+function strength(t,extra){
+  const r=extra?rosters[t].concat([extra]):rosters[t];const L=lineupOf(r);
+  const wavg=(arr,w,rep)=>{let s=0,ws=0;w.forEach((wi,i)=>{s+=(arr[i]?arr[i].ovr:rep)*wi;ws+=wi;});return s/ws;};
+  const F=wavg(L.F,WF,REPL.F),Dv=wavg(L.D,WD,REPL.D),G=L.G[0]?L.G[0].ovr:REPL.G;
+  const raw=F*.45+Dv*.25+G*.30;
+  return {F,D:Dv,G,off:F*.78+Dv*.22,def:F*.45+Dv*.55,raw,ovr:Math.round(raw),L};
+}
+const shotsPer60=(off,def,home)=>Math.min(36,Math.max(23,28.6+0.5*(off-def)+(home?0.8:0)));
+const savePct=(g,off)=>Math.min(.932,Math.max(.88,.909+(g-85)*.0012-(off-85)*.001));
+/* Expected goal differential per game against a league-average opponent, using the same model the games use. */
+function goalDiff(s){const AV=84;
+  const gf=shotsPer60(s.off,AV,false)*(1-savePct(AV,s.off)), ga=shotsPer60(AV,s.def,false)*(1-savePct(s.G,AV));return gf-ga;}
+/* The winner signs whoever adds the most to its own expected goal differential, not simply the best player. */
+function pickPlayer(w,l){
+  const base=goalDiff(strength(w));const pool=rosters[l].slice().sort((a,b)=>b.ovr-a.ovr);
+  let best=null;pool.forEach(p=>{const g=goalDiff(strength(w,p))-base;if(!best||g>best.gain+1e-9||(Math.abs(g-best.gain)<1e-9&&p.ovr>best.p.ovr))best={p,gain:g};});
+  const top=pool[0];let why='';
+  if(top&&best&&top!==best.p){
+    const wl=lineupOf(rosters[w]);
+    if(grp(top)==='G'&&wl.G[0]&&wl.G[0].ovr>=top.ovr)why=`passed on ${top.name} (G, ${top.ovr}) because ${wl.G[0].name} is already the better goalie`;
+    else{const cur=lineupOf(rosters[w]);const g=grp(best.p);
+      why=g==='G'?`passed on ${top.name} (${top.pos}, ${top.ovr}) because upgrading in goal${cur.G[0]?` from ${cur.G[0].name} (${cur.G[0].ovr})`:''} helps more`
+        :g==='D'?`passed on ${top.name} (${top.pos}, ${top.ovr}) because the blue line needed help more`
+        :`passed on ${top.name} (${top.pos}, ${top.ovr}) because ${best.p.name} adds more up front`;}
+  }
+  return {...best,top,why};
+}
+
+/* ---------------- Map drawing ---------------- */
+const mapC=$('#map'), ovC=$('#ov');
+const K=Math.min(2,window.devicePixelRatio||1);
+[mapC,ovC].forEach(c=>{c.width=Math.round(W*K);c.height=Math.round(H*K);});
+const mctx=mapC.getContext('2d'), octx2=ovC.getContext('2d');
+mctx.setTransform(K,0,0,K,0,0);octx2.setTransform(K,0,0,K,0,0);
+const off=document.createElement('canvas');off.width=GW;off.height=GH;
+const offx=off.getContext('2d');const img=offx.createImageData(GW,GH);
+/* Land mask: every state and province filled and lightly stroked so no hairline seams show. */
+const mask=document.createElement('canvas');mask.width=mapC.width;mask.height=mapC.height;
+{const m=mask.getContext('2d');m.setTransform(K,0,0,K,0,0);m.fillStyle='#fff';m.strokeStyle='#fff';m.lineWidth=1.4;m.lineJoin='round';m.fill(landPath);m.stroke(landPath);}
+const comp=document.createElement('canvas');comp.width=mapC.width;comp.height=mapC.height;const cctx=comp.getContext('2d');
+let theme={};
+const readTheme=()=>{theme={ocean:css('--ocean'),coast:css('--coast'),border:css('--border'),board:css('--board'),ink:css('--ink'),muted:css('--muted')};};
+
+function drawMap(){
+  const d=img.data;
+  for(let i=0;i<NC;i++){const n=nearLand[i];const c=RGB[n>=0?cellOwner(n):0];const j=i*4;d[j]=c[0];d[j+1]=c[1];d[j+2]=c[2];d[j+3]=255;}
+  offx.putImageData(img,0,0);
+  const c=mctx;c.clearRect(0,0,W,H);
+  c.fillStyle=theme.ocean;c.fillRect(0,0,W,H);
+  c.save();c.globalAlpha=.25;c.strokeStyle=theme.coast;c.lineWidth=.5;
+  for(let lat=30;lat<=80;lat+=10){c.beginPath();for(let lon=-170;lon<=-50;lon+=2){const [x,y]=toS(lon,lat);lon===-170?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
+  for(let lon=-160;lon<=-50;lon+=20){c.beginPath();for(let lat=24;lat<=84;lat+=2){const [x,y]=toS(lon,lat);lat===24?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();}
+  c.restore();
+  cctx.setTransform(1,0,0,1,0,0);cctx.globalCompositeOperation='source-over';cctx.clearRect(0,0,comp.width,comp.height);
+  cctx.drawImage(mask,0,0);cctx.globalCompositeOperation='source-in';cctx.imageSmoothingEnabled=false;cctx.drawImage(off,0,0,GW*CS*K,GH*CS*K);
+  c.save();c.setTransform(1,0,0,1,0,0);c.drawImage(comp,0,0);c.restore();
+  // faint state and province lines
+  c.save();c.lineJoin='round';c.strokeStyle=theme.coast;c.globalAlpha=.28;c.lineWidth=.6;c.stroke(landPath);c.restore();
+  // team borders
+  const bp=new Path2D();
+  for(let gy=0;gy<GH;gy++)for(let gx=0;gx<GW;gx++){const i=gy*GW+gx;if(!land[i])continue;const o=cellOwner(i);
+    if(gx+1<GW&&land[i+1]&&cellOwner(i+1)!==o){bp.moveTo((gx+1)*CS,gy*CS);bp.lineTo((gx+1)*CS,(gy+1)*CS);}
+    if(gy+1<GH&&land[i+GW]&&cellOwner(i+GW)!==o){bp.moveTo(gx*CS,(gy+1)*CS);bp.lineTo((gx+1)*CS,(gy+1)*CS);}}
+  c.strokeStyle=theme.border;c.lineWidth=1.4;c.stroke(bp);
+  c.fillStyle=theme.ocean;c.fill(lakePath);
+  c.lineJoin='round';c.strokeStyle=theme.coast;c.lineWidth=.8;c.stroke(lakePath);
+  // Hawaii inset
+  c.save();c.setLineDash([4,3]);c.strokeStyle=theme.coast;c.lineWidth=1;c.strokeRect(HB.x,HB.y,HB.w,HB.h);c.restore();
+  c.fillStyle=TEAMS[owner[HAWAII_ORIG]].c;c.fill(hawaiiPath);c.strokeStyle=theme.coast;c.lineWidth=1;c.stroke(hawaiiPath);
+  c.fillStyle=theme.coast;c.font='600 11px "Chakra Petch", monospace';c.fillText('HAWAII',HB.x+8,HB.y+14);
+}
+
+function computeLabels(){
+  const dist=new Float32Array(NC);
+  for(let gy=0;gy<GH;gy++)for(let gx=0;gx<GW;gx++){const i=gy*GW+gx;
+    if(!land[i]){dist[i]=0;continue;}const o=og[i];
+    const edge=gx===0||gy===0||gx===GW-1||gy===GH-1||!land[i-1]||!land[i+1]||!land[i-GW]||!land[i+GW]||og[i-1]!==o||og[i+1]!==o||og[i-GW]!==o||og[i+GW]!==o;
+    dist[i]=edge?0:1e9;}
+  for(let gy=1;gy<GH;gy++)for(let gx=1;gx<GW-1;gx++){const i=gy*GW+gx;if(!dist[i])continue;
+    dist[i]=Math.min(dist[i],dist[i-1]+1,dist[i-GW]+1,dist[i-GW-1]+1.41,dist[i-GW+1]+1.41);}
+  for(let gy=GH-2;gy>=0;gy--)for(let gx=GW-2;gx>0;gx--){const i=gy*GW+gx;if(!dist[i])continue;
+    dist[i]=Math.min(dist[i],dist[i+1]+1,dist[i+GW]+1,dist[i+GW+1]+1.41,dist[i+GW-1]+1.41);}
+  const best=Array(N).fill(-1),pos=Array(N).fill(-1);
+  for(let i=0;i<NC;i++){if(!land[i])continue;const o=og[i];if(dist[i]>best[o]){best[o]=dist[i];pos[o]=i;}}
+  labels={};alive().forEach(t=>{if(pos[t]>=0)labels[t]=[(pos[t]%GW+.5)*CS,(Math.floor(pos[t]/GW)+.5)*CS];});
+}
+
+function neighborsOf(t){
+  let n=0,sl=0,sa=0;const acc={};
+  for(let gy=1;gy<GH-1;gy++)for(let gx=1;gx<GW-1;gx++){const i=gy*GW+gx;if(!land[i]||og[i]!==t)continue;
+    n++;sl+=clon[i];sa+=clat[i];
+    for(const j of [i-1,i+1,i-GW,i+GW]){if(!land[j])continue;const o=og[j];if(o===t)continue;
+      const a=acc[o]||(acc[o]={lo:0,la:0,x:0,y:0,n:0});a.lo+=clon[j];a.la+=clat[j];a.x+=(j%GW+.5)*CS;a.y+=(Math.floor(j/GW)+.5)*CS;a.n++;}}
+  const cl=sl/n, ca=sa/n;
+  return Object.entries(acc).map(([o,a])=>{const lo=a.lo/a.n,la=a.la/a.n;const dx=(lo-cl)*Math.cos((la+ca)/2*D),dy=la-ca;
+    return {team:+o,ang:(Math.atan2(dx,dy)/D+360)%360,x:a.x/a.n,y:a.y/a.n};});
+}
+const DIRS=['N','NE','E','SE','S','SW','W','NW'];
+const DIRNAME={N:'north',NE:'northeast',E:'east',SE:'southeast',S:'south',SW:'southwest',W:'west',NW:'northwest'};
+function directionOptions(t){
+  const bins={};
+  neighborsOf(t).forEach(nb=>{const b=Math.round(nb.ang/45)%8;let diff=Math.abs(nb.ang-b*45);if(diff>180)diff=360-diff;
+    if(!bins[b]||diff<bins[b].diff)bins[b]={...nb,diff};});
+  return Object.keys(bins).map(Number).sort((a,b)=>a-b).map(b=>({dir:DIRS[b],...bins[b]}));
+}
+
+/* ---------------- Overlay ---------------- */
+function badge(c,t,x,y,alpha,pulse,ts){
+  const cnt=terr(t);const r=10+Math.min(9,(cnt-1)*0.7);
+  c.save();c.globalAlpha=alpha;
+  if(pulse){const pr=r+5+3*Math.sin(ts/180);c.beginPath();c.arc(x,y,pr,0,TAU);c.strokeStyle=TEAMS[t].c;c.lineWidth=3;c.stroke();c.beginPath();c.arc(x,y,pr+2,0,TAU);c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1;c.stroke();}
+  c.beginPath();c.arc(x,y,r+1.5,0,TAU);c.fillStyle='rgba(0,0,0,.45)';c.fill();
+  c.beginPath();c.arc(x,y,r,0,TAU);c.fillStyle=TEAMS[t].c;c.fill();c.lineWidth=2;c.strokeStyle='#fff';c.stroke();
+  c.fillStyle=TXT[t];c.textAlign='center';c.textBaseline='middle';c.font=`800 ${Math.round(r*0.95)}px "Saira Extra Condensed", sans-serif`;c.fillText(TEAMS[t].ab,x,y+1);
+  if(cnt>1){c.font='700 10px "Chakra Petch", monospace';const s='×'+cnt,w=c.measureText(s).width+8;c.fillStyle='rgba(10,16,22,.85)';
+    c.beginPath();c.roundRect?c.roundRect(x-w/2,y+r+2,w,14,7):c.rect(x-w/2,y+r+2,w,14);c.fill();c.fillStyle='#fff';c.fillText(s,x,y+r+9.5);}
+  c.restore();
+}
+function drawOverlay(ts){
+  const c=octx2;c.clearRect(0,0,W,H);
+  if(arrow&&labels){const a=labels[arrow.from];if(a){const [x1,y1]=a,x2=arrow.x,y2=arrow.y;
+    const mx=(x1+x2)/2-(y2-y1)*.18,my=(y1+y2)/2+(x2-x1)*.18;
+    c.save();c.lineCap='round';c.setLineDash([10,7]);c.lineDashOffset=-ts/40;
+    c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo(mx,my,x2,y2);c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=6;c.stroke();
+    c.strokeStyle='#fff';c.lineWidth=3;c.stroke();c.setLineDash([]);
+    const ang=Math.atan2(y2-my,x2-mx);c.translate(x2,y2);c.rotate(ang);c.beginPath();c.moveTo(4,0);c.lineTo(-12,-8);c.lineTo(-12,8);c.closePath();
+    c.fillStyle='#fff';c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=2;c.stroke();c.fill();c.restore();}}
+  if(labels)Object.keys(labels).forEach(k=>{const t=+k;const [x,y]=labels[t];let al=1;
+    if(anim&&t===anim.loser)al=Math.max(0,1-anim.p*1.4);
+    badge(c,t,x,y,al,t===attacker||t===defender,ts);});
+  if(selected>=0&&labels&&labels[selected]){const [x,y]=labels[selected];c.save();c.strokeStyle=theme.ink;c.setLineDash([3,3]);c.lineWidth=1.5;c.beginPath();c.arc(x,y,26,0,TAU);c.stroke();c.restore();}
+  requestAnimationFrame(drawOverlay);
+}
+
+/* ---------------- Wheels ---------------- */
+class Wheel{
+  constructor(cv,upright){this.cv=cv;this.c=cv.getContext('2d');this.items=[];this.rot=0;this.sel=-1;this.hub='';this.upright=upright;}
+  set(items,hub=''){this.items=items;this.sel=-1;this.hub=hub;this.draw();}
+  draw(){
+    const c=this.c,S=this.cv.width,cx=S/2,cy=S/2,R=S/2-14,n=this.items.length;
+    c.clearRect(0,0,S,S);
+    c.beginPath();c.arc(cx,cy,R+9,0,TAU);c.fillStyle=css('--rim');c.fill();
+    for(let k=0;k<24;k++){const a=k/24*TAU;c.beginPath();c.arc(cx+Math.cos(a)*(R+4.5),cy+Math.sin(a)*(R+4.5),2,0,TAU);c.fillStyle='rgba(255,255,255,.55)';c.fill();}
+    if(!n){c.beginPath();c.arc(cx,cy,R,0,TAU);c.fillStyle=css('--slot');c.fill();}
+    const seg=TAU/Math.max(1,n);
+    this.items.forEach((it,i)=>{const a0=this.rot+i*seg-Math.PI/2;
+      c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,R,a0,a0+seg);c.closePath();c.fillStyle=it.color;c.fill();
+      c.strokeStyle='rgba(255,255,255,.75)';c.lineWidth=n>16?1.2:2.5;c.stroke();
+      if(this.sel>=0&&this.sel!==i){c.fillStyle='rgba(0,0,0,.5)';c.fill();}
+      const mid=a0+seg/2;c.fillStyle=it.text;
+      if(this.upright){const x=cx+Math.cos(mid)*R*.64,y=cy+Math.sin(mid)*R*.64;c.textAlign='center';c.textBaseline='middle';
+        c.font=`800 ${n>5?34:42}px "Saira Extra Condensed", sans-serif`;c.fillText(it.label,x,y-9);
+        c.font='700 18px "Chakra Petch", monospace';c.fillText(it.sub,x,y+19);}
+      else{c.save();c.translate(cx,cy);c.rotate(mid);c.textAlign='right';c.textBaseline='middle';
+        c.font=`800 ${n>24?20:n>12?24:30}px "Saira Extra Condensed", sans-serif`;c.fillText(it.label,R-10,1);c.restore();}
+    });
+    c.beginPath();c.arc(cx,cy,R*.25,0,TAU);c.fillStyle=css('--board');c.fill();c.lineWidth=4;c.strokeStyle=css('--rim');c.stroke();
+    c.fillStyle=css('--ink');c.textAlign='center';c.textBaseline='middle';c.font=`800 ${this.hub.length>3?24:34}px "Saira Extra Condensed", sans-serif`;c.fillText(this.hub||'SPIN',cx,cy+2);
+  }
+  spin(ms){
+    const n=this.items.length,seg=TAU/n,k=Math.floor(Math.random()*n);
+    const target=-(k+.5)*seg+(Math.random()-.5)*seg*.7;
+    const start=this.rot;let delta=((target-start)%TAU+TAU)%TAU;
+    if(ms>0)delta+=TAU*Math.max(2,Math.round(ms/650));
+    this.sel=-1;this.hub='';
+    if(!ms){this.rot=start+delta;this.sel=k;this.draw();return Promise.resolve(k);}
+    const ep=epoch;
+    return new Promise((res,rej)=>{const t0=performance.now();
+      const f=now=>{if(ep!==epoch)return rej('reset');const p=Math.min(1,(now-t0)/ms),e=1-Math.pow(1-p,4);
+        this.rot=start+delta*e;this.draw();if(p<1)requestAnimationFrame(f);else{this.sel=k;this.draw();res(k);}};
+      requestAnimationFrame(f);});
+  }
+}
+const wTeam=new Wheel($('#wTeam'),false), wDir=new Wheel($('#wDir'),true);
+
+/* ---------------- Game simulation ---------------- */
+const rnd=n=>Math.floor(Math.random()*n);
+function pickW(arr,wf){let s=0;const w=arr.map(p=>{const v=Math.max(.01,wf(p));s+=v;return v});let r=Math.random()*s;for(let i=0;i<arr.length;i++){r-=w[i];if(r<=0)return arr[i];}return arr[arr.length-1];}
+const INF=['Tripping','Hooking','Slashing','Holding','High-sticking','Interference','Roughing','Cross-checking','Delay of game'];
+function simulate(A,Hm){
+  const teams=[A,Hm],st=teams.map(t=>strength(t));
+  /* Only the dressed lineup plays: top 6 F, top 4 D, starting G. */
+  const sk=st.map(s=>s.L.F.concat(s.L.D));
+  const gl=st.map(s=>s.L.G[0]||{name:'Emergency backup',ovr:74});
+  const ev=[],score=[0,0],pp=[0,0];
+  /* Calibrated to recent NHL norms: ~29 shots and ~3 goals per team, ~.905 save percentage. */
+  const rate=i=>shotsPer60(st[i].off,st[1-i].def,i===1)/360;
+  const gp=i=>1-savePct(gl[1-i].ovr,st[i].off);
+  const goal=(i,t,tag)=>{const sc=pickW(sk[i],p=>Math.pow(Math.max(1,p.ovr-70),2.4)*(p.pos==='D'?.35:1));
+    const r=Math.random(),na=tag==='EN'?(r<.4?0:1):(r<.06?0:r<.28?1:2);const as=[];let pool=sk[i].filter(p=>p!==sc);
+    for(let k=0;k<na&&pool.length;k++){const a=pickW(pool,p=>Math.pow(Math.max(1,p.ovr-70),2)*(p.pos==='D'?.85:1));as.push(a.name);pool=pool.filter(p=>p!==a);}
+    score[i]++;ev.push({t,kind:'goal',team:i,scorer:sc.name,assists:as,tag});};
+  for(let tick=0;tick<360;tick++){const t0=tick*10;
+    if(tick===120)ev.push({t:t0,kind:'period',text:'End of the 1st period'});
+    if(tick===240)ev.push({t:t0,kind:'period',text:'End of the 2nd period'});
+    for(const i of Math.random()<.5?[0,1]:[1,0]){
+      const diff=score[i]-score[1-i],late=t0>=3480;
+      if(Math.random()<.0085&&pp[0]<=t0&&pp[1]<=t0){const tt=t0+rnd(10);pp[1-i]=tt+120;ev.push({t:tt,kind:'pen',team:i,player:pickW(sk[i],()=>1).name,inf:INF[rnd(INF.length)]});continue;}
+      const onPP=pp[i]>t0,sh=pp[1-i]>t0;let r=rate(i)*(onPP?1.9:1)*(sh?.45:1);
+      if(late&&diff<0&&diff>=-2)r*=1.5;
+      if(diff>=3)r*=0.7; /* score effects: big leads sit back */
+      if(Math.random()<r){const tt=t0+rnd(10);ev.push({t:tt,kind:'shot',team:i});
+        if(Math.random()<gp(i)*(onPP?1.35:1)){goal(i,tt,onPP?'PPG':'');if(onPP)pp[i]=0;}}
+      else if(late&&diff>0&&diff<=2&&Math.random()<.011){const tt=t0+rnd(10);ev.push({t:tt,kind:'shot',team:i});goal(i,tt,'EN');}
+    }
+  }
+  let decided='REG',otEnd=3600,winner;
+  if(score[0]===score[1]){
+    ev.push({t:3600,kind:'period',text:'End of regulation. Heading to 3-on-3 overtime'});decided='OT';otEnd=3900;
+    outer:for(let tick=0;tick<30;tick++){const t0=3600+tick*10;
+      for(const i of Math.random()<.5?[0,1]:[1,0]){if(Math.random()<rate(i)*1.5){const tt=t0+1+rnd(9);ev.push({t:tt,kind:'shot',team:i});
+        if(Math.random()<gp(i)*1.15){goal(i,tt,'OT');otEnd=tt;break outer;}}}}
+    if(score[0]===score[1]){
+      ev.push({t:3900,kind:'period',text:'Overtime solves nothing. Shootout'});decided='SO';
+      const sh=st.map(x=>x.L.F.slice(0,5));const so=[0,0];let k=0,round=0;
+      while(true){const made=[0,0];
+        for(const i of [0,1]){const s=sh[i][round%sh[i].length]||sk[i][0];const p=Math.min(.55,Math.max(.15,.32+(s.ovr-85)*.009-(gl[1-i].ovr-85)*.009));
+          const m=Math.random()<p;made[i]=m;if(m)so[i]++;k++;ev.push({t:3900+k*15,kind:'so',team:i,player:s.name,made:m});
+          if(round<3){const left0=2-round+(i===0?1:0),left1=2-round;if(so[0]>so[1]+left1||so[1]>so[0]+left0)break;}}
+        round++;
+        if(round<3){const left=3-round;if(so[0]>so[1]+left||so[1]>so[0]+left)break;}
+        else if(so[0]!==so[1])break;
+        if(round>20){so[rnd(2)]++;break;}
+      }
+      winner=so[0]>so[1]?0:1;score[winner]++;otEnd=3900+k*15;
+    }
+  }
+  if(winner===undefined)winner=score[0]>score[1]?0:1;
+  ev.sort((a,b)=>a.t-b.t);
+  const endT=Math.max(decided==='REG'?3600:otEnd,ev.length?ev[ev.length-1].t:0);
+  return {teams,ev,final:score,decided,endT,winner,gl};
+}
+
+/* ---------------- Game playback ---------------- */
+const SPEEDS={broadcast:{wheel:3600,min:80,goal:1000,conq:1600,gap:900},fast:{wheel:1200,min:14,goal:280,conq:700,gap:350},instant:{wheel:0,min:0,goal:0,conq:220,gap:90}};
+let speed=matchMedia('(prefers-reduced-motion: reduce)').matches?'fast':'broadcast';$('#speed').value=speed;
+const SP=()=>SPEEDS[speed];
+let epoch=0;
+const sleep=ms=>{const ep=epoch;return new Promise((res,rej)=>setTimeout(()=>ep===epoch?res():rej('reset'),ms));};
+const fmt=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+function clockAt(t,sim){
+  if(t<3600){const p=Math.min(2,Math.floor(t/1200));return [['1st','2nd','3rd'][p],fmt(1200-(t-p*1200))];}
+  if(sim.decided==='REG')return ['FINAL',''];
+  if(t<=3900&&(sim.decided==='SO'||t<=sim.endT))return ['OT',fmt(300-(t-3600))];
+  return sim.decided==='SO'?['SO','']:['FINAL','OT'];
+}
+function setTeamBlock(el,t,label){el.style.setProperty('--tc',t>=0?TEAMS[t].c:'#33414c');el.querySelector('.sbab').textContent=t>=0?TEAMS[t].ab:'—';
+  el.querySelector('.sbnm').textContent=t>=0?TEAMS[t].name+' · '+label:label;el.querySelector('.sbsog b').textContent='0';}
+function addPbp(time,html,cls,t){const ol=$('#pbp');const e=ol.querySelector('.empty');if(e)e.remove();
+  const li=document.createElement('li');if(cls)li.className=cls;li.innerHTML=`<time>${time}</time><span>${html}</span>`;
+  if(t>=0){li.style.setProperty('--tc',TEAMS[t].c);li.style.setProperty('--tt',TXT[t]);}
+  ol.prepend(li);}
+function playGame(sim){
+  const [A,Hm]=sim.teams;const sp=SP();
+  $('#pbp').innerHTML='';setTeamBlock($('#sbA'),A,'Away');setTeamBlock($('#sbH'),Hm,'Home');
+  const score=[0,0],shots=[0,0];$('#scA').textContent='0';$('#scH').textContent='0';
+  $('#sbmsg').innerHTML=`<b>${TEAMS[A].name}</b> invade ${TEAMS[Hm].ab} territory. Goalies: ${sim.gl[0].name} vs ${sim.gl[1].name}.`;
+  const apply=e=>{const tm=sim.teams[e.team];const [pl,ck]=clockAt(e.t,sim);const tl=pl+(ck?' '+ck:'');
+    if(e.kind==='shot'){shots[e.team]++;(e.team?$('#sbH'):$('#sbA')).querySelector('.sbsog b').textContent=shots[e.team];}
+    else if(e.kind==='goal'){score[e.team]++;$('#scA').textContent=score[0];$('#scH').textContent=score[1];
+      const tag=e.tag==='PPG'?' power-play goal':e.tag==='EN'?' empty-net goal':e.tag==='OT'?' overtime winner':'';
+      addPbp(tl,`<span class="tag">${TEAMS[tm].ab}</span>${e.scorer}${tag} (${e.assists.length?e.assists.join(', '):'unassisted'})`,'g',tm);
+      const b=$('#board');b.style.setProperty('--fc',TEAMS[tm].c);b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash');
+      $('#sbmsg').innerHTML=`<b>Goal, ${TEAMS[tm].ab}!</b> ${e.scorer} makes it ${score[0]}–${score[1]}.`;}
+    else if(e.kind==='pen'){addPbp(tl,`${TEAMS[tm].ab} · ${e.player}, 2 min for ${e.inf.toLowerCase()}`,'',-1);}
+    else if(e.kind==='period'){addPbp(tl,`<em>${e.text}</em>`,'',-1);}
+    else if(e.kind==='so'){addPbp('SO',`<span class="tag">${TEAMS[tm].ab}</span>${e.player}: ${e.made?'scores':'stopped'}`,e.made?'g':'',tm);}
+    return e.kind==='goal'||(e.kind==='so');};
+  const finish=()=>{const [a,h]=sim.final;$('#scA').textContent=a;$('#scH').textContent=h;
+    $('#per').textContent='FINAL';$('#clk').textContent=sim.decided==='REG'?'':sim.decided;};
+  if(!sp.min){sim.ev.forEach(apply);finish();return Promise.resolve();}
+  const ep=epoch;
+  return new Promise((res,rej)=>{let gt=0,idx=0,last=performance.now(),pauseUntil=0;
+    const f=now=>{if(ep!==epoch)return rej('reset');const dt=now-last;last=now;
+      if(now>=pauseUntil){gt+=dt/sp.min*60;
+        while(idx<sim.ev.length&&sim.ev[idx].t<=gt){const e=sim.ev[idx++];if(apply(e)){pauseUntil=now+(e.kind==='so'?sp.goal*.6:sp.goal);gt=e.t;break;}}
+        const [pl,ck]=clockAt(Math.min(gt,sim.endT),sim);$('#per').textContent=pl;$('#clk').textContent=ck;}
+      if(idx>=sim.ev.length&&gt>=sim.endT&&now>=pauseUntil){finish();res();}else requestAnimationFrame(f);};
+    requestAnimationFrame(f);});
+}
+
+/* ---------------- Conquest ---------------- */
+function conquer(w,l){
+  const prev=new Uint8Array(og);
+  owner=owner.map(o=>o===l?w:o);buildOwn();
+  const d=new Int32Array(NC).fill(-1);let q=[];
+  for(let i=0;i<NC;i++){if(prev[i]!==l)continue;const x=i%GW;
+    const nb=[x>0?i-1:-1,x<GW-1?i+1:-1,i-GW,i+GW];if(nb.some(j=>j>=0&&j<NC&&prev[j]===w)){d[i]=0;q.push(i);}}
+  const bfs=qq=>{let h=0;while(h<qq.length){const i=qq[h++],x=i%GW;for(const j of [x>0?i-1:-1,x<GW-1?i+1:-1,i-GW,i+GW]){if(j<0||j>=NC||prev[j]!==l||d[j]>=0)continue;d[j]=d[i]+1;qq.push(j);}}};
+  bfs(q);
+  let mx=0;for(let i=0;i<NC;i++)if(d[i]>mx)mx=d[i];
+  const q2=[];for(let i=0;i<NC;i++)if(prev[i]===l&&d[i]<0){const x=i%GW;const nb=[x>0?i-1:-1,x<GW-1?i+1:-1,i-GW,i+GW];if(nb.some(j=>j>=0&&j<NC&&prev[j]!==l)){d[i]=Math.round(mx*.3);q2.push(i);}}
+  bfs(q2);mx=0;for(let i=0;i<NC;i++)if(d[i]>mx)mx=d[i];
+  const ms=SP().conq,ep=epoch;anim={loser:l,winner:w,d,th:-1,p:0};
+  return new Promise((res,rej)=>{const t0=performance.now();
+    const f=now=>{if(ep!==epoch)return rej('reset');const p=Math.min(1,(now-t0)/ms);const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      anim.th=e*(mx+1)-1;anim.p=p;drawMap();if(p<1)requestAnimationFrame(f);else{anim=null;drawMap();res();}};
+    requestAnimationFrame(f);});
+}
+
+/* ---------------- Flow ---------------- */
+let busy=false,auto=false;
+const nameShort=t=>TEAMS[t].ab;
+async function doTeam(){
+  const al=alive();arrow=null;attacker=-1;defender=-1;
+  wTeam.set(al.map(t=>({team:t,color:TEAMS[t].c,text:TXT[t],label:TEAMS[t].ab})));
+  wDir.set([],'');$('#rDir').textContent='Waiting';$('#rTeam').textContent='Spinning…';
+  const k=await wTeam.spin(SP().wheel);attacker=wTeam.items[k].team;wTeam.hub=TEAMS[attacker].ab;wTeam.draw();
+  $('#rTeam').textContent=TEAMS[attacker].name;
+  const opts=directionOptions(attacker);
+  wDir.set(opts.map(o=>({...o,color:TEAMS[o.team].c,text:TXT[o.team],label:o.dir,sub:TEAMS[o.team].ab})),'');
+  $('#rDir').textContent=opts.length+(opts.length===1?' direction':' directions')+' open';
+}
+async function doDir(){
+  $('#rDir').textContent='Spinning…';
+  const k=await wDir.spin(SP().wheel);const o=wDir.items[k];defender=o.team;dirLabel=o.dir;wDir.hub=o.dir;wDir.draw();
+  arrow={from:attacker,x:o.x,y:o.y};
+  $('#rDir').textContent=`${DIRNAME[o.dir]} → ${TEAMS[defender].ab}`;
+  setTeamBlock($('#sbA'),attacker,'Away');setTeamBlock($('#sbH'),defender,'Home');
+  $('#scA').textContent='0';$('#scH').textContent='0';$('#per').textContent='1st';$('#clk').textContent='20:00';
+  const a=strength(attacker),d=strength(defender);
+  $('#sbmsg').innerHTML=`<b>${TEAMS[attacker].ab}</b> (OVR ${a.ovr}) marches ${DIRNAME[o.dir]} into <b>${TEAMS[defender].ab}</b> (OVR ${d.ovr}) territory.`;
+}
+async function doGame(){
+  const sim=simulate(attacker,defender);await playGame(sim);
+  const w=sim.teams[sim.winner],l=sim.teams[1-sim.winner];gameNo++;wins[w]++;
+  const pk=pickPlayer(w,l);const star=pk.p;rosters[w].push({...star});rosters[l]=[];
+  const [a,h]=sim.final;const suf=sim.decided==='REG'?'':' ('+sim.decided+')';
+  const gainTxt=pk.gain>=0.005?`, +${pk.gain.toFixed(2)} goals per game`:'';
+  history.unshift({n:gameNo,txt:`${TEAMS[sim.teams[0]].ab} ${a}–${h} ${TEAMS[sim.teams[1]].ab}${suf}`,w,l,star,why:pk.why,gainTxt,terr:terr(l)});
+  $('#sbmsg').innerHTML=`<b>${TEAMS[w].name}</b> win ${Math.max(a,h)}–${Math.min(a,h)}${suf}, annex ${TEAMS[l].ab} land and sign <b>${star.name}</b> (${star.pos}${gainTxt}).`;
+  addPbp('FINAL',`<span class="tag">${TEAMS[w].ab}</span>signs ${star.name} (${star.pos}, ${star.ovr}) from ${TEAMS[l].ab}${pk.why?`. ${pk.why[0].toUpperCase()+pk.why.slice(1)}.`:''}`,'g',w);
+  if(selected===l)selected=w;
+  await conquer(w,l);arrow=null;attacker=-1;defender=-1;computeLabels();renderSide();
+  if(alive().length===1){champion=w;showChamp();}
+}
+function updateUI(){
+  const go=$('#go');go.disabled=busy;
+  const lab={team:'Spin the team wheel',dir:attacker>=0?`Spin direction for ${nameShort(attacker)}`:'Spin direction',game:defender>=0?`Drop the puck: ${nameShort(attacker)} at ${nameShort(defender)}`:'Play the game',done:'Play again'}[phase];
+  go.textContent=busy?'In progress…':lab;
+  document.querySelectorAll('.steps li').forEach(li=>li.classList.toggle('on',li.dataset.s===phase));
+}
+async function step(){
+  if(busy)return;
+  if(phase==='done'){restart();return;}
+  busy=true;updateUI();const ep=epoch;
+  try{
+    if(phase==='team'){await doTeam();phase='dir';}
+    else if(phase==='dir'){await doDir();phase='game';}
+    else if(phase==='game'){await doGame();phase=alive().length>1?'team':'done';if(phase==='done'){auto=false;$('#auto').setAttribute('aria-pressed','false');}}
+  }catch(e){if(e!=='reset')console.error(e);return;}
+  finally{if(ep===epoch){busy=false;updateUI();}}
+  if(auto&&phase!=='done'&&ep===epoch)sleep(SP().gap).then(step).catch(()=>{});
+}
+function restart(){
+  epoch++;busy=false;auto=false;$('#auto').setAttribute('aria-pressed','false');
+  resetState();drawMap();computeLabels();
+  wTeam.set(alive().map(t=>({team:t,color:TEAMS[t].c,text:TXT[t],label:TEAMS[t].ab})));wDir.set([],'');
+  $('#rTeam').textContent='Spin to pick';$('#rDir').textContent='Waiting';
+  setTeamBlock($('#sbA'),-1,'Away');setTeamBlock($('#sbH'),-1,'Home');$('#scA').textContent='0';$('#scH').textContent='0';$('#per').textContent='1st';$('#clk').textContent='20:00';
+  $('#sbmsg').textContent='Spin the wheels to set a matchup.';
+  $('#pbp').innerHTML='<li class="empty">Goals and penalties appear here once the puck drops.</li>';
+  $('#champ').hidden=true;$('#board').classList.remove('flash');
+  renderSide();updateUI();
+}
+
+/* ---------------- Side panels ---------------- */
+function renderSide(){
+  const al=alive();
+  $('#stTeams').textContent=al.length;$('#stGames').textContent=gameNo;
+  const lead=al.slice().sort((a,b)=>terr(b)-terr(a))[0];$('#stLead').textContent=terr(lead)>1?`${TEAMS[lead].ab} ×${terr(lead)}`:'—';
+  const out=TEAMS.map((_,i)=>i).filter(i=>!al.includes(i));
+  const sorted=[...al.sort((a,b)=>terr(b)-terr(a)||strength(b).ovr-strength(a).ovr),...out.sort((a,b)=>owner[a]-owner[b]||a-b)];
+  const st=$('#stand');st.innerHTML='';
+  sorted.forEach(t=>{const isOut=!al.includes(t);const b=document.createElement('button');b.type='button';b.className='srow'+(isOut?' out':'');
+    b.style.setProperty('--tc',TEAMS[t].c);
+    b.innerHTML=`<span class="sw"></span><span class="tn">${TEAMS[t].name}${isOut?` <span class="by">· taken by ${TEAMS[owner[t]].ab}</span>`:''}</span><span class="n">${isOut?'0':terr(t)}</span><span class="n">${isOut?'—':strength(t).ovr}</span><span class="n">${wins[t]}</span>`;
+    b.setAttribute('aria-expanded',String(selected===t));
+    b.addEventListener('click',()=>{selected=selected===t?-1:t;renderSide();});
+    st.appendChild(b);
+    if(selected===t&&!isOut){const r=document.createElement('div');r.className='roster';
+      const L=lineupOf(rosters[t]);const dressed=new Set([...L.F,...L.D,...L.G]);
+      const ord={F:0,D:1,G:2};
+      r.innerHTML=rosters[t].slice().sort((a,b)=>(dressed.has(b)-dressed.has(a))||ord[grp(a)]-ord[grp(b)]||b.ovr-a.ovr).map(p=>`<span class="${dressed.has(p)?'':'depth'}">${p.name}${p.from!==TEAMS[t].ab?`<span class="via">via ${p.from}</span>`:''}${dressed.has(p)?'':' <span class="dtag">depth</span>'}</span><span class="pos">${p.pos}</span><span class="ovr">${p.ovr}</span>`).join('');
+      st.appendChild(r);}
+  });
+  const h=$('#hist');
+  h.innerHTML=history.length?history.map(e=>`<li><span class="gn">G${e.n}</span><div><div class="res">${e.txt}</div><div class="sub">${TEAMS[e.w].ab} annexes ${TEAMS[e.l].name} land${e.terr>1?` (${e.terr} territories)`:''} and signs ${e.star.name} (${e.star.pos}, ${e.star.ovr})${e.why?`; ${e.why}`:''}.</div></div></li>`).join(''):'<li class="empty">No games yet.</li>';
+}
+function showChamp(){
+  const t=champion,c=$('#champ');
+  const top=rosters[t].slice().sort((a,b)=>b.ovr-a.ovr).slice(0,8);
+  c.innerHTML=`<div class="champcard" style="--tc:${TEAMS[t].c}"><p class="eyebrow">Continental champions</p><h3>${TEAMS[t].name}</h3><p>Conquered all 32 territories in ${gameNo} games.</p><ul>${top.map(p=>`<li>${p.name}${p.from!==TEAMS[t].ab?` <span style="color:var(--muted)">via ${p.from}</span>`:''}</li><li style="font-family:var(--mono)">${p.ovr}</li>`).join('')}</ul><button class="go" type="button" id="again">Play again</button></div>`;
+  c.hidden=false;$('#again').addEventListener('click',restart);
+}
+
+/* ---------------- Map interaction ---------------- */
+const tip=$('#tip');
+function hit(e){const r=ovC.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+  if(x>=HB.x&&x<=HB.x+HB.w&&y>=HB.y&&y<=HB.y+HB.h)return {o:owner[HAWAII_ORIG],orig:HAWAII_ORIG,hawaii:true,px:e.clientX-r.left,py:e.clientY-r.top,w:r.width};
+  const gx=Math.floor(x/CS),gy=Math.floor(y/CS);if(gx<0||gy<0||gx>=GW||gy>=GH)return null;const i=gy*GW+gx;if(!land[i])return null;
+  return {o:og[i],orig:orig[i],reg:REGIONS[regionOf[i]].name,px:e.clientX-r.left,py:e.clientY-r.top,w:r.width};}
+ovC.addEventListener('mousemove',e=>{const h=hit(e);if(!h){tip.hidden=true;return;}
+  const s=strength(h.o);const region=h.hawaii?'Hawaii · originally SJS':`${h.reg} · originally ${TEAMS[h.orig].ab}`;
+  tip.innerHTML=`<b>${TEAMS[h.o].name}</b><span>${region}</span><span>${terr(h.o)} of 32 territories · OVR ${s.ovr}</span>`;
+  tip.hidden=false;const tw=tip.offsetWidth;tip.style.left=Math.min(h.w-tw-6,h.px+14)+'px';tip.style.top=(h.py+14)+'px';});
+ovC.addEventListener('mouseleave',()=>tip.hidden=true);
+ovC.addEventListener('click',e=>{const h=hit(e);if(!h)return;selected=h.o;renderSide();});
+
+/* ---------------- Controls ---------------- */
+$('#go').addEventListener('click',step);
+$('#auto').addEventListener('click',()=>{auto=!auto;$('#auto').setAttribute('aria-pressed',String(auto));if(auto&&!busy&&phase!=='done')step();});
+$('#speed').addEventListener('change',e=>{speed=e.target.value;});
+$('#reset').addEventListener('click',restart);
+const rethemes=()=>{readTheme();drawMap();wTeam.draw();wDir.draw();};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rethemes);
+new MutationObserver(rethemes).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+readTheme();restart();requestAnimationFrame(drawOverlay);
+(document.fonts&&document.fonts.ready||Promise.resolve()).then(()=>{wTeam.draw();wDir.draw();});
+})();
+</script>
+
+<a href="../index.html#nhl" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;font:700 13px/1 system-ui,sans-serif;color:#fff;background:rgba(20,27,38,.85);border-radius:999px;padding:8px 12px;text-decoration:none">All games</a>
+</body></html>

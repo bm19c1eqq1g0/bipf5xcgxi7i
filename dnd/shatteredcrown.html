@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Shattered Crown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-size:14px;font-family:system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Layout: one centered column (max 680px). Sticky hero bar, story card, big stacked choices, dice tray modal. Single dark theme by choice. */
+:root{--bg:#16121e;--panel:#211a2c;--panel2:#2c2340;--line:#45385e;--ink:#f4eef8;--mute:#b4a8c6;
+  --torch:#efbf55;--torch2:#ffe2a0;--blood:#ef5f6b;--mana:#8fb8ff;--leaf:#79d39a;--dieline:#5a3a0e;--barbg:rgba(22,18,30,.94);
+  --btnink:#2a1a05;--notebg:#2e2440;--noteline:#6a5690;--selbg:#382c50;--lan1:#3f3218;--lan2:#2b2414;--badge:#33284b;--glow:239,191,85;
+  --f-disp:'Uncial Antiqua','Luminari',Georgia,serif;
+  --f-body:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;color-scheme:dark}
+
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.55;min-height:100vh;
+  background:radial-gradient(ellipse 90% 50% at 50% -8%, rgba(var(--glow),.16), transparent 70%),var(--bg);}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--torch2);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+h1,h2,h3{font-family:var(--f-disp);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0}
+
+/* hero bar */
+#bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--barbg);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar-in{max-width:680px;margin:0 auto;display:flex;gap:12px;align-items:center;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.who{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;text-align:left;min-width:0}
+.who .ico{font-size:22px}
+.who b{display:block;font-size:15px;line-height:1.1;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who small{color:var(--mute);font-size:12px;font-weight:700}
+.vitals{flex:1;min-width:0}
+.vit-row{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.track{height:10px;background:#0c0f1a;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.track i{display:block;height:100%;background:linear-gradient(90deg,#b8322a,var(--blood));transition:width .4s}
+.track.xp{height:5px;margin-top:4px;border:0}
+.track.xp i{background:var(--mana)}
+.purse{display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.purse .g{color:var(--torch2)}
+.ouch #bar{animation:ouch .45s}
+@keyframes ouch{0%,100%{background:var(--barbg)}30%{background:rgba(160,40,34,.75)}}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.scene-head{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.badge{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:radial-gradient(circle at 50% 40%,var(--badge),#1a1a22);border:2px solid var(--torch);box-shadow:0 0 18px rgba(var(--glow),.3)}
+.scene-head h2{font-size:30px;color:var(--torch2);line-height:1.1}
+.card p{margin:0 0 12px;max-width:62ch}
+.card p:last-child{margin-bottom:0}
+.note{background:var(--notebg);border:1px solid var(--noteline);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.note span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--torch)}
+.note p{margin:2px 0 0;font-weight:600}
+.lvup{margin-top:10px;padding:10px 12px;border-radius:10px;background:#1b2c40;border:1px solid var(--mana);color:#cfe6ff;font-weight:700}
+
+.choices{display:grid;gap:10px;margin-top:16px}
+.ch{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-weight:700;font-size:17px;transition:border-color .15s,transform .1s}
+.ch:hover:not(:disabled){border-color:var(--torch)}
+.ch:active:not(:disabled){transform:scale(.985)}
+.ch:disabled{opacity:.45;cursor:not-allowed}
+.ch .arr{color:var(--torch);font-size:20px;line-height:1}
+.ch .lab{flex:1;min-width:0}
+.tag{flex:none;font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.tag.chk{color:var(--mana)} .tag.bat{color:var(--blood)} .tag.gold{color:var(--torch2)} .tag.done{color:var(--leaf)}
+.hint{color:var(--mute);font-size:14px;margin-top:10px}
+
+/* shop & riddle */
+.shop{display:grid;gap:10px;margin-top:14px}
+.item{display:flex;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.item div{flex:1;min-width:0}
+.item b{display:block}
+.item small{color:var(--mute);font-size:14px}
+.buy{background:var(--torch);color:var(--btnink);border:0;border-radius:10px;padding:8px 12px;font-weight:800;white-space:nowrap}
+.buy:disabled{background:var(--line);color:var(--mute);cursor:not-allowed}
+.riddle{margin-top:14px;padding:16px;border-radius:14px;background:#151a2b;border:1px dashed var(--torch)}
+.riddle q{display:block;font-family:var(--f-disp);font-size:26px;color:var(--torch2);quotes:none;line-height:1.2;margin-bottom:12px}
+.riddle .opts{display:grid;gap:8px}
+
+/* combat */
+.foe{text-align:center}
+.foe-ico{font-size:76px;line-height:1.1;display:inline-block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+.foe.hit .foe-ico{animation:shake .45s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px) rotate(-6deg)}40%{transform:translateX(10px) rotate(5deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.foe h2{font-size:30px;color:var(--torch2);margin:4px 0 10px}
+.foe .track{height:14px;max-width:360px;margin:0 auto}
+.foe-meta{display:flex;justify-content:center;gap:16px;margin-top:6px;font-size:14px;font-weight:800;color:var(--mute);font-variant-numeric:tabular-nums}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.act{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left;min-width:0}
+.act b{display:block;font-size:16px}
+.act small{display:block;color:var(--mute);font-size:13px;line-height:1.3;margin-top:2px}
+.act.main{border-color:var(--torch);background:var(--selbg)}
+.act.lan{grid-column:1/-1;border-color:var(--torch2);background:linear-gradient(90deg,var(--lan1),var(--lan2));animation:glow 1.6s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 22px rgba(255,216,137,.35)}}
+.act:hover:not(:disabled){border-color:var(--torch2)}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.log{margin-top:16px;display:grid;gap:6px;font-size:15px}
+.log div{padding:8px 12px;border-radius:10px;background:#161b2b}
+.log div:first-child{background:#20263a;font-weight:700}
+.log .p{color:var(--torch2)} .log .m{color:#ff9a90} .log .a,.log .h{color:#9be3ad} .log .n{color:var(--mute)}
+
+/* overlay */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(6,8,14,.78);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ovbox{width:100%;max-width:420px;max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--torch);border-radius:20px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ovbox h3{font-size:30px;color:var(--torch2)}
+.ovbox .sub{color:var(--mute);margin:4px 0 6px}
+.ovbox .body{text-align:left;margin-top:10px}
+.die{position:relative;width:140px;height:140px;margin:10px auto}
+.die svg{width:100%;height:100%}
+.die .num{position:absolute;inset:0;display:grid;place-items:center;padding-top:12px;font-family:var(--f-disp);font-size:44px;color:var(--btnink)}
+.die.spin svg{animation:spin .85s cubic-bezier(.2,.7,.3,1)}
+@keyframes spin{from{transform:rotate(0) scale(.7)}to{transform:rotate(720deg) scale(1)}}
+.die.land{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.15)}}
+.die.crit svg polygon:first-child{fill:#ffd889}
+.die.crit{filter:drop-shadow(0 0 18px rgba(255,216,137,.9))}
+.die.fumble svg polygon:first-child{fill:#e2574c}
+.res{font-variant-numeric:tabular-nums;font-weight:700;min-height:1.5em}
+.verdict{font-family:var(--f-disp);font-size:34px;line-height:1.1;min-height:1.1em;margin:4px 0}
+.verdict.ok{color:var(--leaf)} .verdict.bad{color:var(--blood)} .verdict.crit{color:var(--torch2)}
+.btns{display:grid;gap:8px;margin-top:14px}
+.big{background:var(--torch);color:var(--btnink);border:0;border-radius:14px;padding:14px 18px;font-weight:800;font-size:18px}
+.big:hover{background:var(--torch2)}
+.ghost{background:transparent;border:2px solid var(--line);border-radius:14px;padding:12px;font-weight:700}
+.ghost:hover{border-color:var(--torch)}
+
+/* title & creation */
+.title{text-align:center;padding-block:28px 8px}
+.lantern{font-size:72px;display:inline-block;animation:flick 2.4s infinite;filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}
+@keyframes flick{0%,100%{filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}45%{filter:drop-shadow(0 0 14px rgba(var(--glow),.45))}55%{filter:drop-shadow(0 0 32px rgba(255,216,137,.8))}}
+.title h1{font-size:clamp(46px,12vw,78px);line-height:.95;color:var(--torch2);text-shadow:0 4px 0 var(--dieline),0 0 30px rgba(var(--glow),.35)}
+.title .tag-line{color:var(--mute);font-weight:700;margin:10px 0 22px}
+.menu{display:grid;gap:10px;max-width:360px;margin:0 auto}
+.trophies{margin-top:28px;text-align:center}
+.trophies h3{font-family:var(--f-body);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.tro{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.tro span{width:64px;padding:8px 0;border-radius:12px;border:1px dashed var(--line);font-size:12px;font-weight:800;color:var(--mute)}
+.tro span i{display:block;font-style:normal;font-size:24px;filter:grayscale(1);opacity:.35}
+.tro span.won{border:1px solid var(--torch);color:var(--torch2);background:var(--notebg)}
+.tro span.won i{filter:none;opacity:1}
+details{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+summary{font-weight:800;cursor:pointer}
+details ul{margin:10px 0 0;padding-left:20px}
+details li{margin-bottom:6px}
+label.f{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
+input[type=text]{width:100%;background:#0f1320;border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:20px;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cls{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.cls.sel{border-color:var(--torch);background:var(--selbg);box-shadow:0 0 0 3px rgba(var(--glow),.2)}
+.cls .ci{font-size:28px}
+.cls b{display:block;font-family:var(--f-disp);font-weight:400;font-size:24px;color:var(--torch2);line-height:1.1}
+.cls small{display:block;color:var(--mute);font-size:13px;line-height:1.35;margin-top:2px}
+.cls .st{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.cls .st em{font-style:normal;color:var(--mute)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:10px;font-weight:700;text-align:left}
+.seg button small{display:block;color:var(--mute);font-weight:600;font-size:13px}
+.seg button.sel{border-color:var(--torch);background:var(--selbg)}
+.sheet-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.sheet-stats div{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center}
+.sheet-stats b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.sheet-stats small{font-size:11px;font-weight:800;color:var(--mute);letter-spacing:.08em}
+.kv{display:grid;gap:6px;font-size:15px}
+.kv div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.kv span{color:var(--mute)}
+.kv b{text-align:right}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.summary div{background:var(--panel2);border-radius:12px;padding:10px 6px;text-align:center}
+.summary b{display:block;font-size:24px;color:var(--torch2);font-variant-numeric:tabular-nums}
+.summary small{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
+@media (max-width:420px){.acts{grid-template-columns:1fr}.scene-head h2{font-size:26px}.sheet-stats{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+[hidden]{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.grid{grid-template-columns:1fr 1fr}}
+.perk{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px dashed var(--line);font-size:15px}
+.perk b{color:var(--torch2);margin-right:4px}
+.preview{margin-top:18px;padding:14px;border-radius:14px;background:var(--panel2);border:1px solid var(--torch)}
+.pv-name{font-family:var(--f-disp);font-size:26px;color:var(--torch2);line-height:1.1}
+.pv-st{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.pv-st em{font-style:normal;color:var(--mute);font-size:12px;margin-right:3px}
+.status{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.status span{font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--mana);color:var(--mana)}
+.thp{color:var(--mana)}
+.who small{white-space:nowrap}
+</style>
+</head>
+<body>
+<header id="bar" hidden></header>
+<main class="wrap" id="main"></main>
+<div class="ov" id="ov" hidden><div class="ovbox" id="ovbox"></div></div>
+<script>
+const GAME={key:'shatteredcrown',title:'The Shattered Crown',tagline:'An epic Dungeons &amp; Dragons-style quest. Three Crown Shards, three lands, one sorcerer. About an hour of adventure.',icon:'👑',start:'castle',silver:'Dwarf-forged',luck:'Four-Leaf Clover',allyScale:1,lv:[0,120,300,550,850,1200,1650],
+ relic:{btn:'Raise the Crown Shards',desc:'3d8+2 golden light damage. Undead and shadows HATE it! Once per fight.',log:'You raise the Crown Shards and golden light blazes like a sunrise!'},
+ ally:{name:'Hoot the baby owlbear',lines:['Hoot hugs it way too hard: {d} damage!','Hoot screeches "HOOOOT!" and pounces: {d} damage!','Hoot bonks it with his fuzzy head: {d} damage!']},
+ items:[['shard1','Crown Shard (Whisperfen)'],['shard2','Crown Shard (Emberpeak)'],['shard3','Crown Shard (Skyreach)'],['star1','Star Fragment'],['star2','Star Fragment'],['star3','Star Fragment'],['charm','Bog Charm (+1 Armor)'],['cloakw','Cloak of Whispers (+1 Armor)'],['cloak','Fireproof Cloak'],['torch','Firebrand'],['cap','Glowcap Mushroom'],['ore','Starsteel Ore'],['page','The Missing Last Page']]};
+const MON={
+  /* Act 1: Whisperfen */
+  leech:{n:`Giant Leech`,i:`🪱`,hp:9,ac:10,atk:3,dmg:[1,6,1],xp:30,gold:1,v:`slurps at`,intro:`A leech the size of a canoe rises out of the muck. It looks thirsty.`,bye:`The leech shrivels up like a raisin and sinks into the bog.`},
+  gator:{n:`Swamp Gator`,i:`🐊`,hp:11,ac:11,atk:3,dmg:[1,8,0],xp:40,gold:2,v:`snaps its jaws at`,intro:`What you thought was a log opens its eyes. It is not a log.`,bye:`The gator decides you're too crunchy and swims away.`},
+  wisp:{n:`Will-o'-Wisp`,i:`💫`,hp:9,ac:14,atk:4,dmg:[1,6,1],xp:45,gold:0,lantern:1,v:`zaps`,intro:`A floating ball of ghostly light giggles and flies straight at you!`,bye:`The wisp fizzles out with a sad little "pfft."`},
+  bandits:{n:`Road Bandits`,i:`🥷`,hp:12,ac:11,atk:3,dmg:[1,6,1],xp:60,gold:12,v:`swing their clubs at`,intro:`"Your gold or your... um... also your gold!" The bandits charge!`,bye:`The bandits drop their loot and sprint off into the trees, screaming for their moms.`},
+  mudgolem:{n:`Mud Golem`,i:`🟤`,hp:15,ac:10,atk:4,dmg:[1,6,1],xp:70,gold:0,v:`slaps a big muddy fist at`,intro:`The mud rises up into a giant lumpy man. It smells like old socks.`,bye:`The mud golem collapses into a puddle. You will be cleaning your boots for a week.`},
+  hydra:{n:`Grizzle, Gnash & Gerald the Hydra`,i:`🐉`,hp:24,ac:13,atk:4,dmg:[1,8,1],xp:200,gold:20,boss:1,v:`all three heads snap at`,intro:`Three heads rise out of the bog. "We're Grizzle, Gnash and Gerald," says the middle one. "Gerald's the nice one," says the left one. "No I'm NOT," says Gerald.`,bye:`The hydra's three heads all faint at once. *HIC!* Something shiny pops out of its mouth and lands at your feet.`},
+  hydraweak:{n:`Grizzle, Gnash & Gerald the Hydra`,i:`🐉`,hp:17,ac:12,atk:4,dmg:[1,6,1],xp:200,gold:20,boss:1,v:`two of its three heads snap at`,intro:`You wave your firebrand, and the hydra's middle head hides behind the other two. "Fire! I hate fire!"`,bye:`The hydra's heads all faint at once. *HIC!* Something shiny pops out of its mouth and lands at your feet.`},
+  /* Act 2: Emberpeak */
+  goat:{n:`Gruff the Mountain Goat`,i:`🐐`,hp:16,ac:12,atk:5,dmg:[1,6,3],xp:60,gold:3,v:`headbutts`,intro:`Gruff lowers his horns. "BAAAAAH." Which, in goat, means "fight me."`,bye:`Gruff stomps off, muttering goat curses. He leaves behind 3 gold coins he was chewing.`},
+  kobolds:{n:`Kobold Raiders`,i:`🦎`,hp:18,ac:12,atk:5,dmg:[2,4,1],xp:70,gold:6,v:`stab their tiny spears at`,intro:`A pack of yappy lizard-folk scurries out shouting "FOR THE GREAT CINDERMAW!"`,bye:`The kobolds flee, yelling "We'll tell on you! We'll tell Cindermaw!"`},
+  harpies:{n:`Harpy Sisters`,i:`🦅`,hp:20,ac:13,atk:5,dmg:[1,8,2],xp:90,gold:4,v:`dive and claw at`,intro:`Three harpies swoop down, cackling and singing a song so bad it should be illegal.`,bye:`The harpies screech off into the sky, still singing badly.`},
+  ogre:{n:`Bonk the Ogre`,i:`👹`,hp:30,ac:11,atk:5,dmg:[2,6,2],xp:120,gold:10,v:`swings his club at`,intro:`"BONK!" says Bonk the Ogre. It is the only word he knows. He says it a lot.`,bye:`"...bonk," whispers Bonk, and he falls asleep right there in the tunnel.`},
+  wyrm:{n:`Cindermaw the Red Wyrmling`,i:`🐲`,hp:38,ac:15,atk:6,dmg:[2,4,2],xp:300,gold:40,boss:1,breath:1,
+    bt:`Cindermaw takes a huge breath and blasts a cone of FIRE!`,tele:`Cindermaw's belly glows orange... he's about to breathe fire!`,v:`claws at`,intro:`"You DARE touch MY treasure? I'm a DRAGON! Well, a small one. But a DRAGON!"`,bye:`Cindermaw flops onto his gold pile. "Fine! FINE! Take the stupid shard! I liked the other shiny things better anyway!" He flies off to sulk.`},
+  wyrmsafe:{n:`Cindermaw the Red Wyrmling`,i:`🐲`,hp:38,ac:15,atk:6,dmg:[2,4,2],xp:300,gold:40,boss:1,breath:1,bd:1,
+    bt:`Cindermaw blasts fire, but your Fireproof Cloak soaks up most of it!`,tele:`Cindermaw's belly glows orange... good thing you're wearing that cloak!`,v:`claws at`,intro:`"You DARE touch MY treasure? I'm a DRAGON! Well, a small one. But a DRAGON!"`,bye:`Cindermaw flops onto his gold pile. "Fine! FINE! Take the stupid shard!" He flies off to sulk.`},
+  /* Act 3: Skyreach */
+  gargoyle:{n:`Gargoyle`,i:`🗿`,hp:24,ac:15,atk:6,dmg:[1,8,3],xp:90,gold:5,v:`swipes its stone claws at`,intro:`The statue on the railing blinks. Then it stretches. Then it grins.`,bye:`The gargoyle cracks into rubble. One of its little stone ears rolls away.`},
+  books:{n:`Flying Spellbooks`,i:`📚`,hp:20,ac:13,atk:6,dmg:[2,4,2],xp:80,gold:2,v:`flap and papercut`,intro:`A flock of books bursts off the shelves, flapping their covers and snapping their pages!`,bye:`The books flop to the floor and lie still. One of them is overdue by 212 years.`},
+  skelk:{n:`Skeleton Knight`,i:`💀`,hp:24,ac:15,atk:6,dmg:[1,8,3],xp:90,gold:6,lantern:1,v:`swings a rusty sword at`,intro:`A skeleton in old armor rattles to attention. "None shall return books late!"`,bye:`The skeleton knight falls apart. His skull keeps whispering "late fees... late fees..."`},
+  shush:{n:`Shush the Iron Librarian`,i:`🤖`,hp:40,ac:16,atk:6,dmg:[2,6,3],xp:200,gold:0,boss:1,v:`slams a giant iron "SHHHH!" finger at`,intro:`A towering iron golem stomps around the corner. Its eyes glow red. "SHHHHHHHHHHH!"`,bye:`Shush the Iron Librarian powers down with one last, tiny "shh."`},
+  lich:{n:`Archivist Vael the Lich`,i:`☠️`,hp:48,ac:15,atk:7,dmg:[2,6,2],xp:350,gold:30,boss:1,lantern:1,breath:1,
+    bt:`Vael raises his bony hands and a wave of freezing ghost-light rolls over you!`,tele:`Vael begins chanting from a glowing book... something nasty is coming!`,v:`zaps you with his bony finger`,intro:`"Ah. A visitor. I have not had a visitor in three hundred years. I shall add you to my COLLECTION!"`,bye:`Vael crumbles into dust and old library cards. The third shard rolls out of his robes.`},
+  lichweak:{n:`Archivist Vael the Lich`,i:`☠️`,hp:34,ac:14,atk:6,dmg:[2,6,1],xp:350,gold:30,boss:1,lantern:1,breath:1,bd:2,
+    bt:`Vael raises his shaky hands. With his hourglass smashed, his ghost-light wave is much weaker!`,tele:`Vael tries to chant, but keeps losing his place in the book...`,v:`zaps you with his bony finger`,intro:`"My HOURGLASS! What have you DONE?!" Vael is already crumbling at the edges.`,bye:`Vael crumbles into dust and old library cards. The third shard rolls out of his robes.`},
+  /* Finale */
+  knights:{n:`Shadow Knights`,i:`🛡️`,hp:30,ac:15,atk:7,dmg:[1,10,3],xp:150,gold:10,lantern:1,v:`swing their dark blades at`,intro:`Two knights made of living shadow step onto the bridge, swords drawn.`,bye:`The Shadow Knights dissolve into smoke and blow away over the lava.`},
+  twin:{n:`Your Evil Twin`,i:`🪞`,hp:30,ac:14,atk:6,dmg:[1,8,3],xp:150,gold:0,v:`copies your moves and attacks`,intro:`One of the mirrors cracks, and out steps... you! Except evil. And with a curly mustache.`,bye:`Your evil twin shatters into a thousand glittering pieces. You'll never know where it got that mustache.`},
+  malg1:{n:`Malgrath the Sorcerer`,i:`🧙`,hp:45,ac:15,atk:7,dmg:[2,6,3],xp:300,gold:0,boss:1,lantern:1,breath:1,
+    bt:`Malgrath hurls a roaring FIREBALL!`,tele:`Malgrath's staff starts glowing bright red...`,v:`blasts you with a dark bolt`,intro:`"So, the little hero has come for the crown. How DELIGHTFUL. Let's see what you've got!"`,bye:`Malgrath staggers and drops his staff. "No... NO! I will not lose to a CHILD with a SWORD!"`},
+  malg2:{n:`Malgrath Unbound`,i:`👿`,hp:60,ac:15,atk:7,dmg:[2,8,3],xp:500,gold:0,boss:1,lantern:1,breath:1,
+    bt:`Malgrath Unbound roars, and a storm of shadow-flame fills the throne room!`,tele:`The shadows on the walls start to swirl toward Malgrath...`,v:`rakes his shadow claws at`,intro:`Malgrath's shadow swallows him whole, and he rises up, huge and horned and furious!`,bye:`The golden light of the Crown pours over Malgrath Unbound, and the shadow screams and shatters like glass.`},
+};
+const MINOR=['leech','gator','wisp'];
+const POOL={fen:['leech','gator','wisp'],mtn:['goat','kobolds','harpies'],lib:['books','skelk','gargoyle']};
+const RIDDLES=[
+  [`What has keys but can't open a single lock?`,`A piano`,[`A jail guard`,`A treasure map`]],
+  [`What has a head and a tail, but no body?`,`A coin`,[`A snake`,`A comet`]],
+  [`The more of them you take, the more you leave behind. What are they?`,`Footsteps`,[`Cookies`,`Photos`]],
+  [`What has hands but can't clap?`,`A clock`,[`A statue`,`A glove`]],
+  [`I'm tall when I'm young and short when I'm old. What am I?`,`A candle`,[`A tree`,`A wizard`]],
+  [`What can you catch but never throw?`,`A cold`,[`A ball`,`A fish`]],
+  [`What has to be broken before you can use it?`,`An egg`,[`A promise`,`A sword`]],
+  [`What has cities but no houses, forests but no trees, and rivers but no fish?`,`A map`,[`A desert`,`A dream`]],
+  [`What gets wetter the more it dries?`,`A towel`,[`A sponge`,`The ocean`]],
+  [`What has many teeth but never bites?`,`A comb`,[`A shark`,`A goblin`]],
+  [`What runs but never walks, and has a bed but never sleeps?`,`A river`,[`A dog`,`A road`]],
+  [`What has a neck but no head?`,`A bottle`,[`A snake`,`A pillow`]],
+];
+const SHOP=[
+  {k:'potion',n:`Healing Potion`,d:`Heals 2d4+2 HP. Works in battle too.`,p:10},
+  {k:'rope',n:`Climbing Rope`,d:`Fifty feet of strong rope. Handy for climbing.`,p:5,max:1},
+  {k:'luck',n:`Four-Leaf Clover`,d:`Reroll one failed check. Used up after.`,p:12,max:1},
+];
+
+const shardN=s=>['shard1','shard2','shard3'].filter(k=>s.flags[k]).length;
+const starN=s=>['star1','star2','star3'].filter(k=>s.flags[k]).length;
+const award=(s,n)=>{s.flags.pendingLv=(s.flags.pendingLv||'')+gainXP(n)};
+const N={
+/* ================= ACT 0: THORNBURY ================= */
+castle:{t:`The Queen's Summons`,i:`👑`,cp:1,
+  x:s=>`The throne room of Castle Thornbury is a mess. Banners are torn, the royal cake is face-down on the floor, and a very nervous royal goat is hiding under the throne.\n\nQueen Isolde stands tall in the middle of it all. "${s.name}. Thank you for coming."\n\n"Three nights ago, at the Harvest Festival, the sorcerer MALGRATH flew in on a cloud of black smoke. He struck the Crown of Eldermoor with his staff and it shattered into three glowing shards. The shards flew off in three directions."\n\nShe unrolls a map. "One fell into Whisperfen Swamp. One into Emberpeak Mountain. One up to the floating Library of Skyreach. The Crown's magic protects our whole kingdom. Without it, Malgrath's shadows grow stronger every night."\n\n"Find the three shards. Then take them to Malgrath's Obsidian Keep and end this. Do that, and you will be named Champion of Eldermoor, with a reward of 500 gold."\n\nThe goat under the throne bleats in agreement.`,
+  c:s=>[{t:`Accept the quest and head into town`,go:'town',note:`"Brave hero!" cries the Queen. The goat comes out from under the throne and licks your boot. You are officially on a quest.`}]},
+town:{t:`Thornbury Square`,i:`🏘️`,cp:1,
+  x:s=>`Thornbury is a cozy little town with crooked chimneys and a fountain shaped like a fish spitting water at a knight. Since the Crown broke, the shadows in the alleys look a little too long, and people hurry home before dark.\n\nYou can visit the Royal Wizard's tower, shop at the Gilded Goose, rest at the Snoring Dragon Inn, or open your map and travel.${shardN(s)?`\n\nYou carry ${shardN(s)} of the 3 Crown Shards.`:''}`,
+  c:s=>[{t:`Climb up to Fizzwick the Royal Wizard's tower`,go:'fizz'},
+    {t:`Shop at the Gilded Goose`,go:'shop'},
+    {t:`Rest at the Snoring Dragon Inn`,cost:5,act:s=>rest(s),go:'town',note:`You sleep in a feather bed that smells like cinnamon. Health and abilities fully restored!`,if:s.hp<s.max||s.uses<CL[s.cls].sp.uses},
+    {t:`Open the map and travel`,go:'map'}]},
+fizz:{t:`Fizzwick's Tower`,i:`🧙‍♂️`,en:s=>{s.flags.fz=(s.flags.fz||0)+1;if(s.flags.fz===1)s.inv.potion++},
+  x:s=>s.flags.fz>1?`Fizzwick is trying to teach a toad to juggle. It is not going well. "Back again? Remember: a witch in the swamp, dwarves under the mountain, and SHHH in the library. Oh, and the Star Fragments! Don't forget the Star Fragments!"${starN(s)?`\n\nHe peers at your pack. "Ooh, you've found ${starN(s)} of the 3 Star Fragments! Splendid!"`:''}`
+  :`Fizzwick the Royal Wizard has a beard so long he uses it as a scarf, a pointy hat covered in burn marks, and a toad on his shoulder named Professor Hopkins.\n\n"Ah, the hero! Splendid! Take this Healing Potion, I made it myself. Probably safe." He hands you a bubbling bottle.\n\n"Some advice. In Whisperfen, find Old Mother Moss the swamp witch. She's grumpy, but she knows everything about that bog. Under Emberpeak, the dwarves of Kharak-Dun are in trouble with a baby dragon. Help them and they'll help you. And in the Library of Skyreach... whatever you do, be QUIET."\n\nHe lowers his voice. "One more thing. Malgrath wasn't always evil. There's an old legend about three Star Fragments that fell from the sky long ago. Together, they can break ANY curse. If you find them on your travels... bring them along. Just a hunch."\n\nProfessor Hopkins croaks wisely.`,
+  c:s=>[{t:`Back down to the town square`,go:'town'}]},
+shop:{t:`The Gilded Goose`,i:`🪿`,type:'shop',
+  x:s=>`The Gilded Goose is run by Marta, a tall woman with arms like tree trunks, and her pet goose, Duchess, who honks at anyone who touches things without buying them.\n\n"Potions, rope, lucky charms," says Marta. "Duchess bites shoplifters." Duchess honks proudly.`,
+  c:s=>[{t:`Back to the town square`,go:'town'}]},
+map:{t:`The Kingdom Map`,i:`🗺️`,cp:1,
+  x:s=>{const n=shardN(s);return `You unroll the Queen's map. The kingdom of Eldermoor stretches out in faded ink: forests, rivers, mountains, and in the far north, the black dot of Malgrath's Obsidian Keep.\n\n${n===0?`Your first stop is WHISPERFEN SWAMP to the south, where the first shard fell.`:n===1?`The first shard glows in your pack. Next: EMBERPEAK MOUNTAIN to the east, home of the dwarves.`:n===2?`Two shards hum together in your pack. Last one: the floating LIBRARY OF SKYREACH, high above the western cliffs.`:`All three shards blaze with golden light. They're pulling you north... to the OBSIDIAN KEEP. It's time to face Malgrath.`}\n\nCrown Shards: ${n} of 3 · Star Fragments: ${starN(s)} of 3`},
+  c:s=>[{t:`Travel to Whisperfen Swamp`,if:!s.flags.shard1,go:s.flags.road?'fen':'road'},
+    {t:`Travel to Emberpeak Mountain`,if:!!(s.flags.shard1&&!s.flags.shard2),go:s.flags.gate2?'hall2':'pass2'},
+    {t:`Travel to the Library of Skyreach`,if:!!(s.flags.shard2&&!s.flags.shard3),go:s.flags.sky1?'lib':'sky1'},
+    {t:`March to the Obsidian Keep`,if:shardN(s)===3,go:'keep1',tag:'Final quest'},
+    {t:`Return to Thornbury`,go:'town'}]},
+/* ================= ACT 1: WHISPERFEN ================= */
+road:{t:`Ambush on the King's Road`,i:`🌲`,en:s=>s.flags.road=1,
+  x:s=>`The King's Road winds south through a dark forest. You're halfway through a sandwich when four bandits leap out from behind the trees, wearing masks made from old socks.\n\n"Stand and deliver!" shouts the leader. "Your gold, or your... um..." He looks at the others. "What else do we ask for?" "Their gold," whispers one. "Right. Your gold or your GOLD!"`,
+  c:s=>[{t:`Fight the bandits!`,fight:'bandits',win:'fen'},
+    {t:`"I'm the Queen's Champion. The royal army is right behind me."`,check:{st:'int',dc:12,pass:{go:'fen',note:`The bandits look nervously down the road. "The WHOLE army?" "Even the guy with the really big axe," you say. They drop their weapons and run. You finish your sandwich.`},fail:{fight:'bandits',win:'fen',note:`"There's no army," says the leader. "We can see the road. It's empty." Oops.`}}},
+    {t:`Pay them off`,cost:10,go:'fen',note:`The bandits count your coins, then bow politely. "Pleasure doing business! Mind the swamp, it's VERY smelly." They wave you off.`}]},
+fen:{t:`The Edge of Whisperfen`,i:`🌫️`,cp:1,
+  x:s=>`Whisperfen Swamp smells like a hundred-year-old egg sandwich. Fog curls over black water, frogs croak in a choir, and rickety boardwalks wobble off in every direction.\n\nTo the left, a crooked hut glows with green candlelight. Smoke shaped like little skulls puffs from its chimney.\n\nTo the right, far out in the bog, something HUGE splashes. Three long necks rise out of the fog, then sink again.${s.flags.shrine1?'':`\n\nStraight ahead, the top of an old stone statue pokes out of a pond, half-sunk in the muck.`}${s.flags.cap&&!s.flags.mossDone?`\n\nThe glowcap mushroom glows in your pack. Old Mother Moss is waiting.`:''}`,
+  c:s=>[{t:`Visit the glowing hut`,go:'witch',rand:.3,pool:POOL.fen,lurk:'Something slithers out of the swamp!'},
+    {t:`Wade out to the sunken statue`,if:!s.flags.shrine1,go:'shrine1',rand:.3,pool:POOL.fen,lurk:'Something slithers out of the swamp!'},
+    {t:`Head toward the giant splashing`,go:'lair',tag:'Boss'},
+    {t:`Leave the swamp (open the map)`,go:'map'}]},
+witch:{t:`Old Mother Moss`,i:`🧙‍♀️`,en:s=>s.flags.wv=(s.flags.wv||0)+1,
+  x:s=>s.flags.mossDone?`Old Mother Moss is stirring a cauldron of something purple. "Off you go, dearie. Remember: wave that firebrand at the hydra and its heads get all shy." Reginald the frog waves at you with one tiny hand.`
+   :s.flags.wv>1?`Old Mother Moss looks up from her cauldron. "Well? Where's my glowcap? It's in the Glowing Hollow, out past the dead trees. Hurry up, dearie, my soup's getting cold."`
+   :`The hut is stuffed with jars of eyeballs (they're actually pickled onions), bundles of drying herbs, and a cauldron bubbling away.\n\nOld Mother Moss is the oldest person you have ever seen. Her nose is long enough to stir soup with, and she does. A frog in a tiny golden crown sits on her shoulder.\n\n"A hero, eh? You want the shard. The hydra ate it. Three heads, one stomach, zero manners."\n\nShe narrows her eyes. "I'll tell you the hydra's secret weakness, AND give you a magic charm. But first, you do something for me. Bring me a glowcap mushroom from the Glowing Hollow. My soup needs it."\n\nThe frog clears its throat. "I am Prince Reginald," it says. "Please don't kiss me. It doesn't work. I've checked."`,
+  c:s=>[{t:`Go to the Glowing Hollow for the glowcap`,if:!s.flags.cap,go:'hollow',rand:.3,pool:POOL.fen,lurk:'Something slithers out of the swamp!'},
+    {t:`Give Mother Moss the glowcap`,if:!!(s.flags.cap&&!s.flags.mossDone),act:s=>{s.flags.mossDone=1;s.flags.torch=1;s.flags.charm=1;s.ac+=1;award(s,40)},go:'witch',note:`She drops the glowcap into her soup. It turns gold and smells like birthday cake. "Perfect! Now listen: hydras HATE fire. Take this firebrand and wave it at the beast, and its heads won't grow back. And take my Bog Charm, it'll turn aside a claw or two." You got a Firebrand and the Bog Charm (+1 Armor)! +40 XP.`},
+    {t:`Ask Prince Reginald how he became a frog`,if:!s.flags.reg,act:s=>{s.flags.reg=1;s.gold+=8},go:'witch',note:`"I told Mother Moss her soup needed salt," Reginald sighs. "That was eleven years ago." He gives you 8 gold from his tiny frog purse for listening. "Don't tell her I had this."`},
+    {t:`Back to the edge of the swamp`,go:'fen'}]},
+hollow:{t:`The Glowing Hollow`,i:`🍄`,
+  x:s=>`Past a forest of dead trees you find a hollow full of mushrooms that glow every color of the rainbow. In the middle, on a mossy stump, sits one big golden glowcap, shining like a little lamp.\n\nThe mud around the stump starts to bubble. Then it starts to rise...`,
+  c:s=>[{t:`Dash in and grab the glowcap before the mud wakes up`,check:{st:'dex',dc:12,
+      pass:s=>{s.flags.cap=1;return{go:'witch',note:`You snatch the glowcap and dive out of the hollow just as a huge muddy hand slaps the ground where you were standing. Too slow, mud!`}},
+      fail:{fight:'mudgolem',win:s=>{s.flags.cap=1;return{go:'witch',note:`You pluck the glowcap out of the mud golem's puddle. It's a bit muddy, but Mother Moss won't mind. Probably.`}},note:`You slip in the mud. The mud slips around YOU. It's a Mud Golem!`}}},
+    {t:`Fight whatever comes out of that mud`,fight:'mudgolem',win:s=>{s.flags.cap=1;return{go:'witch',note:`You pluck the glowcap out of the mud golem's puddle and head back to the witch's hut.`}}}]},
+shrine1:{t:`The Sunken Statue`,i:`🗿`,en:s=>s.flags.shrine1v=1,
+  x:s=>`You wade through cold, waist-deep water to the old statue. It's a queen from long ago, with a stone crown and a kind face. Her hands are cupped together just under the water, and something between them sparkles like a tiny star.\n\nAs you get close, three floating lights rise out of the reeds, giggling.`,
+  c:s=>[{t:`Reach into the water and take the sparkle`,check:{st:'wis',dc:12,
+      pass:s=>{s.flags.shrine1=1;s.flags.star1=1;award(s,30);return{go:'fen',note:`You notice the giggling lights only bother people who splash. So you move slowly, slowly... and lift out a glittering STAR FRAGMENT! The lights get bored and float away. +30 XP.`}},
+      fail:{fight:'wisp',win:s=>{s.flags.shrine1=1;s.flags.star1=1;return{go:'fen',note:`With the wisp gone, you scoop the sparkle out of the statue's hands. It's a STAR FRAGMENT, warm and humming!`}},note:`SPLASH! The wisps shriek with delight and attack!`}}},
+    {t:`Back to the edge of the swamp`,go:'fen'}]},
+lair:{t:`The Hydra's Nest`,i:`🐉`,
+  x:s=>`In the deepest part of the bog sits a nest made of rotting logs, old boats, and one very surprised-looking scarecrow. Curled on top is a hydra: one big green body, three long necks, and three heads.\n\nThey're arguing. "It's MY turn to hold the shiny thing." "You swallowed it, Gerald. None of us can hold it now." "...Oh yeah."\n\nAll three heads turn and spot you at the same time.${s.flags.torch?`\n\nYou grip the firebrand Mother Moss gave you.`:''}`,
+  c:s=>[{t:`Battle the hydra!`,fight:s.flags.torch?'hydraweak':'hydra',win:'shard1',hint:s.flags.torch?null:`Tip: Old Mother Moss knows this beast's weakness. Help her first and the fight gets easier.`},
+    {t:`Tickle Gerald's nose with a swamp reed`,check:{st:'dex',dc:15,pass:{go:'shard1',note:`Gerald's nose twitches. His eyes water. "Ah... AH... AHHH-CHOOOO!" The shard shoots out of his mouth and lands in your hands. The other heads laugh so hard they fall over. Gerald is very embarrassed.`},
+      fail:{fight:s.flags.torch?'hydraweak':'hydra',win:'shard1',note:`Gerald does not sneeze. Gerald is now ANGRY.`}}},
+    {t:`Back away to the edge of the swamp`,go:'fen'}]},
+shard1:{t:`The First Shard`,i:`💎`,en:s=>{if(!s.flags.shard1){s.flags.shard1=1;s.flags.lantern=1;award(s,50)}},
+  x:s=>`You hold up the first Crown Shard. It's warm, and it glows like a sunrise trapped in glass. When you raise it, the fog around you pulls back as if it's afraid.\n\nYou have the first shard! +50 XP.\n\nThe shard's light hurts creatures of darkness. In battle against undead and shadow monsters, you can now RAISE THE CROWN SHARDS to blast them with golden light.`,
+  c:s=>[{t:`Open the map`,go:'map'},{t:`Return to Thornbury to rest and shop`,go:'town'}]},
+/* ================= ACT 2: EMBERPEAK ================= */
+pass2:{t:`The Switchback Trail`,i:`⛰️`,
+  x:s=>`The trail up Emberpeak zigzags back and forth across the cliffs. The air gets hotter as you climb, not colder. Smoke drifts from cracks in the rock. This is a volcano. A sleepy one, you hope.\n\nOn a ledge so narrow only one creature can pass at a time stands a mountain goat. He's enormous. He has a beard down to his knees and eyes full of pure, ancient rudeness.\n\n"BAAAAH," says the goat. A wooden sign around his neck reads: GRUFF. DO NOT PET.`,
+  c:s=>[{t:`Fight Gruff for the right to pass`,fight:'goat',win:'gate2'},
+    {t:`Shove him out of the way`,check:{st:'str',dc:13,pass:{go:'gate2',note:`You lower your shoulder and push. Gruff pushes back. You push harder. Gruff slides backward, offended, onto a wider ledge, and you squeeze past. "Baaah," he grumbles.`},fail:{fight:'goat',win:'gate2',note:`You push. Gruff does not move. Gruff headbutts you. Ow.`}}},
+    {t:`Offer him your sandwich crusts`,check:{st:'wis',dc:11,pass:{go:'gate2',note:`Gruff sniffs the crusts. He eats them. He eats the napkin. He tries to eat your sleeve. Then he steps aside, satisfied. You've made a friend, sort of.`},fail:{fight:'goat',win:'gate2',note:`You forgot you ate the crusts. You offer Gruff an empty hand. Gruff takes this as an insult.`}}}]},
+gate2:{t:`The Gates of Kharak-Dun`,i:`🚪`,cp:1,en:s=>s.flags.gate2v=1,
+  x:s=>`At the top of the trail, two giant stone doors are carved into the mountain, decorated with hammers, beards, and more beards. These are the gates of Kharak-Dun, the dwarf city.\n\nThe gates are shut. And right now, a pack of yappy lizard-folk kobolds is banging on them with spears, shouting "OPEN UP! CINDERMAW WANTS MORE GOLD!"\n\nFrom a window above, a dwarf with an eyepatch shouts back: "NEVER, YE SCALY GOBLINS!" "We're KOBOLDS!" "WHATEVER!"`,
+  c:s=>[{t:`Charge the kobolds!`,fight:'kobolds',win:s=>{s.flags.gate2=1;return{go:'hall2',note:`The dwarf with the eyepatch cheers. "A HERO! Open the gates, lads!" The giant doors grind open and a crowd of dwarves carries you inside on their shoulders.`}}},
+    {t:`Sneak around and scare them from behind`,check:{st:'dex',dc:13,pass:s=>{s.flags.gate2=1;return{go:'hall2',note:`You sneak up behind the kobolds and yell "BOO!" They scream, drop their spears, and tumble all the way down the mountain. The dwarves laugh so hard they open the gates.`}},
+      fail:{fight:'kobolds',win:s=>{s.flags.gate2=1;return{go:'hall2',note:`The dwarves cheer as the kobolds flee. "Open the gates for the hero!"`}},note:`A kobold turns around. "Hey! Someone's sneaking!" So much for that.`}}}]},
+hall2:{t:`The Great Forge-Hall`,i:`⚒️`,cp:1,
+  x:s=>`Kharak-Dun is a city carved inside the mountain. Rivers of glowing lava flow through stone channels, warming the halls. Dwarves bustle everywhere, hammering, shouting, and arguing about whose beard is longest.\n\nQueen Brunhilda Ironbeard sits on a throne made from a single giant anvil.${s.flags.met2?'':` "Ye helped us at the gate, hero. Now let me help you. That dragon Cindermaw lives in the Hoard Cave below. He's young, but he's MEAN, and his fire breath will roast ye like a marshmallow."\n\n"Get some starsteel ore from the Deep Mines, and our master smith Durgan will forge ye a proper weapon and a fireproof cloak. And while yer down there... a baby owlbear's gone missing in the Echo Caves. Poor thing's been crying for days."`}\n\nFrom here you can go to the Deep Mines, Durgan's Forge, the Echo Caves, or down to Cindermaw's Hoard Cave.`,
+  en:s=>{s.flags.met2v=(s.flags.met2v||0)+1;if(s.flags.met2v>1)s.flags.met2=1},
+  c:s=>[{t:`Ride down into the Deep Mines`,if:!s.flags.ore,go:'mines',rand:.25,pool:POOL.mtn,lurk:'Something jumps out of the shadows!'},
+    {t:`Visit Durgan's Forge`,if:!s.flags.silver,go:'forge'},
+    {t:`Explore the Echo Caves`,if:!(s.flags.caves&&s.flags.star2),go:'caves',rand:.25,pool:POOL.mtn,lurk:'Something jumps out of the shadows!'},
+    {t:`Descend to Cindermaw's Hoard Cave`,go:'lair2',tag:'Boss',hint:!s.flags.cloak?'Tip: a fireproof cloak from Durgan would help a lot against a dragon.':null},
+    {t:`Rest in the dwarven guest hall`,if:!s.flags.rest2,act:s=>{s.flags.rest2=1;rest(s)},go:'hall2',note:`The dwarves feed you seventeen sausages and sing you to sleep. Badly. But warmly. Health and abilities fully restored!`},
+    {t:`Leave the mountain (open the map)`,go:'map'}]},
+mines:{t:`The Deep Mines`,i:`⛏️`,
+  x:s=>`The Deep Mines go down, down, DOWN into the mountain. Rusty mine carts sit on twisty tracks that disappear into the dark. Somewhere far below, you hear a deep voice saying "Bonk. Bonk. Bonk."\n\nA sign by the carts says: STARSTEEL ORE AT THE BOTTOM. CARTS HAVE NO BRAKES. GOOD LUCK.`,
+  c:s=>[{t:`Ride a mine cart all the way down!`,check:{st:'dex',dc:12,
+      pass:s=>{s.flags.ore=1;award(s,40);return{go:'hall2',note:`WHOOOOOAAA! The cart rockets down the tracks, loops upside down (somehow), and stops right next to a glittering vein of starsteel. You chip out a big chunk and ride a cart back up. Best. Ride. Ever. +40 XP.`}},
+      fail:{fight:'ogre',win:s=>{s.flags.ore=1;return{go:'hall2',note:`Behind the sleeping ogre is a vein of glittering starsteel ore. You chip out a big chunk and climb back up to the Forge-Hall.`}},note:`The cart flies off the tracks and crashes right into an ogre's lunch. The ogre is upset. "BONK!"`}}},
+    {t:`Walk down the tunnels the slow way`,fight:'ogre',win:s=>{s.flags.ore=1;return{go:'hall2',note:`Behind the sleeping ogre is a vein of glittering starsteel. You chip out a big chunk and climb back up.`}},note:`Halfway down, you turn a corner into a very large ogre.`},
+    {t:`Back to the Forge-Hall`,go:'hall2'}]},
+forge:{t:`Durgan's Forge`,i:`🔥`,
+  x:s=>s.flags.ore?`Durgan the master smith has arms like barrels and a beard braided into the shape of a hammer. He grabs your starsteel ore and his eyes light up. "NOW we're talkin'!"\n\nHe hammers for an hour. Sparks fly everywhere. One lands in his beard. He doesn't notice.`
+   :`Durgan the master smith has arms like barrels and a beard braided into the shape of a hammer. "Ye want a weapon fit for dragon-slaying? Then bring me starsteel ore from the Deep Mines! I can't make somethin' outta nothin'! Well, I CAN, but it's a really bad nothin'."`,
+  c:s=>[{t:`Watch Durgan work`,if:!!s.flags.ore,act:s=>{s.flags.silver=1;s.flags.cloak=1},go:'hall2',note:`Durgan dunks your new weapon in a barrel of water. HISSSSS! It's a gleaming DWARF-FORGED weapon: +2 damage on every hit! Then he tosses you a cloak woven from dragon-proof starsteel thread. "Fireproof Cloak. Dragon breath'll tickle, at most." (His beard is still on fire.)`},
+    {t:`Back to the Forge-Hall`,go:'hall2'}]},
+caves:{t:`The Echo Caves`,i:`🦉`,
+  x:s=>`"Hello?" you call into the Echo Caves. "HELLO... hello... hello..." the caves answer. Then, quieter: "...nice haircut... not..." Rude caves.\n\n${s.flags.caves?`The spot where you rescued Hoot is quiet now.`:`Deep inside you find a fuzzy creature with a bear's body and an owl's face, its paw stuck under a fallen rock. It's a baby OWLBEAR! It hoots sadly.\n\nAbove you, three harpies are circling, licking their lips.`}${s.flags.star2?'':`\n\nAnd way up on the cave ceiling, something glitters like a fallen star...`}`,
+  c:s=>{const save=s=>{s.flags.caves=1;s.flags.ally=1;award(s,40);return{go:'hall2',note:`The baby owlbear hoots with joy and hugs you so hard your ribs creak. It follows you everywhere. You name it HOOT. Hoot will now fight beside you! +40 XP.`}};return[
+    {t:`Lift the rock off the owlbear's paw, fast!`,if:!s.flags.caves,check:{st:'str',dc:13,pass:save,fail:{fight:'harpies',win:save,note:`The rock is heavy. Too heavy. The harpies dive!`}}},
+    {t:`Fight off the harpies first`,if:!s.flags.caves,fight:'harpies',win:save},
+    {t:`Climb up to the glittering ceiling`,if:!s.flags.star2,check:{st:'dex',dc:s.inv.rope?8:14,
+      pass:s=>{s.flags.star2=1;award(s,30);return{go:'caves',note:`${s.inv.rope?'You toss your rope over a stalactite and climb up. ':''}Hanging upside down from the ceiling, you pry loose a glittering STAR FRAGMENT! +30 XP.`}},
+      fail:s=>{const d=dice(1,6);hurt(d);s.flags.star2=1;return{go:'caves',note:`You almost reach it... then slip! You fall (−${d} HP), but the glittering thing falls too and lands right on your head. BONK. It's a STAR FRAGMENT!`}}}},
+    {t:`Back to the Forge-Hall`,go:'hall2'}]}},
+lair2:{t:`Cindermaw's Hoard Cave`,i:`🐲`,type:'riddle',en:s=>{if(!s.flags.wyrmRid)pickRiddle(s)},done:s=>s.flags.wyrmRid,
+  x:s=>s.flags.wyrmRid?`Cindermaw glares at you from his gold pile, smoke puffing from his nose. "No more riddles. Now you BURN!"`:`The Hoard Cave glitters with gold: coins, cups, crowns, a golden toilet (?), and right on top, glowing brighter than all of it, the second Crown Shard.\n\nCurled around the shard is a red dragon about the size of a horse. Cindermaw. He opens one yellow eye.\n\n"A visitor. How BORING. Most visitors just scream and run. Tell you what, little hero. I'm a CLEVER dragon. Answer my riddle and I might just give you the shard. Get it wrong, and you're dinner."\n\nHe grins. He has a LOT of teeth.`,
+  ok:s=>{s.flags.wyrmRid=1;s.gold+=20;return{go:'shard2',note:`Cindermaw's jaw drops. "WHAT? Nobody EVER gets that one!" He sulks so hard that smoke comes out of his ears, then flicks the shard at you, plus a handful of coins. "Take it. And tell NOBODY you beat me at riddles."`}},
+  bad:s=>{s.flags.wyrmRid=1;return{fight:s.flags.cloak?'wyrmsafe':'wyrm',win:'shard2',note:`"WRONG!" Cindermaw roars with delight. "DINNER TIME!"`}},
+  c:s=>[{t:`Skip the riddle. Fight the dragon!`,fight:s.flags.cloak?'wyrmsafe':'wyrm',win:'shard2'},{t:`Back up to the Forge-Hall`,go:'hall2'}]},
+shard2:{t:`The Second Shard`,i:`💎`,en:s=>{if(!s.flags.shard2){s.flags.shard2=1;award(s,50)}},
+  x:s=>`The second Crown Shard clicks against the first one in your pack, and they both start humming a soft, happy tune. Golden light spills out between your fingers. +50 XP.\n\nWhen you return to the Forge-Hall, the dwarves throw you a feast. Queen Brunhilda makes you an honorary dwarf and gives you a fake beard to wear on special occasions.${s.flags.ally?' Hoot eats eleven fish pies and falls asleep in your lap.':''}`,
+  c:s=>[{t:`Open the map`,go:'map'},{t:`Return to Thornbury to rest and shop`,go:'town'}]},
+/* ================= ACT 3: SKYREACH ================= */
+sky1:{t:`The Floating Stairs`,i:`☁️`,en:s=>s.flags.sky1=1,
+  x:s=>`High above the western cliffs, an island of rock floats in the clouds. On top of it stands a tower of white stone: the Library of Skyreach. The only way up is a staircase of floating stone blocks, drifting gently in the wind, with big gaps between them.\n\nHalfway up, a stone gargoyle perches on one of the blocks. You're pretty sure it just moved.`,
+  c:s=>[{t:`Leap from block to block`,check:{st:'dex',dc:13,pass:{go:'lib',note:`Jump. Jump. JUMP. You land on the top step and do a little victory dance. The gargoyle slow-claps with its stone hands.`},
+      fail:s=>{const d=dice(2,4);hurt(d);return{fight:'gargoyle',win:'lib',note:`You miss a block, catch the edge, and haul yourself up (−${d} HP)... right in front of the gargoyle. It grins.`}}}},
+    {t:`Fight the gargoyle on the way up`,fight:'gargoyle',win:'lib'}]},
+lib:{t:`The Library of Skyreach`,i:`📖`,cp:1,
+  x:s=>`The Library of Skyreach is the biggest room you've ever seen. Shelves climb up and up into the clouds. Ladders slide by themselves. Books float lazily from shelf to shelf like fish.\n\nSigns hang everywhere: SILENCE. QUIET PLEASE. SHHH. NO TALKING. NO WHISPERING. NO THINKING TOO LOUD.\n\nSomewhere in the stacks, heavy iron footsteps go CLANK... CLANK... CLANK.\n\nFrom here you can explore the Restricted Section, the Reading Room, or head toward the Archivist's Vault, where the third shard must be.`,
+  c:s=>[{t:`Sneak into the Restricted Section`,if:!s.flags.stacks,go:'stacks',rand:.3,pool:POOL.lib,lurk:'Something rustles between the shelves!'},
+    {t:`Visit the Reading Room`,go:'reading'},
+    {t:`Head for the Archivist's Vault`,go:s.flags.shushDone?'vault':'silent',tag:'Boss'},
+    {t:`Take a nap in a comfy reading chair`,if:!s.flags.rest3,act:s=>{s.flags.rest3=1;rest(s)},go:'lib',note:`You curl up in a giant velvet armchair and snooze. A floating book reads you a bedtime story. Health and abilities fully restored!`},
+    {t:`Leave the library (open the map)`,go:'map'}]},
+stacks:{t:`The Restricted Section`,i:`🔒`,
+  x:s=>`Behind a gate marked RESTRICTED (AND WE MEAN IT) the books are older, darker, and chained to the shelves. Some of them are growling.\n\nOn a stand in the middle sits a huge book with a cover made of night sky. Real stars twinkle on it. Next to it is a book with its last page torn out.`,
+  c:s=>[{t:`Tiptoe over and open the starry book`,if:!s.flags.star3,check:{st:'dex',dc:13,
+      pass:s=>{s.flags.star3=1;award(s,30);return{go:'stacks',note:`You open the starry book without a sound. Inside, nestled in a hole cut in the pages, is a STAR FRAGMENT! +30 XP.`}},
+      fail:{fight:'books',win:s=>{s.flags.star3=1;return{go:'stacks',note:`With the spellbooks beaten, you open the starry book. Inside is a STAR FRAGMENT!`}},note:`Your foot squeaks on the floor. Every book in the section turns toward you. Then they FLY.`}}},
+    {t:`Search the shelves for a missing last page`,if:!s.flags.page,check:{st:'int',dc:12,
+      pass:s=>{s.flags.page=1;return{go:'stacks',note:`You remember: lost pages always end up in the "Lost and Found" drawer. You open it. There it is: a single yellow page that says THE END at the bottom.`}},
+      fail:{fight:'books',win:s=>{s.flags.page=1;return{go:'stacks',note:`One of the beaten spellbooks flaps open, and a loose page flutters out. It says THE END at the bottom. Lucky!`}},note:`You pull the wrong book. It bites you. Its friends join in.`}}},
+    {t:`Back to the main library`,go:'lib',act:s=>{if(s.flags.star3&&s.flags.page)s.flags.stacks=1}}]},
+reading:{t:`The Reading Room`,i:`👻`,
+  x:s=>s.flags.pellDone?`The Reading Room is peaceful now. Pell's chair is empty, but her book sits on the table, closed, with a pressed flower in it.`
+   :`The Reading Room is full of cozy armchairs and soft lamps. In the best chair sits a ghost: a girl about your age, see-through and glowing faintly blue, with a book in her lap.\n\n"Oh! Hello," she whispers. "I'm Pell. I've been reading this book for three hundred years. It's SO good. But the last page is missing! I can't leave until I know how it ends."\n\nShe sighs. "I bet it's in the Restricted Section. Everything good is in the Restricted Section."`,
+  c:s=>[{t:`Give Pell the missing page`,if:!!(s.flags.page&&!s.flags.pellDone),act:s=>{s.flags.pellDone=1;s.flags.hourglass=1;s.flags.cloakw=1;s.ac+=1;award(s,60)},go:'reading',note:`Pell reads the last page. She gasps. She laughs. She cries a tiny ghost tear. "It was the BUTLER! I KNEW it!" She starts to glow brighter. "Thank you. Here's a secret: Archivist Vael keeps his life inside a golden hourglass on his desk. Smash it first, and he'll be much weaker. And take my cloak, it helps you dodge." She fades away, smiling. You got the Cloak of Whispers (+1 Armor)! +60 XP.`},
+    {t:`Back to the main library`,go:'lib'}]},
+silent:{t:`The Silent Hall`,i:`🤫`,
+  x:s=>`The hall to the Archivist's Vault is long, dark, and lined with sleeping suits of armor. A sign says: ABSOLUTELY NO NOISE. VIOLATORS WILL BE SHUSHED.\n\nAt the far end, a giant iron golem stands guard. It has a lamp for a head and one enormous finger pressed to where its lips would be. Its name tag says SHUSH.${s.flags.ally?`\n\nHoot looks at you. Hoot looks at the golem. Hoot's beak starts to open... oh no.`:''}`,
+  c:s=>[{t:`Sneak past Shush, very very quietly`,check:{st:'dex',dc:s.flags.ally?15:13,pass:s=>{s.flags.shushDone=1;return{go:'vault',note:`${s.flags.ally?'You hold Hoot\'s beak shut the whole way. ':''}Step... step... step... You slip past Shush and through the vault door. Not a sound. Ninja level: legendary.`}},
+      fail:{fight:'shush',win:s=>{s.flags.shushDone=1;return{go:'vault'}},note:s.flags.ally?`Hoot lets out the loudest HOOOOOOT in history. Shush's eyes turn red. "SHHHHHHHHH!"`:`You sneeze. In the silence, it sounds like a thunderclap. "SHHHHHHHHH!"`}}},
+    {t:`Fight the iron librarian`,fight:'shush',win:s=>{s.flags.shushDone=1;return{go:'vault'}}},
+    {t:`Back to the main library`,go:'lib'}]},
+vault:{t:`The Archivist's Vault`,i:`⏳`,
+  x:s=>`The vault is a round room filled with glass cases. Inside each case is something someone lost: a teddy bear, a love letter, a single sock, a wizard's hat. On a tall desk in the middle sits a golden hourglass, its sand glowing green.\n\nBehind the desk is a skeleton in fancy robes, wearing tiny spectacles. Archivist Vael, the Lich. The third Crown Shard floats above his bony hand.\n\n"Another item for my collection," he whispers. "A real, live hero. I'll put you in the case between the sock and the teddy bear."`,
+  c:s=>[{t:`Smash the golden hourglass first!`,if:!!s.flags.hourglass,fight:'lichweak',first:1,win:'shard3',note:`You leap onto the desk and SMASH the hourglass! Green sand explodes everywhere. Vael shrieks.`},
+    {t:`Battle the Lich!`,fight:'lich',win:'shard3',hint:s.flags.hourglass?null:`Tip: the ghost in the Reading Room might know a secret about Vael.`},
+    {t:`Back to the main library`,go:'lib'}]},
+shard3:{t:`The Third Shard`,i:`💎`,en:s=>{if(!s.flags.shard3){s.flags.shard3=1;award(s,50)}},
+  x:s=>`You grab the third Crown Shard. The moment it touches the other two, all three snap together in midair into a glowing golden crown! It hovers in front of you, humming, then gently floats down into your hands. +50 XP.\n\nEvery lost thing in the vault starts to glow, and one by one they vanish, flying home to the people who lost them. Somewhere, someone finally gets their sock back.\n\nThe Crown tugs north, toward the Obsidian Keep. It's time.`,
+  c:s=>[{t:`Open the map`,go:'map'},{t:`Return to Thornbury to rest and shop first`,go:'town'}]},
+/* ================= FINALE: THE OBSIDIAN KEEP ================= */
+keep1:{t:`The Obsidian Bridge`,i:`🌋`,cp:1,
+  x:s=>`Malgrath's Obsidian Keep is a castle of black glass on top of a volcano. The only way in is a narrow bridge over a river of bubbling lava. Lightning flickers around the towers. A sign at the start of the bridge says WELCOME, written in what you really hope is ketchup.\n\nHalfway across, two knights made of living shadow step out of the smoke. Their eyes glow purple.\n\n"None may pass," they say together, in creepy echo-voices.`,
+  c:s=>[{t:`Raise the Crown and blind them`,check:{st:'wis',dc:13,pass:{go:'keep2',note:`You raise the Crown. Golden light blasts across the bridge like a sunrise. The Shadow Knights shriek, cover their eyes, and melt into puddles of smoke.`},fail:{fight:'knights',win:'keep2',note:`The Crown flickers... but the knights pull down their visors. Clever shadows. They charge!`}}},
+    {t:`Fight the Shadow Knights!`,fight:'knights',win:'keep2'}]},
+keep2:{t:`The Hall of Mirrors`,i:`🪞`,
+  x:s=>`Inside, the keep is a maze of mirrors. Hundreds of copies of you stare back from every direction. Some of them are waving. You are NOT waving.\n\nThere are a dozen doors, but you can tell only one of them is real. The rest are reflections.`,
+  c:s=>[{t:`Look carefully for the real door`,check:{st:'wis',dc:14,pass:{go:'keep3',note:`You notice that only ONE door has its doorknob on the correct side. Ha! You stroll through it while all your reflections look jealous.`},fail:{fight:'twin',win:'keep3',note:`You pick a door. It's a mirror. You bonk your face. One of your reflections laughs, then climbs out of the glass!`}}},
+    {t:`Smash the mirrors until you find the way`,fight:'twin',win:'keep3',note:`You smash the first mirror. Your reflection in the next one does NOT like that.`}]},
+keep3:{t:`The Last Campfire`,i:`🔥`,cp:1,en:s=>{if(!s.flags.lastRest){s.flags.lastRest=1;rest(s)}},
+  x:s=>`Past the mirrors you find a small quiet room with a fireplace. The fire flickers, and Fizzwick's face appears in the flames.\n\n"Psst! Hero! Can you hear me? Splendid! I've used a little magic to heal you up. Malgrath is right through that big door. Be brave!"\n\n${starN(s)===3?`He peers at your pack. "And you found ALL THREE Star Fragments! Oh, excellent. When the moment is right, you'll know what to do with them."`:`He looks worried. "If only you'd found all three Star Fragments... no matter. You'll just have to beat him the old-fashioned way. With bonking."`}\n\nThe fire pops, and he's gone. You feel fully rested.${s.flags.ally?' Hoot snuggles against your leg for courage.':''}`,
+  c:s=>[{t:`Push open the great door`,go:'throneM'}]},
+throneM:{t:`Malgrath's Throne Room`,i:`🧙`,
+  x:s=>`The throne room is enormous and dark, lit only by purple flames in iron bowls. On a throne of black glass sits Malgrath the Sorcerer: tall, thin, with a long gray beard, a crooked staff, and very sad eyes.\n\nHe stands. "The Crown. You brought it right to me. How thoughtful."\n\n"Do you know why I broke it, hero? Because once, long ago, I was the Queen's royal wizard. Then a curse of shadow crept into my heart, and Queen Isolde's mother banished me. Ever since, the shadow has grown and grown, and now..."\n\nHis eyes flash purple. "Now there's not much of the old me left. GIVE ME THE CROWN!"`,
+  c:s=>[{t:`Battle Malgrath!`,fight:'malg1',win:'phase2'}]},
+phase2:{t:`Malgrath Unbound`,i:`👿`,cp:1,en:s=>{if(!s.flags.p2){s.flags.p2=1;rest(s)}},
+  x:s=>`Malgrath falls to one knee. For a moment, his eyes turn kind and gray. "Please..." he whispers. "Help me..."\n\nThen the shadow inside him ROARS. It bursts out of him like black smoke and swallows him whole. When it clears, Malgrath is gone. In his place stands a huge horned monster of shadow, ten feet tall, with eyes like purple fire.\n\nThe Crown in your hands blazes with light, and warmth floods through you. You are fully healed!${s.flags.ally?' Hoot puffs up all his feathers and growls a brave little growl.':''}${starN(s)===3?`\n\nIn your pack, the three Star Fragments start to glow and sing...`:''}`,
+  c:s=>[{t:`Throw the three Star Fragments into the shadow!`,if:starN(s)===3,act:s=>s.flags.peace=1,go:'victory'},
+    {t:`Fight Malgrath Unbound!`,fight:'malg2',win:'victory',hint:`Tip: shadow creatures HATE the Crown's light. Raise it in the fight!`}]},
+victory:{t:`Champion of Eldermoor`,i:`🏆`,type:'end',en:s=>{s.gold+=500;const w=store.get(WINS)||{};w[s.cls]=(w[s.cls]||0)+1;store.set(WINS,w);store.del(SAVE)},
+  x:s=>`${s.flags.peace?`You throw the three Star Fragments into the heart of the shadow. They burst into a blinding white light, brighter than a thousand suns, and the shadow monster screams... and then goes quiet.\n\nWhen the light fades, an old man is sitting on the floor, blinking. Malgrath. The real Malgrath, with kind gray eyes, a messy beard, and no shadow at all.\n\n"Oh my," he says. "Oh my, oh my. I'm free." He starts to cry, then laugh, then both. "Thank you, hero. Thank you."\n\nYou didn't just defeat the villain. You SAVED him. That's the rarest kind of hero there is.\n\n`:`The Crown's golden light pours over Malgrath Unbound, and with one last roar the shadow shatters like glass. Where it stood, an old, tired man lies sleeping peacefully. The curse is broken.\n\n`}You carry the Crown of Eldermoor home to Thornbury.\n\nThe whole kingdom is waiting. When Queen Isolde places the Crown back on her head, golden light ripples out across the land. Every shadow in Eldermoor shrinks back to normal size. Flowers bloom. The royal goat faints from happiness.\n\nThe Queen raises her sword and taps you on each shoulder. "Arise, ${s.name}, CHAMPION OF ELDERMOOR!" The crowd goes wild. You receive 500 gold and your very own castle bedroom (with a slide).${s.flags.ally?`\n\nHoot the owlbear is named Royal Hugger. He takes the job very seriously.`:''}${s.flags.peace?`\n\nMalgrath moves back into the castle and becomes Fizzwick's assistant. They argue about everything. They're best friends within a week.`:`\n\nFizzwick says that if you'd found all three Star Fragments, the story might have ended a little differently. Maybe next adventure...`}\n\nTHE END. (For now.)`},
+};
+
+const $=s=>document.querySelector(s);
+const R=n=>1+Math.floor(Math.random()*n);
+const dice=(c,d,b=0)=>{let t=b;for(let i=0;i<c;i++)t+=R(d);return t};
+const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const SAVE=GAME.key+'_save_v2', WINS=GAME.key+'_wins_v1';
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const STATN={str:'Strength',dex:'Dexterity',int:'Intelligence',wis:'Wisdom'};
+const CL={
+  fighter:{name:'Fighter',i:'🛡️',blurb:'Tough as nails. Big sword, heavy armor, hard to knock down.',hp:14,lv:7,ac:16,st:{str:3,dex:1,int:0,wis:0},
+    wpn:{n:'Longsword',c:1,d:8,s:'str'},sw:'Longsword',sp:{n:'Second Wind',d:'Heal 1d10 + your level',uses:2,k:'heal'}},
+  ranger:{name:'Ranger',i:'🏹',blurb:'Expert tracker and archer. Marks a target and never lets it go.',hp:12,lv:6,ac:14,st:{str:1,dex:3,int:0,wis:1},
+    wpn:{n:'Longbow',c:1,d:8,s:'dex'},sw:'Longbow',sp:{n:'Hunter\'s Mark',d:'Mark the monster and shoot. Every hit this fight does +1d6',uses:2,k:'mark'}},
+  rogue:{name:'Rogue',i:'🗡️',blurb:'Sneaky and quick. Great at tricks, traps and surprise attacks.',hp:11,lv:6,ac:14,st:{str:0,dex:3,int:1,wis:1},
+    wpn:{n:'Shortsword',c:1,d:6,s:'dex'},sw:'Shortsword',sp:{n:'Sneak Attack',d:'Roll twice, keep the best. +2d6 damage on a hit',uses:2,k:'sneak'}},
+  druid:{name:'Druid',i:'🌿',blurb:'Nature magic. Lashes foes with thorns and can turn into a bear!',hp:10,lv:6,ac:13,st:{str:0,dex:1,int:1,wis:3},
+    wpn:{n:'Thorn Whip',c:1,d:8,s:'wis'},sw:'Oak Staff',sp:{n:'Wild Shape: Bear',d:'Become a bear! Gain 2d6 + level bonus HP and +2 damage this fight',uses:2,k:'bear'}},
+  wizard:{name:'Wizard',i:'🔮',blurb:'Fragile but brilliant. Throws fire and magic darts that never miss.',hp:9,lv:5,ac:12,st:{str:-1,dex:1,int:3,wis:1},
+    wpn:{n:'Fire Bolt',c:1,d:10,s:'int'},sw:'Wand',sp:{n:'Magic Missile',d:'3 glowing darts that never miss (1d4+1 each)',uses:3,k:'missile'}},
+  cleric:{name:'Cleric',i:'☀️',blurb:'Holy warrior. Heals wounds and burns monsters with sacred fire.',hp:11,lv:6,ac:15,st:{str:1,dex:0,int:0,wis:3},
+    wpn:{n:'Sacred Flame',c:1,d:8,s:'wis'},sw:'Holy Symbol',sp:{n:'Cure Wounds',d:'Heal 1d8 + 3 + your level',uses:2,k:'cure'}},
+};
+const RACES={
+  human:{name:'Human',i:'🧑',blurb:'Brave and adaptable.',st:{str:1,dex:1,int:1,wis:1},perk:'Versatile: +1 to every ability.'},
+  elf:{name:'Elf',i:'🧝',blurb:'Graceful forest folk with sharp eyes.',st:{dex:2,wis:1},perk:'Keen Senses: +2 extra on Wisdom checks.'},
+  tiefling:{name:'Tiefling',i:'😈',blurb:'Horns, a tail, and fire in the blood.',st:{int:2,wis:1},perk:'Hellish Rebuke: the first time a monster hits you in a fight, flames burn it for 2d6.'},
+  dwarf:{name:'Dwarf',i:'🧔',blurb:'Stout, stubborn, and hard as stone.',st:{str:2,wis:1},perk:'Dwarven Toughness: +3 HP, plus 1 more every level.'},
+  halfling:{name:'Halfling',i:'🧒',blurb:'Small, cheerful, and amazingly lucky.',st:{dex:2,int:1},perk:'Lucky: start with a free lucky charm to reroll a failed check.'},
+  dragonborn:{name:'Dragonborn',i:'🐲',blurb:'Proud dragon folk with scales of bronze.',st:{str:2,wis:1},perk:'Dragon Breath: once per fight, breathe fire for 2d6 + level damage.'},
+};
+const heroStats=(c,r)=>{const o={...CL[c].st};for(const k in RACES[r].st)o[k]+=RACES[r].st[k];return o};
+const silverName=s=>GAME.silver+' '+CL[s.cls].sw;
+
+let S=null, C=null, busy=false, screen='title', cur=[];
+const cls=()=>CL[S.cls], race=()=>RACES[S.race];
+const toHit=()=>S.st[cls().wpn.s]+(S.lvl>=6?4:S.lvl>=3?3:2)+(S.diff==='easy'?2:0);
+const dmgB=()=>S.st[cls().wpn.s]+(S.flags.silver?2:0)+(C&&C.bear?2:0);
+const wpnName=()=>S.flags.silver?silverName(S):cls().wpn.n;
+function hurt(n){S.hp=Math.max(1,S.hp-n)}
+function heal(n){const b=S.hp;S.hp=Math.min(S.max,S.hp+n);return S.hp-b}
+function rest(s){s.hp=s.max;s.uses=CL[s.cls].sp.uses}
+const LV=GAME.lv||[0,100,300,600,1000];const LVMAX=LV.length;
+function gainXP(n){S.xp+=n;let out='';while(S.lvl<LVMAX&&S.xp>=LV[S.lvl]){S.lvl++;const g=cls().lv+(S.race==='dwarf'?1:0);S.max+=g;S.hp=S.max;S.uses=cls().sp.uses;
+  out+=`<div class="lvup">LEVEL UP! You are now level ${S.lvl}. +${g} max HP${S.lvl===3||S.lvl===6?', and your attacks get more accurate':''}. Health and abilities restored!</div>`}return out}
+function pickRiddle(s){let used=s.flags.used||[];let av=RIDDLES.map((_,i)=>i).filter(i=>!used.includes(i));if(!av.length){used=[];av=RIDDLES.map((_,i)=>i)}
+  const i=pick(av);used.push(i);s.flags.used=used;s.flags.rq=i;s.flags.ro=shuffle([RIDDLES[i][1],...RIDDLES[i][2]])}
+
+/* ---------- FLOW ---------- */
+function save(){if(S&&S.node!=='victory')store.set(SAVE,S)}
+function makeCp(){S.cp=null;S.cp=JSON.stringify(S)}
+function restoreCp(){const cp=S.cp;S=JSON.parse(cp);S.cp=cp;rest(S);S.mode='story';S.note='Everything went dark... then a warm voice whispered, "Not yet, hero." You wake up at your last safe spot, fully healed. Let\'s try that again!';C=null;busy=false;save();render()}
+function go(t,note){
+  if(typeof t==='function')t=t(S);
+  if(t&&typeof t==='object'){if(t.fight)return startCombat(t.fight,t.win,t.first,t.note||note);note=t.note||note;t=t.go}
+  S.note=note||'';S.node=t;S.mode='story';const n=N[t];if(n.en)n.en(S);
+  if(n.cp)makeCp();save();render();window.scrollTo(0,0);
+  if(S.flags.pendingLv){const l=S.flags.pendingLv;S.flags.pendingLv='';msg('Level up!',l,'Awesome!')}
+}
+function choose(i){
+  const ch=cur[i];if(!ch||busy)return;
+  if(ch.cost){if(S.gold<ch.cost)return;S.gold-=ch.cost}
+  if(ch.act)ch.act(S);
+  if(ch.check)return doCheck(ch);
+  if(ch.rand&&Math.random()<ch.rand)return startCombat(pick(ch.pool||MINOR),ch.go,0,ch.lurk||'Something lurks in the tunnel ahead!');
+  if(ch.fight)return go(ch);
+  go(ch.go,ch.note);
+}
+function checkBonus(st){return S.st[st]+(S.race==='elf'&&st==='wis'?2:0)}
+function doCheck(ch){const k=ch.check;
+  rollD20({kind:'check',title:`${STATN[k.st]} check`,sub:ch.t,bonus:checkBonus(k.st),blabel:k.st.toUpperCase(),target:k.dc,tlabel:'needed'},ok=>go(ok?k.pass:k.fail))}
+
+/* ---------- DICE OVERLAY ---------- */
+const D20=`<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,3 93,27 93,73 50,97 7,73 7,27" fill="var(--torch)" stroke="var(--dieline)" stroke-width="3"/><polygon points="50,24 79,70 21,70" fill="var(--torch2)" stroke="var(--dieline)" stroke-width="2"/><g stroke="var(--dieline)" stroke-width="2"><line x1="50" y1="3" x2="50" y2="24"/><line x1="93" y1="27" x2="79" y2="70"/><line x1="7" y1="27" x2="21" y2="70"/><line x1="93" y1="73" x2="79" y2="70"/><line x1="7" y1="73" x2="21" y2="70"/><line x1="50" y1="97" x2="79" y2="70"/><line x1="50" y1="97" x2="21" y2="70"/><line x1="7" y1="27" x2="50" y2="24"/><line x1="93" y1="27" x2="50" y2="24"/></g></svg>`;
+function openOv(html){$('#ovbox').innerHTML=html;$('#ov').hidden=false}
+function closeOv(){$('#ov').hidden=true}
+function msg(title,body,btn,cb){openOv(`<h3>${title}</h3><div class="body">${body}</div><div class="btns"><button class="big" id="ovOk">${btn||'Continue'}</button></div>`);
+  $('#ovOk').onclick=()=>{closeOv();cb&&cb()};$('#ovOk').focus()}
+function rollD20(o,cb){
+  openOv(`<h3>${o.title}</h3><div class="sub">${o.sub||''}</div>
+   <div class="die" id="die">${D20}<span class="num" id="dn">20</span></div>
+   <div class="res" id="dres">${o.kind==='check'?`Roll a d20 and add your ${o.blabel} bonus (${sign(o.bonus)}). You need ${o.target} or more.`:''}</div>
+   <div class="verdict" id="dv"></div><div class="btns" id="db"></div>`);
+  const db=$('#db');
+  const spin=()=>{
+    db.innerHTML='';$('#dv').textContent='';$('#dv').className='verdict';
+    const die=$('#die');die.className='die spin';
+    const r1=R(20),r2=o.adv?R(20):null,nat=r2?Math.max(r1,r2):r1;
+    const dur=REDUCED?150:850;const t0=performance.now();
+    const tick=()=>{if(performance.now()-t0<dur){$('#dn').textContent=R(20);setTimeout(tick,55)}else land()};
+    const land=()=>{
+      $('#dn').textContent=nat;die.className='die land'+(nat===20?' crit':nat===1?' fumble':'');
+      const tot=nat+o.bonus;
+      const ok=o.kind==='check'?(nat===20||tot>=o.target):(nat===20||(nat!==1&&tot>=o.target));
+      $('#dres').innerHTML=`${r2?`You rolled ${r1} and ${r2}, keeping ${nat}.<br>`:''}${nat} ${sign(o.bonus)} ${o.blabel} = <b>${tot}</b> &nbsp;·&nbsp; ${o.tlabel} ${o.target}`;
+      const v=$('#dv');
+      if(nat===20){v.textContent=o.kind==='check'?'Natural 20!':'Critical hit!';v.classList.add('crit')}
+      else if(nat===1&&o.kind!=='check'){v.textContent='Oops! Natural 1';v.classList.add('bad')}
+      else{v.textContent=ok?(o.kind==='check'?'Success!':'Hit!'):(o.kind==='check'?'Failed!':'Miss!');v.classList.add(ok?'ok':'bad')}
+      if(o.auto){let done=false;const fin=()=>{if(done)return;done=true;closeOv();cb(ok,nat)};
+        db.innerHTML=`<button class="ghost" id="dgo">Continue</button>`;$('#dgo').onclick=fin;setTimeout(fin,REDUCED?900:1300);return}
+      const canLuck=!ok&&S.inv.luck>0;
+      db.innerHTML=(canLuck?`<button class="big" id="dluck">Use your ${GAME.luck} (reroll)</button>`:'')+`<button class="${canLuck?'ghost':'big'}" id="dgo">Continue</button>`;
+      $('#dgo').onclick=()=>{closeOv();cb(ok,nat)};$('#dgo').focus();
+      if($('#dluck'))$('#dluck').onclick=()=>{S.inv.luck--;$('#dres').textContent='Your lucky charm glows... roll again!';spin()};
+    };
+    tick();
+  };
+  if(o.kind==='check'){db.innerHTML=`<button class="big" id="droll">Roll the d20!</button>`;$('#droll').onclick=spin;$('#droll').focus()}else spin();
+}
+
+/* ---------- COMBAT ---------- */
+function startCombat(id,win,first,note){
+  const b=MON[id],easy=S.diff==='easy',hp=easy?Math.ceil(b.hp*.8):b.hp;
+  C={id,m:{...b,hp,max:hp,atk:b.atk-(easy?1:0)},win,from:S.node,round:1,log:[],lan:false,hit:false,thp:0,bear:false,mark:false,breathUsed:false,rebuked:false};
+  if(note)C.log.unshift({c:'n',t:note});C.log.unshift({c:'n',t:b.intro});
+  if(first){const d=dice(cls().wpn.c,cls().wpn.d,dmgB());C.m.hp-=d;C.log.unshift({c:'p',t:`Free hit! You strike first for ${d} damage.`})}
+  S.mode='combat';busy=false;render();window.scrollTo(0,0);
+}
+const log=(c,t)=>C.log.unshift({c,t});
+function hitFoe(n){C.m.hp-=n;C.hit=true}
+function attack(kind){
+  if(busy)return;busy=true;const w=cls().wpn,sneak=kind==='sneak';if(sneak)S.uses--;render();
+  rollD20({kind:'atk',title:sneak?'Sneak Attack!':(C.bear?'Bear Swipe!':wpnName()),sub:`vs ${C.m.n}`,bonus:toHit(),blabel:'',target:C.m.ac,tlabel:'Armor',adv:sneak,auto:1},(ok,nat)=>{
+    if(ok){const cm=nat===20?2:1;let d=dice(w.c*cm,w.d,dmgB()),ex=[];
+      if(sneak){const s=dice(2*cm,6);d+=s;ex.push(`${s} sneak`)}
+      if(C.mark){const s=dice(cm,6);d+=s;ex.push(`${s} from Hunter's Mark`)}
+      hitFoe(d);log('p',`${nat===20?'CRITICAL HIT! ':''}${C.bear?'Your giant bear claws hit':'Your '+wpnName()+' hits'} the ${C.m.n} for ${d} damage${ex.length?` (${ex.join(', ')})`:''}!`)}
+    else log('p',nat===1?pick(['You trip over your own feet. Miss!','Your weapon slips out of your hand for a second. Miss!','You sneeze at the worst possible moment. Miss!']):`You miss the ${C.m.n}!`);
+    after();
+  });
+}
+function special(){
+  if(busy||S.uses<1)return;const sp=cls().sp;
+  if(sp.k==='sneak')return attack('sneak');
+  if(sp.k==='mark'){if(C.mark)return;S.uses--;C.mark=true;log('p',`You fix your eyes on the ${C.m.n}. It's MARKED. It can't hide from you now!`);return attack('atk')}
+  busy=true;S.uses--;
+  if(sp.k==='bear'){if(C.bear){busy=false;S.uses++;return}const t=dice(2,6,S.lvl);C.thp+=t;C.bear=true;log('h',`You drop to all fours, fur bursts out, and you ROAR! You're a giant bear: +${t} bonus HP and +2 damage this fight.`)}
+  else if(sp.k==='missile'){const a=[dice(1,4,1),dice(1,4,1),dice(1,4,1)],t=a[0]+a[1]+a[2];hitFoe(t);log('p',`Three glowing darts zip from your fingers: ${a.join(' + ')} = ${t} damage!`)}
+  else{const n=sp.k==='heal'?dice(1,10,S.lvl):dice(1,8,3+S.lvl);const g=heal(n);log('h',sp.k==='heal'?`You catch your breath and power through. +${g} HP!`:`Healing light flows over your wounds. +${g} HP!`)}
+  after();
+}
+function potion(){if(busy||S.inv.potion<1)return;busy=true;S.inv.potion--;const g=heal(dice(2,4,2));log('h',`${GAME.sip||'Glug glug. The potion tastes like cherries.'} +${g} HP!`);after()}
+function relic(){if(busy||C.lan)return;busy=true;C.lan=true;const d=dice(3,8,2);hitFoe(d);log('p',`${GAME.relic.log} The ${C.m.n} shrieks: ${d} damage!`);after()}
+function dbreath(){if(busy||C.breathUsed)return;busy=true;C.breathUsed=true;const d=dice(2,6,S.lvl);hitFoe(d);log('p',`You take a deep breath and blast a cone of dragon fire! ${d} damage!`);after()}
+function flee(){if(busy||C.m.boss)return;busy=true;render();
+  rollD20({kind:'atk',title:'Run away!',sub:'Dexterity check',bonus:S.st.dex,blabel:'DEX',target:12,tlabel:'needed',auto:1},ok=>{
+    if(ok){const f=C.from;C=null;busy=false;go(f,'You run for it and get away! Phew.');return}
+    log('n','You try to run, but you can\'t get away!');after()})}
+function after(){
+  render();
+  if(C.m.hp<=0)return setTimeout(winFight,550);
+  setTimeout(()=>{
+    if(S.flags.ally){const d=dice(1,4,1+(GAME.allyScale?Math.floor(S.lvl/2):0));hitFoe(d);log('a',pick(GAME.ally.lines).replace('{d}',d));
+      if(C.m.hp<=0){render();return setTimeout(winFight,550)}}
+    foeTurn();C.round++;busy=false;render();
+    if(C.m.hp<=0)return setTimeout(winFight,550);
+    if(S.hp<=0)setTimeout(lose,600);
+  },650);
+}
+function hurtP(d){
+  if(C.thp>0){const a=Math.min(C.thp,d);C.thp-=a;d-=a;if(C.thp<=0&&C.bear){C.bear=false;log('n','POOF! Your bear form wears off and you turn back into yourself.')}}
+  S.hp-=d;
+}
+function foeTurn(){
+  const m=C.m;const before=S.hp+C.thp;let hit=false;
+  if(m.breath&&C.round%3===0){const r=R(20),sv=r+S.st.dex;let d=dice(m.bd||3,6);const ok=r===20||sv>=13;if(ok)d=Math.floor(d/2);hurtP(d);hit=true;
+    log('m',`${m.bt} You dive for cover (${r}${sign(S.st.dex)} = ${sv} vs 13) ${ok?'and only get grazed':'but it catches you'}: ${d} damage!`)}
+  else{const r=R(20),tot=r+m.atk;
+    if(r===20||(r!==1&&tot>=S.ac)){const d=dice(m.dmg[0]*(r===20?2:1),m.dmg[1],m.dmg[2]);hurtP(d);hit=true;log('m',`${r===20?'Critical! ':''}The ${m.n} ${m.v} you for ${d} damage!`)}
+    else log('n',`The ${m.n} ${m.v} you, but misses! (rolled ${tot} vs your Armor ${S.ac})`);
+    if(m.breath&&C.round%3===2)log('n',m.tele)}
+  if(hit&&S.race==='tiefling'&&!C.rebuked&&S.hp>0){C.rebuked=true;const d=dice(2,6);hitFoe(d);log('p',`Hellish Rebuke! Your eyes flash red and flames burst around the ${m.n}: ${d} damage!`)}
+  if(S.hp+C.thp<before){document.body.classList.remove('ouch');void document.body.offsetWidth;document.body.classList.add('ouch')}
+}
+function winFight(){
+  const m=C.m;S.kills[C.id]=(S.kills[C.id]||0)+1;S.gold+=m.gold;const lv=gainXP(m.xp);busy=false;
+  msg('Victory!',`<p>${m.bye}</p><p><b>+${m.xp} XP</b>${m.gold?` &nbsp;·&nbsp; <b>+${m.gold} gold</b>`:''}</p>${lv}`,'Continue',()=>{const w=C.win;C=null;go(w)});
+}
+function lose(){busy=true;msg('You have fallen...','<p>The world spins, and everything goes dark.</p><p>But heroes don\'t give up that easily.</p>','Rise again',()=>restoreCp())}
+
+/* ---------- RENDER ---------- */
+const paras=t=>t.split('\n\n').map(p=>`<p>${p}</p>`).join('');
+function renderBar(){
+  const b=$('#bar');if(!S||screen!=='game'){b.hidden=true;return}b.hidden=false;const c=cls();
+  const nx=S.lvl<LVMAX?LV[S.lvl]:S.xp,pv=LV[S.lvl-1],xpP=S.lvl<LVMAX?Math.round((S.xp-pv)/(nx-pv)*100):100;
+  const thp=C&&C.thp>0?` <span class="thp">+${C.thp} bear</span>`:'';
+  b.innerHTML=`<div class="bar-in"><button class="who" id="sheetBtn" aria-label="Open hero sheet"><span class="ico">${C&&C.bear?'🐻':c.i}</span><span><b>${S.name}</b><small>Lv ${S.lvl} ${race().name} ${c.name}</small></span></button>
+   <div class="vitals"><div class="vit-row"><span>Health${thp}</span><span>${Math.max(0,S.hp)} / ${S.max}</span></div><div class="track"><i style="width:${Math.max(0,S.hp)/S.max*100}%"></i></div>
+   <div class="track xp" title="Experience"><i style="width:${xpP}%"></i></div></div>
+   <div class="purse"><span class="g">${S.gold} gold</span><span>🧪 ${S.inv.potion}</span></div></div>`;
+  $('#sheetBtn').onclick=sheet;
+}
+function render(){
+  renderBar();const m=$('#main');
+  if(screen==='title')return renderTitle(m);
+  if(screen==='create')return renderCreate(m);
+  if(S.mode==='combat')return renderCombat(m);
+  renderNode(m);
+}
+function renderNode(m){
+  const n=N[S.node];let h=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">${n.i}</div><h2>${n.t}</h2></div>`;
+  if(S.note)h+=`<div class="note"><span>What happened</span><p>${S.note}</p></div>`;
+  h+=paras(n.x(S));
+  if(n.type==='shop')h+=`<div class="shop">${SHOP.map((it,i)=>{const own=S.inv[it.k],full=it.max&&own>=it.max;
+    return `<div class="item"><div><b>${it.n}${own?` <small>(you have ${own})</small>`:''}</b><small>${it.d}</small></div><button class="buy" data-buy="${i}" ${full||S.gold<it.p?'disabled':''}>${full?'Owned':it.p+' gold'}</button></div>`}).join('')}</div>`;
+  const q=n.type==='riddle'?(n.q||RIDDLES[S.flags.rq]):null;
+  if(q&&!(n.done&&n.done(S)))h+=`<div class="riddle"><q>${q[0]}</q><div class="opts">${S.flags.ro.map((o,i)=>`<button class="ch" data-r="${i}"><span class="arr">›</span><span class="lab">${o}</span></button>`).join('')}</div></div>`;
+  if(n.type==='end'){const k=Object.values(S.kills).reduce((a,b)=>a+b,0);h+=`<div class="summary"><div><b>${S.lvl}</b><small>Level</small></div><div><b>${k}</b><small>Monsters beaten</small></div><div><b>${S.gold}</b><small>Gold</small></div></div>`}
+  h+='</article>';
+  cur=n.c?n.c(S).filter(c=>c.if!==false):[];
+  if(cur.length){h+=`<div class="choices">${cur.map((c,i)=>{let tag='';
+    if(c.check)tag=`<span class="tag chk">${c.check.st.toUpperCase()} ${c.check.dc}</span>`;else if(c.fight)tag=`<span class="tag bat">Battle</span>`;else if(c.cost)tag=`<span class="tag gold">${c.cost} gold</span>`;else if(c.tag)tag=`<span class="tag bat">${c.tag}</span>`;
+    return `<button class="ch" data-c="${i}" ${c.cost&&S.gold<c.cost?'disabled':''}><span class="arr">›</span><span class="lab">${c.t}</span>${tag}</button>`}).join('')}</div>`;
+    const hint=cur.find(c=>c.hint);if(hint)h+=`<div class="hint">${hint.hint}</div>`}
+  if(n.type==='end')h+=`<div class="choices"><button class="big" id="again">Play again with a new hero</button></div><p class="hint">Can you win with all six classes? Try a different path too. There are secrets you haven't found yet.</p>`;
+  m.innerHTML=h;
+  m.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>choose(+b.dataset.c));
+  m.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=SHOP[+b.dataset.buy];if(S.gold<it.p)return;S.gold-=it.p;S.inv[it.k]++;S.note=`You bought: ${it.n}.`;save();render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const ok=S.flags.ro[+b.dataset.r]===q[1];go(ok?n.ok:n.bad,ok?'':`The answer was: ${q[1]}.`)});
+  if($('#again'))$('#again').onclick=()=>{S=null;screen='create';render()};
+}
+function renderCombat(m){
+  const f=C.m,c=cls(),sp=c.sp,w=c.wpn,d=busy;
+  const spOff=d||S.uses<1||(sp.k==='mark'&&C.mark)||(sp.k==='bear'&&C.bear);
+  let h=`<article class="card"><div class="foe" id="foe"><div class="foe-ico" aria-hidden="true">${f.i}</div><h2>${f.n}</h2>
+   <div class="track"><i style="width:${Math.max(0,f.hp)/f.max*100}%"></i></div><div class="foe-meta"><span>${Math.max(0,f.hp)} / ${f.max} HP</span><span>Armor ${f.ac}</span><span>Round ${C.round}</span></div>
+   ${C.mark||C.bear?`<div class="status">${C.mark?'<span>Marked</span>':''}${C.bear?'<span>You are a bear</span>':''}</div>`:''}</div>
+   <div class="acts">`;
+  if(S.flags.lantern&&f.lantern&&!C.lan)h+=`<button class="act lan" id="aL" ${d?'disabled':''}><b>${GAME.relic.btn}</b><small>${GAME.relic.desc}</small></button>`;
+  h+=`<button class="act main" id="aA" ${d?'disabled':''}><b>Attack: ${C.bear?'Bear Claws':wpnName()}</b><small>d20 ${sign(toHit())} to hit · ${w.c}d${w.d}${sign(dmgB())} damage${C.mark?' +1d6':''}</small></button>
+   <button class="act" id="aS" ${spOff?'disabled':''}><b>${sp.n}</b><small>${sp.d} · ${S.uses} left</small></button>
+   <button class="act" id="aP" ${d||S.inv.potion<1||S.hp>=S.max?'disabled':''}><b>Healing Potion</b><small>Heal 2d4+2 · ${S.inv.potion} left</small></button>
+   ${S.race==='dragonborn'?`<button class="act" id="aB" ${d||C.breathUsed?'disabled':''}><b>Dragon Breath</b><small>2d6${sign(S.lvl)} fire damage · ${C.breathUsed?'used':'once per fight'}</small></button>`:''}
+   <button class="act" id="aR" ${d||f.boss?'disabled':''}><b>Run away</b><small>${f.boss?'You can\'t run from a boss!':'Dexterity check, need 12'}</small></button>
+   </div><div class="log" aria-live="polite">${C.log.slice(0,6).map(l=>`<div class="${l.c}">${l.t}</div>`).join('')}</div></article>`;
+  m.innerHTML=h;
+  if(C.hit){C.hit=false;$('#foe').classList.add('hit')}
+  $('#aA').onclick=()=>attack('atk');$('#aS').onclick=special;$('#aP').onclick=potion;$('#aR').onclick=flee;
+  if($('#aL'))$('#aL').onclick=relic;if($('#aB'))$('#aB').onclick=dbreath;
+}
+function sheet(){
+  const c=cls(),items=[];if(S.inv.potion)items.push(`${S.inv.potion} Healing Potion${S.inv.potion>1?'s':''}`);if(S.inv.rope)items.push(SHOP.find(x=>x.k==='rope').n);if(S.inv.luck)items.push(GAME.luck);
+  GAME.items.forEach(([f,l])=>{if(S.flags[f])items.push(l)});
+  const k=Object.entries(S.kills).map(([id,n])=>`${MON[id].n}${n>1?' ×'+n:''}`).join(', ')||'None yet';
+  msg(`${S.name}`,`<div style="text-align:center;color:var(--mute);font-weight:700">Level ${S.lvl} ${race().name} ${c.name} · ${S.xp} XP${S.lvl<LVMAX?` (next level at ${LV[S.lvl]})`:''}</div>
+   <div class="sheet-stats">${Object.keys(STATN).map(s=>`<div><b>${sign(S.st[s])}</b><small>${s.toUpperCase()}</small></div>`).join('')}</div>
+   <div class="kv"><div><span>Health</span><b>${S.hp} / ${S.max}</b></div><div><span>Armor</span><b>${S.ac}</b></div><div><span>Weapon</span><b>${wpnName()} (${c.wpn.c}d${c.wpn.d}${sign(dmgB())})</b></div>
+   <div><span>${c.sp.n}</span><b>${S.uses} / ${c.sp.uses} left</b></div><div><span>${race().name} power</span><b>${race().perk}</b></div><div><span>Gold</span><b>${S.gold}</b></div><div><span>Items</span><b>${items.join(', ')||'Nothing'}</b></div>
+   ${S.flags.ally?`<div><span>Companion</span><b>${GAME.ally.name}</b></div>`:''}<div><span>Monsters beaten</span><b>${k}</b></div></div>`,'Back to the adventure');
+}
+function renderTitle(m){
+  const w=store.get(WINS)||{},sv=store.get(SAVE);
+  m.innerHTML=`<div class="title"><div class="lantern" aria-hidden="true">${GAME.icon}</div><h1>${GAME.title}</h1><div class="tag-line">${GAME.tagline}</div>
+   <div class="menu">${sv?`<button class="big" id="cont">Continue: ${sv.name} the ${RACES[sv.race].name} ${CL[sv.cls].name}</button><button class="ghost" id="nw">Start a new adventure</button>`:`<button class="big" id="nw">Start a new adventure</button>`}</div></div>
+   <div class="trophies"><h3>Classes that beat the game</h3><div class="tro">${Object.entries(CL).map(([k,c])=>`<span class="${w[k]?'won':''}"><i>${c.i}</i>${c.name}</span>`).join('')}</div></div>
+   <details><summary>How to play</summary><ul>
+   <li>Read what happens, then tap a choice to decide what your hero does.</li>
+   <li>Choices with a blue tag like <b>DEX 13</b> are checks. Roll a 20-sided die (d20) and add your bonus. Get 13 or more to succeed. A natural 20 always works!</li>
+   <li>In battle, roll to hit. You need to match or beat the monster's Armor number.</li>
+   <li>Your race gives you a special power, and your class gives you another. Try different combos!</li>
+   <li>Win battles to earn XP and level up. Gold buys potions at the shop.</li>
+   <li>If you fall, you'll wake up at the last safe spot. Your game saves itself as you go.</li>
+   <li>Tap your hero's name at the top to see your hero sheet.</li></ul></details>`;
+  $('#nw').onclick=()=>{screen='create';render()};
+  if($('#cont'))$('#cont').onclick=()=>{S=sv;screen='game';S.mode='story';render()};
+}
+let pickC='fighter',pickR='human',pickD='normal',pickN='';
+function renderCreate(m){
+  const st=heroStats(pickC,pickR),hp=CL[pickC].hp+(pickR==='dwarf'?3:0);
+  m.innerHTML=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">📜</div><h2>Create your hero</h2></div>
+   <label class="f" for="hn">Hero name</label><input type="text" id="hn" maxlength="16" placeholder="Leave blank for a random name" value="${pickN}">
+   <label class="f">Choose your race</label><div class="grid races">${Object.entries(RACES).map(([k,r])=>`<button class="cls ${k===pickR?'sel':''}" data-r="${k}"><span class="ci">${r.i}</span><b>${r.name}</b><small>${r.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${RACES[pickR].name} power</b> ${RACES[pickR].perk}</div>
+   <label class="f">Choose your class</label><div class="grid">${Object.entries(CL).map(([k,c])=>`<button class="cls ${k===pickC?'sel':''}" data-k="${k}"><span class="ci">${c.i}</span><b>${c.name}</b><small>${c.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${CL[pickC].sp.n}</b> ${CL[pickC].sp.d}.</div>
+   <div class="preview"><div class="pv-name">${RACES[pickR].name} ${CL[pickC].name}</div><div class="pv-st">
+     <span><em>HP</em> ${hp}</span><span><em>Armor</em> ${CL[pickC].ac}</span>${Object.keys(STATN).map(s=>`<span><em>${s.toUpperCase()}</em> ${sign(st[s])}</span>`).join('')}</div></div>
+   <label class="f">Difficulty</label><div class="seg"><button data-d="normal" class="${pickD==='normal'?'sel':''}">Normal<small>Real D&amp;D danger</small></button><button data-d="easy" class="${pickD==='easy'?'sel':''}">Easy<small>Weaker monsters, better aim</small></button></div>
+   <div class="choices"><button class="big" id="go">Begin the adventure</button><button class="ghost" id="bk">Back</button></div></article>`;
+  $('#hn').oninput=e=>pickN=e.target.value;
+  m.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{pickC=b.dataset.k;render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{pickR=b.dataset.r;render()});
+  m.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{pickD=b.dataset.d;render()});
+  $('#bk').onclick=()=>{screen='title';render()};
+  $('#go').onclick=()=>{
+    const n=(pickN||'').replace(/[^\p{L}\p{N} '\-]/gu,'').trim().slice(0,16)||pick(['Brannoc','Kestrel','Thorne','Zephyr','Rook','Talon','Juno','Ash','Wren','Cassius']);
+    const c=CL[pickC];
+    S={name:n,cls:pickC,race:pickR,diff:pickD,lvl:1,xp:0,hp,max:hp,ac:c.ac,st:heroStats(pickC,pickR),gold:20,inv:{potion:1,rope:0,luck:pickR==='halfling'?1:0},uses:c.sp.uses,flags:{},kills:{},node:GAME.start,note:'',mode:'story',cp:null};
+    pickN='';screen='game';go(GAME.start);
+  };
+}
+render();
+
+</script>
+<a href="../index.html#dnd" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:15;font:700 13px/1 Nunito,system-ui,sans-serif;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 12px;text-decoration:none;opacity:.85">All games</a>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Game Shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@700;800&family=Uncial+Antiqua&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one centered column. Step 1 = two big category doors (rink / dungeon). Step 2 = that category's game list. Hash routes #nhl and #dnd. */
+:root{
+  --bg:#eef2f6; --panel:#ffffff; --line:#d3dbe4; --ink:#14202b; --mute:#5b6876; --focus:#1f4fa3;
+  --rink:#f4f8fb; --rinkline:#c8102e; --blue:#1f4fa3; --rinkink:#14202b;
+  --dun:#1d1628; --dun2:#2c2340; --gold:#efbf55; --gold2:#ffe2a0; --dunink:#f4eef8; --dunmute:#b4a8c6;
+  --f-body:'Nunito','Trebuchet MS',system-ui,sans-serif;
+  --f-nhl:'Saira Extra Condensed','Arial Narrow',Impact,sans-serif;
+  --f-dnd:'Uncial Antiqua','Luminari',Georgia,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1117; --panel:#151c25; --line:#273340; --ink:#e7edf3; --mute:#93a1b0; --focus:#7aa7ff;
+  --rink:#e9f0f5; --dun:#1d1628; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c1117; --panel:#151c25; --line:#273340; --ink:#e7edf3; --mute:#93a1b0; --focus:#7aa7ff; --rink:#e9f0f5; --dun:#1d1628; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;min-height:100vh}
+[hidden]{display:none!important}
+main{max-width:880px;margin:0 auto;padding-block:max(28px,env(safe-area-inset-top,0px)) 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{text-align:center;margin-bottom:26px}
+h1{margin:0;font-family:var(--f-nhl);font-weight:800;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(44px,10vw,72px);line-height:.9}
+h1 span{font-family:var(--f-dnd);font-weight:400;text-transform:none;color:var(--gold);letter-spacing:0;font-size:.8em;-webkit-text-stroke:1px #6b4a12}
+.sub{margin:10px 0 0;color:var(--mute);font-weight:600}
+a:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* Step 1: category doors */
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:620px){.doors{grid-template-columns:1fr}}
+.door{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:300px;border-radius:22px;padding:22px;text-decoration:none;overflow:hidden;border:0;text-align:left;cursor:pointer;font:inherit;transition:transform .15s,box-shadow .15s;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.door:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.25)}
+.door:active{transform:translateY(0)}
+.door b{display:block;line-height:.95}
+.door small{display:block;margin-top:8px;font-size:15px;font-weight:700}
+.door .count{position:absolute;top:18px;right:18px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.nhl{background:var(--rink);color:var(--rinkink)}
+.nhl::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(90deg,transparent calc(50% - 3px),var(--rinkline) calc(50% - 3px),var(--rinkline) calc(50% + 3px),transparent calc(50% + 3px)),
+  linear-gradient(90deg,transparent 22%,var(--blue) 22%,var(--blue) calc(22% + 8px),transparent calc(22% + 8px),transparent calc(78% - 8px),var(--blue) calc(78% - 8px),var(--blue) 78%,transparent 78%);opacity:.22}
+.nhl::after{content:"";position:absolute;width:150px;height:150px;border:5px solid var(--blue);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-78%);opacity:.22}
+.nhl b{position:relative;font-family:var(--f-nhl);font-weight:800;font-size:64px;text-transform:uppercase;letter-spacing:.01em}
+.nhl small{position:relative;color:#4a5866}
+.nhl .count{background:var(--rinkline);color:#fff}
+.nhl .puck{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%);width:74px;height:26px;border-radius:50%;background:#111;box-shadow:0 7px 0 #000,0 9px 12px rgba(0,0,0,.35)}
+.dnd{background:radial-gradient(ellipse 80% 60% at 50% 30%,#3a2d55,var(--dun) 70%);color:var(--dunink)}
+.dnd b{position:relative;font-family:var(--f-dnd);font-weight:400;font-size:46px;color:var(--gold2);text-shadow:0 3px 0 #5a3a0e}
+.dnd small{position:relative;color:var(--dunmute)}
+.dnd .count{background:var(--gold);color:#2a1a05}
+.dnd svg{position:absolute;top:30%;left:50%;width:96px;height:96px;transform:translate(-50%,-50%);filter:drop-shadow(0 0 24px rgba(239,191,85,.45))}
+
+/* Step 2: game list */
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.back{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 14px;font:700 15px var(--f-body);cursor:pointer}
+.back:hover{border-color:var(--focus)}
+.bar h2{margin:0;font-size:30px;line-height:1}
+#v-nhl h2{font-family:var(--f-nhl);font-weight:800;text-transform:uppercase;font-size:40px}
+#v-dnd h2{font-family:var(--f-dnd);font-weight:400}
+.games{display:grid;gap:12px}
+.game{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:16px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px;text-decoration:none;color:inherit;transition:border-color .15s,transform .1s}
+.game:hover{border-color:var(--focus)}
+.game:active{transform:scale(.99)}
+.ic{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:32px}
+#v-nhl .ic{background:var(--rink);border:2px solid var(--rinkline)}
+#v-dnd .ic{background:var(--dun2);border:2px solid var(--gold)}
+.game b{display:block;font-size:20px;line-height:1.2}
+.game span{display:block;color:var(--mute);font-size:15px;margin-top:3px}
+.len{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.len.long{color:#2a1a05;background:var(--gold);border-color:var(--gold)}
+@media (max-width:520px){.game{grid-template-columns:52px minmax(0,1fr)}.ic{width:52px;height:52px;font-size:26px}.len{grid-column:2;justify-self:start}}
+footer{margin-top:28px;text-align:center;color:var(--mute);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Game Shelf</h1>
+    <p class="sub">Pick a shelf, then pick a game.</p>
+  </header>
+
+  <section id="v-home">
+    <div class="doors">
+      <a class="door nhl" href="#nhl"><span class="count">2 games</span><span class="puck" aria-hidden="true"></span><b>NHL</b><small>Run a team or conquer a continent.</small></a>
+      <a class="door dnd" href="#dnd"><span class="count">4 adventures</span>
+        <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,3 93,27 93,73 50,97 7,73 7,27" fill="#efbf55" stroke="#5a3a0e" stroke-width="3"/><polygon points="50,24 79,70 21,70" fill="#ffe2a0" stroke="#5a3a0e" stroke-width="2"/><g stroke="#5a3a0e" stroke-width="2"><line x1="50" y1="3" x2="50" y2="24"/><line x1="93" y1="27" x2="79" y2="70"/><line x1="7" y1="27" x2="21" y2="70"/><line x1="93" y1="73" x2="79" y2="70"/><line x1="7" y1="73" x2="21" y2="70"/><line x1="50" y1="97" x2="79" y2="70"/><line x1="50" y1="97" x2="21" y2="70"/><line x1="7" y1="27" x2="50" y2="24"/><line x1="93" y1="27" x2="50" y2="24"/></g><text x="50" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="700" fill="#2a1a05">20</text></svg>
+        <b>Dungeons &amp; Dragons</b><small>Roll the dice. Choose your path.</small></a>
+    </div>
+  </section>
+
+  <section id="v-nhl" hidden>
+    <div class="bar"><button class="back" type="button" data-home>← Back</button><h2>NHL</h2></div>
+    <div class="games">
+      <a class="game" href="nhl/gm.html"><span class="ic" aria-hidden="true">📋</span><div><b>NHL GM 2026-27</b><span>Take over any team. Set lines, make trades, manage the cap, and chase the Cup.</span></div><span class="len">Season mode</span></a>
+      <a class="game" href="nhl/imperialism.html"><span class="ic" aria-hidden="true">🗺️</span><div><b>NHL Imperialism</b><span>Spin the wheels, play the game, and annex your neighbour. Last team standing owns the continent.</span></div><span class="len">Watch &amp; spin</span></a>
+    </div>
+  </section>
+
+  <section id="v-dnd" hidden>
+    <div class="bar"><button class="back" type="button" data-home>← Back</button><h2>Dungeons &amp; Dragons</h2></div>
+    <div class="games">
+      <a class="game" href="dnd/shatteredcrown.html"><span class="ic" aria-hidden="true">👑</span><div><b>The Shattered Crown</b><span>The big one. Find three Crown Shards across a swamp, a dragon mountain, and a floating library, then face the sorcerer Malgrath.</span></div><span class="len long">About 1 hour</span></a>
+      <a class="game" href="dnd/grimmholt.html"><span class="ic" aria-hidden="true">🏮</span><div><b>The Lantern of Grimmholt</b><span>Goblins, a riddling troll, and a shadow dragon in the caves under Grimmholt Hill.</span></div><span class="len">20–30 min</span></a>
+      <a class="game" href="dnd/sandking.html"><span class="ic" aria-hidden="true">🏺</span><div><b>Tomb of the Sand King</b><span>A desert pyramid full of traps, mummies, a sphinx, and a very grumpy king.</span></div><span class="len">20–30 min</span></a>
+      <a class="game" href="dnd/frostbottom.html"><span class="ic" aria-hidden="true">🧊</span><div><b>Brrr-serkers of Frostbottom</b><span>Ice warriors, a ticklish yeti, penguin knights, and a skeleton who is always cold.</span></div><span class="len">20–30 min</span></a>
+    </div>
+  </section>
+
+  <footer>Every game saves your progress in this browser as you play.</footer>
+</main>
+<script>
+(function(){
+  var views={home:document.getElementById('v-home'),nhl:document.getElementById('v-nhl'),dnd:document.getElementById('v-dnd')};
+  function show(){var k=location.hash.replace('#','');if(!views[k])k='home';
+    for(var v in views)views[v].hidden=(v!==k);window.scrollTo(0,0);}
+  window.addEventListener('hashchange',show);
+  document.querySelectorAll('[data-home]').forEach(function(b){b.addEventListener('click',function(){
+    if(history.replaceState)history.replaceState(null,'',location.pathname);show();});});
+  show();
+})();
+</script>
+</body>
+</html>
