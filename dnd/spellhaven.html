@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Spellhaven Mystery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Henny+Penny&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-size:14px;font-family:system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Layout: one centered column (max 680px). Sticky hero bar, story card, big stacked choices, dice tray modal. Single dark theme by choice. */
+:root{--bg:#121327;--panel:#1b1d38;--panel2:#252849;--line:#3b3f6b;--ink:#f1f0fb;--mute:#a9abd0;
+  --torch:#8de3b5;--torch2:#d4ffe9;--blood:#f2697a;--mana:#b49cff;--leaf:#f3c969;--dieline:#145a3a;--barbg:rgba(18,19,39,.94);
+  --btnink:#072a1a;--notebg:#1d2a3e;--noteline:#3f7a6a;--selbg:#1f3a3a;--lan1:#1e3a30;--lan2:#172a24;--badge:#22304a;--glow:141,227,181;
+  --f-disp:'Henny Penny','Luminari',Georgia,serif;
+  --f-body:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;color-scheme:dark}
+
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.55;min-height:100vh;
+  background:radial-gradient(ellipse 90% 50% at 50% -8%, rgba(var(--glow),.16), transparent 70%),var(--bg);}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--torch2);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+h1,h2,h3{font-family:var(--f-disp);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0}
+
+/* hero bar */
+#bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--barbg);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar-in{max-width:680px;margin:0 auto;display:flex;gap:12px;align-items:center;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.who{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;text-align:left;min-width:0}
+.who .ico{font-size:22px}
+.who b{display:block;font-size:15px;line-height:1.1;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who small{color:var(--mute);font-size:12px;font-weight:700}
+.vitals{flex:1;min-width:0}
+.vit-row{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.track{height:10px;background:#0c0f1a;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.track i{display:block;height:100%;background:linear-gradient(90deg,#b8322a,var(--blood));transition:width .4s}
+.track.xp{height:5px;margin-top:4px;border:0}
+.track.xp i{background:var(--mana)}
+.purse{display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.purse .g{color:var(--torch2)}
+.ouch #bar{animation:ouch .45s}
+@keyframes ouch{0%,100%{background:var(--barbg)}30%{background:rgba(160,40,34,.75)}}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.scene-head{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.badge{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:radial-gradient(circle at 50% 40%,var(--badge),#1a1a22);border:2px solid var(--torch);box-shadow:0 0 18px rgba(var(--glow),.3)}
+.scene-head h2{font-size:30px;color:var(--torch2);line-height:1.1}
+.card p{margin:0 0 12px;max-width:62ch}
+.card p:last-child{margin-bottom:0}
+.note{background:var(--notebg);border:1px solid var(--noteline);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.note span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--torch)}
+.note p{margin:2px 0 0;font-weight:600}
+.lvup{margin-top:10px;padding:10px 12px;border-radius:10px;background:#1b2c40;border:1px solid var(--mana);color:#cfe6ff;font-weight:700}
+
+.choices{display:grid;gap:10px;margin-top:16px}
+.ch{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-weight:700;font-size:17px;transition:border-color .15s,transform .1s}
+.ch:hover:not(:disabled){border-color:var(--torch)}
+.ch:active:not(:disabled){transform:scale(.985)}
+.ch:disabled{opacity:.45;cursor:not-allowed}
+.ch .arr{color:var(--torch);font-size:20px;line-height:1}
+.ch .lab{flex:1;min-width:0}
+.tag{flex:none;font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.tag.chk{color:var(--mana)} .tag.bat{color:var(--blood)} .tag.gold{color:var(--torch2)} .tag.done{color:var(--leaf)}
+.hint{color:var(--mute);font-size:14px;margin-top:10px}
+
+/* shop & riddle */
+.shop{display:grid;gap:10px;margin-top:14px}
+.item{display:flex;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.item div{flex:1;min-width:0}
+.item b{display:block}
+.item small{color:var(--mute);font-size:14px}
+.buy{background:var(--torch);color:var(--btnink);border:0;border-radius:10px;padding:8px 12px;font-weight:800;white-space:nowrap}
+.buy:disabled{background:var(--line);color:var(--mute);cursor:not-allowed}
+.riddle{margin-top:14px;padding:16px;border-radius:14px;background:#151a2b;border:1px dashed var(--torch)}
+.riddle q{display:block;font-family:var(--f-disp);font-size:26px;color:var(--torch2);quotes:none;line-height:1.2;margin-bottom:12px}
+.riddle .opts{display:grid;gap:8px}
+
+/* combat */
+.foe{text-align:center}
+.foe-ico{font-size:76px;line-height:1.1;display:inline-block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+.foe.hit .foe-ico{animation:shake .45s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px) rotate(-6deg)}40%{transform:translateX(10px) rotate(5deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.foe h2{font-size:30px;color:var(--torch2);margin:4px 0 10px}
+.foe .track{height:14px;max-width:360px;margin:0 auto}
+.foe-meta{display:flex;justify-content:center;gap:16px;margin-top:6px;font-size:14px;font-weight:800;color:var(--mute);font-variant-numeric:tabular-nums}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.act{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left;min-width:0}
+.act b{display:block;font-size:16px}
+.act small{display:block;color:var(--mute);font-size:13px;line-height:1.3;margin-top:2px}
+.act.main{border-color:var(--torch);background:var(--selbg)}
+.act.lan{grid-column:1/-1;border-color:var(--torch2);background:linear-gradient(90deg,var(--lan1),var(--lan2));animation:glow 1.6s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 22px rgba(255,216,137,.35)}}
+.act:hover:not(:disabled){border-color:var(--torch2)}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.log{margin-top:16px;display:grid;gap:6px;font-size:15px}
+.log div{padding:8px 12px;border-radius:10px;background:#161b2b}
+.log div:first-child{background:#20263a;font-weight:700}
+.log .p{color:var(--torch2)} .log .m{color:#ff9a90} .log .a,.log .h{color:#9be3ad} .log .n{color:var(--mute)}
+
+/* overlay */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(6,8,14,.78);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ovbox{width:100%;max-width:420px;max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--torch);border-radius:20px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ovbox h3{font-size:30px;color:var(--torch2)}
+.ovbox .sub{color:var(--mute);margin:4px 0 6px}
+.ovbox .body{text-align:left;margin-top:10px}
+.die{position:relative;width:140px;height:140px;margin:10px auto}
+.die svg{width:100%;height:100%}
+.die .num{position:absolute;inset:0;display:grid;place-items:center;padding-top:12px;font-family:var(--f-disp);font-size:44px;color:var(--btnink)}
+.die.spin svg{animation:spin .85s cubic-bezier(.2,.7,.3,1)}
+@keyframes spin{from{transform:rotate(0) scale(.7)}to{transform:rotate(720deg) scale(1)}}
+.die.land{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.15)}}
+.die.crit svg polygon:first-child{fill:#ffd889}
+.die.crit{filter:drop-shadow(0 0 18px rgba(255,216,137,.9))}
+.die.fumble svg polygon:first-child{fill:#e2574c}
+.res{font-variant-numeric:tabular-nums;font-weight:700;min-height:1.5em}
+.verdict{font-family:var(--f-disp);font-size:34px;line-height:1.1;min-height:1.1em;margin:4px 0}
+.verdict.ok{color:var(--leaf)} .verdict.bad{color:var(--blood)} .verdict.crit{color:var(--torch2)}
+.btns{display:grid;gap:8px;margin-top:14px}
+.big{background:var(--torch);color:var(--btnink);border:0;border-radius:14px;padding:14px 18px;font-weight:800;font-size:18px}
+.big:hover{background:var(--torch2)}
+.ghost{background:transparent;border:2px solid var(--line);border-radius:14px;padding:12px;font-weight:700}
+.ghost:hover{border-color:var(--torch)}
+
+/* title & creation */
+.title{text-align:center;padding-block:28px 8px}
+.lantern{font-size:72px;display:inline-block;animation:flick 2.4s infinite;filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}
+@keyframes flick{0%,100%{filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}45%{filter:drop-shadow(0 0 14px rgba(var(--glow),.45))}55%{filter:drop-shadow(0 0 32px rgba(255,216,137,.8))}}
+.title h1{font-size:clamp(46px,12vw,78px);line-height:.95;color:var(--torch2);text-shadow:0 4px 0 var(--dieline),0 0 30px rgba(var(--glow),.35)}
+.title .tag-line{color:var(--mute);font-weight:700;margin:10px 0 22px}
+.menu{display:grid;gap:10px;max-width:360px;margin:0 auto}
+.trophies{margin-top:28px;text-align:center}
+.trophies h3{font-family:var(--f-body);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.tro{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.tro span{width:64px;padding:8px 0;border-radius:12px;border:1px dashed var(--line);font-size:12px;font-weight:800;color:var(--mute)}
+.tro span i{display:block;font-style:normal;font-size:24px;filter:grayscale(1);opacity:.35}
+.tro span.won{border:1px solid var(--torch);color:var(--torch2);background:var(--notebg)}
+.tro span.won i{filter:none;opacity:1}
+details{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+summary{font-weight:800;cursor:pointer}
+details ul{margin:10px 0 0;padding-left:20px}
+details li{margin-bottom:6px}
+label.f{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
+input[type=text]{width:100%;background:#0f1320;border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:20px;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cls{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.cls.sel{border-color:var(--torch);background:var(--selbg);box-shadow:0 0 0 3px rgba(var(--glow),.2)}
+.cls .ci{font-size:28px}
+.cls b{display:block;font-family:var(--f-disp);font-weight:400;font-size:24px;color:var(--torch2);line-height:1.1}
+.cls small{display:block;color:var(--mute);font-size:13px;line-height:1.35;margin-top:2px}
+.cls .st{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.cls .st em{font-style:normal;color:var(--mute)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:10px;font-weight:700;text-align:left}
+.seg button small{display:block;color:var(--mute);font-weight:600;font-size:13px}
+.seg button.sel{border-color:var(--torch);background:var(--selbg)}
+.sheet-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.sheet-stats div{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center}
+.sheet-stats b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.sheet-stats small{font-size:11px;font-weight:800;color:var(--mute);letter-spacing:.08em}
+.kv{display:grid;gap:6px;font-size:15px}
+.kv div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.kv span{color:var(--mute)}
+.kv b{text-align:right}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.summary div{background:var(--panel2);border-radius:12px;padding:10px 6px;text-align:center}
+.summary b{display:block;font-size:24px;color:var(--torch2);font-variant-numeric:tabular-nums}
+.summary small{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
+@media (max-width:420px){.acts{grid-template-columns:1fr}.scene-head h2{font-size:26px}.sheet-stats{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+[hidden]{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.grid{grid-template-columns:1fr 1fr}}
+.perk{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px dashed var(--line);font-size:15px}
+.perk b{color:var(--torch2);margin-right:4px}
+.preview{margin-top:18px;padding:14px;border-radius:14px;background:var(--panel2);border:1px solid var(--torch)}
+.pv-name{font-family:var(--f-disp);font-size:26px;color:var(--torch2);line-height:1.1}
+.pv-st{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.pv-st em{font-style:normal;color:var(--mute);font-size:12px;margin-right:3px}
+.status{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.status span{font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--mana);color:var(--mana)}
+.thp{color:var(--mana)}
+.who small{white-space:nowrap}
+</style>
+</head>
+<body>
+<header id="bar" hidden></header>
+<main class="wrap" id="main"></main>
+<div class="ov" id="ov" hidden><div class="ovbox" id="ovbox"></div></div>
+<script>
+const GAME={key:'spellhaven',title:'The Spellhaven Mystery',tagline:'A magical Dungeons &amp; Dragons-style school adventure. Three keys, a frozen castle, and a villain hiding in plain sight. About an hour of adventure.',icon:'🪄',start:'arrive',silver:'Runeforged',luck:'Lucky Wishbone',allyScale:1,lv:[0,120,300,550,850,1200,1650],sip:'Glug glug. Tastes like strawberry!',
+ relic:{btn:'Raise the Spellhaven Keys',desc:'3d8+2 Heartstone light damage. Shadows and ghosts HATE it! Once per fight.',log:'You hold up the glowing keys and Heartstone light floods the room!'},
+ ally:{name:'Bristles the talking broom',lines:['Bristles whacks it over the head: {d} damage!','"TAKE THAT, YOU DUST BUNNY!" Bristles sweeps its legs: {d} damage!','Bristles pokes it right in the eye with her handle: {d} damage!']},
+ items:[['shard1','Emerald Key'],['shard2','Silver Key'],['shard3','Golden Key'],['star1','Phoenix Feather'],['star2','Phoenix Feather'],['star3','Phoenix Feather'],['lullaby','Bertha\'s Lullaby (memorized)'],['gear','Golden Gear'],['windkey','Tock\'s winding key'],['hic','Hiccup Potion']]};
+const MON={
+  /* Grounds & Greenhouse */
+  armor:{n:`Enchanted Suit of Armor`,i:`🛡️`,hp:12,ac:12,atk:3,dmg:[1,6,1],xp:60,gold:5,v:`clanks a rusty sword at`,intro:`The suit of armor by the gate creaks to life. "HALT! NO STUDENTS AFTER CURFEW!" It is not after curfew. It is 2 in the afternoon.`,bye:`The armor falls apart into a pile of clanking pieces. The helmet rolls away, still muttering "curfew... curfew..."`},
+  pixies:{n:`Prank Pixies`,i:`🧚`,hp:10,ac:13,atk:3,dmg:[1,4,2],xp:35,gold:2,v:`pinch and tickle`,intro:`A swarm of tiny glowing pixies zooms at you, giggling and tying your shoelaces together.`,bye:`The pixies zoom off, laughing. Your shoelaces are still tied together.`},
+  gnomes:{n:`Garden Gnome Gang`,i:`🧙`,hp:11,ac:12,atk:3,dmg:[1,6,1],xp:35,gold:3,v:`whack their tiny shovels at`,intro:`The garden gnome statues blink. Then they pull out tiny shovels. "GET OFF OUR LAWN!"`,bye:`The gnomes freeze back into statues, mid-run. One of them is stuck making a very rude face.`},
+  mandrakes:{n:`Screaming Mandrakes`,i:`🌱`,hp:12,ac:11,atk:3,dmg:[2,4,0],xp:45,gold:0,v:`SCREAM at`,intro:`Three ugly root-babies pop out of their pots and start SCREAMING. "WAAAAAAH!"`,bye:`The mandrakes run out of breath and flop back into their pots, sulking.`},
+  vines:{n:`Strangling Vines`,i:`🌿`,hp:14,ac:11,atk:4,dmg:[1,6,1],xp:55,gold:0,v:`whip and wrap around`,intro:`The vines on the wall twitch, then lash out like green whips!`,bye:`The vines go limp and droop to the floor, beaten.`},
+  bertha:{n:`Big Bertha the Giant Flytrap`,i:`🪴`,hp:24,ac:12,atk:4,dmg:[1,8,1],xp:200,gold:10,boss:1,v:`chomps her giant leaf-jaws at`,intro:`Big Bertha opens her jaws. She's taller than a door, and she's drooling. "FEEEEEED MEEEEE."`,bye:`Big Bertha wilts, burps, and spits out the Emerald Key. It's covered in plant drool.`},
+  berthaweak:{n:`Big Bertha the Giant Flytrap`,i:`🪴`,hp:17,ac:11,atk:4,dmg:[1,6,1],xp:200,gold:10,boss:1,v:`yawns and flops her jaws at`,intro:`Professor Fernsby's lullaby still floats in the air. Big Bertha is very, very sleepy. She tries to fight anyway.`,bye:`Big Bertha falls asleep, snoring, and the Emerald Key drops out of her mouth.`},
+  /* Clocktower */
+  beetles:{n:`Clockwork Beetles`,i:`🪲`,hp:16,ac:14,atk:5,dmg:[2,4,1],xp:70,gold:3,v:`skitter and snip at`,intro:`A swarm of brass beetles skitters out of the gears, their tiny scissors clicking.`,bye:`The clockwork beetles wind down... tick... tick... tick... and stop.`},
+  cuckoos:{n:`Furious Cuckoos`,i:`🐦`,hp:15,ac:13,atk:5,dmg:[1,8,1],xp:65,gold:2,v:`peck at`,intro:`Every cuckoo clock on the wall bursts open at once. "CUCKOO! CUCKOO! CUCKOO!" They're angry.`,bye:`The cuckoos zip back into their clocks and slam the little doors.`},
+  butler:{n:`The Brass Butler`,i:`🤖`,hp:30,ac:15,atk:5,dmg:[2,6,2],xp:150,gold:10,v:`swings a silver serving tray at`,intro:`"Good afternoon. Visitors are not permitted. Please allow me to ESCORT YOU OUT." Its hands turn into frying pans.`,bye:`The Brass Butler bows stiffly. "Very good. Very good. Very... goooood..." and powers down.`},
+  tock:{n:`Professor Tock the Clockwork Owl`,i:`🦉`,hp:38,ac:15,atk:6,dmg:[2,4,2],xp:300,gold:30,boss:1,breath:1,
+    bt:`Professor Tock spreads her brass wings and blasts a STORM of spinning gears!`,tele:`Professor Tock's gears start spinning faster and faster... WHIRRRRR...`,v:`slashes her brass talons at`,intro:`"TARDY! You are TARDY, student! The penalty for tardiness is... DETENTION! FOREVER!"`,bye:`Professor Tock's gears slow down. "Class... dismissed..." She drops the Silver Key and goes still.`},
+  tockslow:{n:`Professor Tock the Clockwork Owl`,i:`🦉`,hp:30,ac:14,atk:5,dmg:[2,4,1],xp:300,gold:30,boss:1,breath:1,bd:1,
+    bt:`Professor Tock tries to blast a gear storm, but she's wound backwards, so it's just a few sad little gears.`,tele:`Professor Tock's gears try to spin up... and sputter...`,v:`slashes her brass talons at`,intro:`"TARDY! You are... wait... why is everything going BACKWARDS?!" You wound her up backwards!`,bye:`Professor Tock's gears slow down. "Class... dismissed..." She drops the Silver Key and goes still.`},
+  /* Potion Cellars */
+  slimes:{n:`Potion Slimes`,i:`🟣`,hp:18,ac:10,atk:6,dmg:[2,4,2],xp:70,gold:2,v:`splorch onto`,intro:`Three blobs of spilled potion wobble toward you. One is purple, one is green, one is glittery.`,bye:`The slimes melt into puddles. The glittery one leaves a sparkly stain you'll never get out.`},
+  bubbles:{n:`Fizzing Bubble Swarm`,i:`🫧`,hp:16,ac:13,atk:6,dmg:[2,4,2],xp:70,gold:0,v:`pop stinging bubbles on`,intro:`A cloud of bubbles rises from a cauldron. Each one has a tiny angry face.`,bye:`POP. POP. POP-POP-POP. The bubble swarm is gone.`},
+  shadows:{n:`Living Shadows`,i:`👤`,hp:22,ac:14,atk:6,dmg:[1,8,3],xp:90,gold:4,lantern:1,v:`claw at`,intro:`Your own shadow peels off the wall... and it has friends. And claws.`,bye:`The shadows hiss and slither away under the doors.`},
+  brewbeast:{n:`The Brew Beast`,i:`🧪`,hp:40,ac:14,atk:6,dmg:[2,6,3],xp:200,gold:0,v:`slams a bubbling fist at`,intro:`Every potion on the shelves pours into one giant cauldron, and out climbs a monster made of bubbling, glowing goo!`,bye:`The Brew Beast splashes apart into a hundred tiny puddles. The cellar smells like grape soda.`},
+  grogwart:{n:`Grandmother Grogwart, Queen of Toads`,i:`🐸`,hp:48,ac:15,atk:7,dmg:[2,6,2],xp:350,gold:40,boss:1,breath:1,
+    bt:`Grandmother Grogwart puffs up and lets out a giant, SLIMY BELCH!`,tele:`Grandmother Grogwart's throat puffs up bigger... and bigger... uh oh.`,v:`lashes her sticky tongue at`,intro:`"RIBBIT. Who disturbs my bath? I'm the size of a hippo, child, and I'm in a VERY bad mood."`,bye:`Grandmother Grogwart sinks into her pond with a sad "ribbit." The Golden Key floats to the surface.`},
+  grogweak:{n:`Grandmother Grogwart, Queen of Toads`,i:`🐸`,hp:36,ac:14,atk:6,dmg:[2,6,1],xp:350,gold:40,boss:1,breath:1,bd:2,
+    bt:`Grandmother Grogwart tries to belch, but it comes out as a hiccup... *HIC*... with a little slime.`,tele:`Grandmother Grogwart puffs up... then hiccups. *HIC!*`,v:`lashes her sticky tongue at`,intro:`"RIBBIT! *HIC!* What did you put in my *HIC* pond?!" The hiccup potion worked!`,bye:`Grandmother Grogwart sinks into her pond with a sad "*hic*." The Golden Key floats to the surface.`},
+  /* Finale */
+  puppets:{n:`Shadow Puppets`,i:`🎭`,hp:30,ac:14,atk:7,dmg:[1,10,3],xp:150,gold:5,lantern:1,v:`slash with shadow-claws at`,intro:`Giant shadow shapes leap off the walls: a wolf, a dragon, and a bunny. The bunny is the scariest one.`,bye:`The shadow puppets melt back into the walls.`},
+  whisk1:{n:`Mr. Whiskerton, the Hollow Prince`,i:`🐈‍⬛`,hp:45,ac:15,atk:7,dmg:[2,6,3],xp:300,gold:0,boss:1,lantern:1,breath:1,
+    bt:`Mr. Whiskerton hisses and sprays a cloud of SHADOW FUR!`,tele:`Mr. Whiskerton's fur stands straight up... he's about to hiss!`,v:`swipes his shadowy claws at`,intro:`"Meow. Did you really think I was just a CAT?" Mr. Whiskerton stands up on his back legs. His eyes glow purple.`,bye:`Mr. Whiskerton tumbles backward. "No... NO! I will not lose to a FIRST-YEAR!"`},
+  whisk2:{n:`The Great Shadow Cat`,i:`🐾`,hp:60,ac:15,atk:7,dmg:[2,8,3],xp:500,gold:0,boss:1,lantern:1,breath:1,
+    bt:`The Great Shadow Cat lets out a YOWL so loud the windows shatter!`,tele:`The Great Shadow Cat crouches low, wiggling its back end... it's about to pounce!`,v:`pounces at`,intro:`Mr. Whiskerton swells and swells until he's as big as the Great Hall, a cat made of pure shadow!`,bye:`The Heartstone's light pours over the Great Shadow Cat. With a sad little "mew," the shadow melts away.`},
+};
+const MINOR=['pixies','gnomes','mandrakes'];
+const POOL={garden:['pixies','gnomes','mandrakes'],clock:['beetles','cuckoos','beetles'],cellar:['slimes','bubbles','shadows']};
+const RIDDLES=[
+  [`What has keys but can't open a single lock?`,`A piano`,[`A wizard`,`A broom`]],
+  [`What has hands but can't clap?`,`A clock`,[`A statue`,`A glove`]],
+  [`The more of me there is, the less you see. What am I?`,`Darkness`,[`Fog`,`Homework`]],
+  [`What has a head and a tail, but no body?`,`A coin`,[`A snake`,`A comet`]],
+  [`What gets bigger the more you take away from it?`,`A hole`,[`A potion`,`A pizza`]],
+  [`What has words but never speaks?`,`A book`,[`A parrot`,`A ghost`]],
+  [`I'm tall when I'm young and short when I'm old. What am I?`,`A candle`,[`A tree`,`A wizard`]],
+  [`What can you catch but never throw?`,`A cold`,[`A ball`,`A frog`]],
+  [`What has many teeth but never bites?`,`A comb`,[`A shark`,`A dragon`]],
+  [`What belongs to you, but other people use it more than you do?`,`Your name`,[`Your wand`,`Your homework`]],
+  [`What goes up but never comes down?`,`Your age`,[`A balloon`,`A broomstick`]],
+  [`What has one eye but can't see?`,`A needle`,[`A cyclops`,`A potato`]],
+];
+const SHOP=[
+  {k:'potion',n:`Healing Potion`,d:`Heals 2d4+2 HP. Tastes like strawberry. Works in battle too.`,p:10},
+  {k:'rope',n:`Enchanted Rope`,d:`A rope that ties its own knots. Handy for climbing.`,p:5,max:1},
+  {k:'luck',n:`Lucky Wishbone`,d:`Reroll one failed check. Used up after.`,p:12,max:1},
+];
+
+const shardN=s=>['shard1','shard2','shard3'].filter(k=>s.flags[k]).length;
+const starN=s=>['star1','star2','star3'].filter(k=>s.flags[k]).length;
+const award=(s,n)=>{s.flags.pendingLv=(s.flags.pendingLv||'')+gainXP(n)};
+const N={
+/* ================= ARRIVAL ================= */
+arrive:{t:`Welcome to Spellhaven`,i:`🏰`,cp:1,
+  x:s=>`Spellhaven Academy floats on a cloud above Lake Mirrormere: seven towers, a thousand windows, and a moat full of friendly sea serpents. It's the greatest school of magic, sword and sorcery in the world. And today is your first day, ${s.name}.\n\nYou're late. Your carriage got stuck behind a parade of sheep. By the time you run through the gates, something is very, very wrong.\n\nThe Great Hall is silent. Every teacher at the welcome feast has been turned to stone: frozen mid-bite, mid-laugh, mid-sneeze. On the wall, written in shadowy letters that wriggle like worms: THE HOLLOW PRINCE RETURNS.\n\nAnd the Heartstone, the giant glowing crystal that keeps Spellhaven floating, is GONE. The whole castle tilts a little to the left. A plate slides off a table.\n\nA soft black cat with a white bow tie winds around your ankles and purrs. His name tag says MR. WHISKERTON.`,
+  c:s=>[{t:`"Hello? Is ANYONE not made of stone?"`,go:'pumblemeet'}]},
+pumblemeet:{t:`Professor Pumble`,i:`🧑‍🏫`,
+  x:s=>`A short, round man in a purple robe peeks out from behind a curtain. His glasses are crooked and his beard has toast crumbs in it.\n\n"Oh, thank goodness, a STUDENT! I'm Professor Pumble, Deputy Headmaster. I was in the... um... the bathroom when it happened. Lucky me!"\n\nHe wrings his hands. "The Hollow Prince is an evil shadow spirit. He froze the teachers, stole the Heartstone, and took Headmistress Thornquill! The only way into the Heartstone Vault under the Great Hall is with three magic keys: the Emerald Key in the Greenhouse, the Silver Key at the top of the Clocktower, and the Golden Key deep in the Potion Cellars."\n\nThe castle tilts a little more. Pumble grabs a pillar. "If the Heartstone isn't back by tomorrow, Spellhaven falls out of the sky! You'll have to find the keys. I'd go, but I have a, um... very bad knee."\n\nMr. Whiskerton yawns and licks his paw.`,
+  c:s=>[{t:`"I'll find the keys."`,go:'gate'}]},
+gate:{t:`The Front Hall`,i:`🛡️`,en:s=>s.flags.gate=1,
+  x:s=>`You're heading out of the Great Hall when a suit of armor by the door clanks to life. Its visor glows purple, the Hollow Prince's color.\n\n"HALT! NO STUDENTS AFTER CURFEW!"\n\n"It's two in the afternoon," you point out.\n\n"NO STUDENTS AFTER CURFEW!" it repeats, and raises its sword.`,
+  c:s=>[{t:`Fight the suit of armor!`,fight:'armor',win:'hall'},
+    {t:`"I'm a teacher. A very short teacher."`,check:{st:'int',dc:12,pass:{go:'hall',note:`The armor pauses. It looks you up and down. "...Apologies, Professor." It steps aside and salutes. Works every time.`},fail:{fight:'armor',win:'hall',note:`"TEACHERS DO NOT HAVE LUNCHBOXES." Dang it.`}}},
+    {t:`Unscrew its helmet while it's not looking`,check:{st:'dex',dc:13,pass:{go:'hall',note:`You sneak behind it and twist. The helmet pops off and the whole suit collapses. "...curfew..." it mumbles from the floor.`},fail:{fight:'armor',win:'hall',note:`It turns around just as you reach for its helmet. Awkward.`}}}]},
+hall:{t:`The Great Hall`,i:`🕯️`,cp:1,
+  x:s=>`The Great Hall's lanterns flicker. The frozen teachers stand like statues around the long tables. The castle creaks and tilts.\n\nProfessor Pumble has set up a "headquarters" at the teachers' table, which mostly means a pile of cookies. Down the corridor is the school shop, the Wand & Wobble. Upstairs, Nurse Plumtart's Infirmary is still open (she was out sick yesterday and missed the feast).${shardN(s)?`\n\nYou have ${shardN(s)} of the 3 keys.`:''}\n\nMr. Whiskerton is curled up on the Headmistress's empty chair, watching you with his yellow eyes.`,
+  c:s=>[{t:`Talk to Professor Pumble`,go:'pumble'},
+    {t:`Shop at the Wand & Wobble`,go:'shop'},
+    {t:`Visit the Infirmary`,cost:5,act:s=>rest(s),go:'hall',note:`Nurse Plumtart gives you a spoonful of medicine that tastes like bubblegum and a lollipop. Health and abilities fully restored!`,if:s.hp<s.max||s.uses<CL[s.cls].sp.uses},
+    {t:`Open the school map`,go:'map'}]},
+pumble:{t:`Professor Pumble's HQ`,i:`🍪`,en:s=>{s.flags.pv=(s.flags.pv||0)+1;if(s.flags.pv===1)s.inv.potion++},
+  x:s=>s.flags.pv>1?`Pumble is eating his fourteenth cookie. "Remember: Fernsby's lullaby for the flytrap. Sprocket in the Clocktower knows tricks. And potions can do strange things to toads."${starN(s)?`\n\nHe gasps. "You've found ${starN(s)} of Ember's 3 Phoenix Feathers! Oh, splendid!"`:''}\n\nMr. Whiskerton steals a cookie off the plate when nobody is looking.`
+  :`Pumble hands you a Healing Potion. "Take this. And some advice, from a teacher who has been here forty years."\n\n"In the Greenhouse, Professor Fernsby was writing a lullaby for Big Bertha, our giant flytrap. Sing it to her and she gets sleepy. In the Clocktower, there's a little goblin inventor named Sprocket who knows every gear in the place. And in the Potion Cellars... well. Grandmother Grogwart lives down there. She's a toad. A very BIG toad."\n\nHe lowers his voice. "One more thing. Long ago, the Headmistress had a phoenix named Ember. When Ember flew away, she left three golden feathers hidden in the school. Legend says a Phoenix Feather can remind anything of who it truly is. If you find them... keep them close."\n\nMr. Whiskerton's ears twitch.`,
+  c:s=>[{t:`Back to the Great Hall`,go:'hall'}]},
+shop:{t:`The Wand & Wobble`,i:`🪄`,type:'shop',
+  x:s=>`The Wand & Wobble is a tiny shop under the stairs, run by a nervous ghost named Gilbert. Most of the shelves are full of candy mice that keep scurrying away.\n\n"W-welcome! Everything's half price because it's the end of the w-world!" Gilbert stammers. "Actually it's full price. Sorry."`,
+  c:s=>[{t:`Back to the Great Hall`,go:'hall'}]},
+map:{t:`The School Map`,i:`🗺️`,cp:1,
+  x:s=>{const n=shardN(s);return `You unroll the Wandering Map of Spellhaven. Little ink footprints walk around on it by themselves.\n\n${n===0?`First: the GREENHOUSE, where the Emerald Key is hidden.`:n===1?`One key! Next: the CLOCKTOWER, for the Silver Key.`:n===2?`Two keys! Last one: the POTION CELLARS, for the Golden Key.`:`All three keys glow in your hand. On the map, a dark smudge throbs right under the Great Hall: the HEARTSTONE VAULT.`}\n\nKeys: ${n} of 3 · Phoenix Feathers: ${starN(s)} of 3\n\nIn the corner of the map, a little pair of ink paw prints follows your footprints everywhere you go.`},
+  c:s=>[{t:`Go to the Greenhouse`,if:!s.flags.shard1,go:'green'},
+    {t:`Climb the Clocktower`,if:!!(s.flags.shard1&&!s.flags.shard2),go:'clock'},
+    {t:`Descend to the Potion Cellars`,if:!!(s.flags.shard2&&!s.flags.shard3),go:'cellar'},
+    {t:`Open the Heartstone Vault`,if:shardN(s)===3,go:'vaultdoor',tag:'Final quest'},
+    {t:`Back to the Great Hall`,go:'hall'}]},
+/* ================= GREENHOUSE ================= */
+green:{t:`The Greenhouse`,i:`🌿`,cp:1,
+  x:s=>`The Greenhouse is a giant glass dome full of jungle. Plants from every corner of the world grow here: trees with candy-striped leaves, flowers that hum, and mushrooms that glow and gossip.\n\nProfessor Fernsby, the plant teacher, stands frozen in the middle, holding a sheet of music.${s.flags.ally?'':`\n\nFrom the potting shed comes a muffled voice: "HELP! I'm TANGLED! This is NOT how a broom should be treated!"`}${s.flags.star1?'':`\n\nIn the lily pond, something golden shines on a lily pad.`}\n\nAt the far end, behind a fence covered in DANGER signs, something huge smacks its lips.\n\nMr. Whiskerton is sitting in a flowerpot. How did he get here before you?`,
+  c:s=>[{t:`Look at Professor Fernsby's sheet music`,if:!s.flags.lullaby,go:'fernsby'},
+    {t:`Check out the potting shed`,if:!s.flags.ally,go:'shed',rand:.3,pool:POOL.garden,lurk:'Something jumps out of the plants!'},
+    {t:`Wade over to the lily pond`,if:!s.flags.star1,go:'lily',rand:.3,pool:POOL.garden,lurk:'Something jumps out of the plants!'},
+    {t:`Climb the DANGER fence`,go:'bertha',tag:'Boss'},
+    {t:`Back to the school map`,go:'map'}]},
+fernsby:{t:`Professor Fernsby`,i:`🎼`,
+  x:s=>`Professor Fernsby is frozen with his mouth open, mid-song. The sheet music in his stone hand says: LULLABY FOR BIG BERTHA (SHE GETS GRUMPY AT LUNCHTIME).\n\nThe notes are written in an old magical music code. Some of the notes wiggle.\n\nBehind you, three potted plants with ugly little faces start to wake up. They're mandrakes. If they start screaming, nobody will be able to think.`,
+  c:s=>[{t:`Quickly memorize the lullaby`,check:{st:'int',dc:12,
+      pass:s=>{s.flags.lullaby=1;award(s,30);return{go:'green',note:`"Hush-a-bye Bertha, don't bite the kids..." You've got it! You tiptoe away before the mandrakes wake up. +30 XP.`}},
+      fail:{fight:'mandrakes',win:s=>{s.flags.lullaby=1;return{go:'green',note:`Once the mandrakes stop screaming, you can finally concentrate. You memorize the lullaby.`}},note:`The mandrakes wake up. "WAAAAAAAH!" You can't hear yourself think!`}}},
+    {t:`Back to the middle of the Greenhouse`,go:'green'}]},
+shed:{t:`The Potting Shed`,i:`🧹`,
+  x:s=>`Inside the potting shed, a broom is wrapped up in thick green vines like a mummy. Only its bristles stick out, wiggling angrily.\n\n"Oh, thank the stars! I'm Bristles, the Headmistress's personal broom. The vines grabbed me when the shadows came. Get me OUT of here! I have SPLINTERS in places I didn't know I had!"`,
+  c:s=>{const free=s=>{s.flags.ally=1;award(s,40);return{go:'green',note:`Bristles shakes off the last vine and hovers in the air. "FREEDOM! Right. I'm coming with you. I know this castle better than anyone. And I can whack things VERY hard." Bristles will now fight beside you! +40 XP.`}};return[
+    {t:`Rip the vines off`,check:{st:'str',dc:13,pass:free,fail:{fight:'vines',win:free,note:`The vines don't like being ripped. They let go of Bristles... and grab YOU.`}}},
+    {t:`Tickle the vines until they let go`,check:{st:'dex',dc:12,pass:s=>{const r=free(s);r.note=`Plants are ticklish? Plants are ticklish! The vines giggle (somehow) and unwrap. `+r.note;return r},fail:{fight:'vines',win:free,note:`The vines are NOT ticklish. They're angry now.`}}},
+    {t:`Fight the vines`,fight:'vines',win:free},
+    {t:`Back to the middle of the Greenhouse`,go:'green'}]}},
+lily:{t:`The Lily Pond`,i:`🪷`,
+  x:s=>`The pond is covered in lily pads as big as tables. Frogs in tiny hats sit on most of them, croaking in harmony like a choir.\n\nOn the lily pad farthest from shore lies a single golden feather that glows like a sunrise. A Phoenix Feather!`,
+  c:s=>[{t:`Hop across the lily pads`,check:{st:'dex',dc:s.inv.rope?8:12,
+      pass:s=>{s.flags.star1=1;award(s,30);return{go:'green',note:`${s.inv.rope?'You lasso a tree branch with your rope and swing across. ':'Hop. Hop. HOP. '}You grab the PHOENIX FEATHER! The frog choir sings a little song for you. +30 XP.`}},
+      fail:s=>{const d=dice(1,4);hurt(d);s.flags.star1=1;return{go:'green',note:`SPLASH! You fall in. A frog bonks you on the head with its tiny hat (−${d} HP). But you come up with the PHOENIX FEATHER in your fist!`}}}},
+    {t:`Back to the middle of the Greenhouse`,go:'green'}]},
+bertha:{t:`Big Bertha's Corner`,i:`🪴`,
+  x:s=>`Behind the fence, in a pot the size of a swimming pool, grows a flytrap taller than a door. Her leaf-jaws are lined with green teeth. She's drooling. A lot.\n\nSomething shiny is stuck in her teeth: the Emerald Key!\n\n"FEEEEEED MEEEEE," says Big Bertha.`,
+  c:s=>[{t:`Sing Professor Fernsby's lullaby`,if:!!s.flags.lullaby,fight:'berthaweak',win:'key1',note:`"Hush-a-bye Bertha..." Her jaws droop. Her eyes droop. She's so sleepy! But she's still a little bit hungry.`},
+    {t:`Battle Big Bertha!`,fight:'bertha',win:'key1',hint:s.flags.lullaby?null:`Tip: Professor Fernsby was writing something to calm Big Bertha down.`},
+    {t:`Back away slowly`,go:'green'}]},
+key1:{t:`The Emerald Key`,i:`🗝️`,en:s=>{if(!s.flags.shard1){s.flags.shard1=1;s.flags.lantern=1;award(s,50)}},
+  x:s=>`You wipe the plant drool off the Emerald Key. It glows a bright, clean green, and when you hold it up, the shadows in the corners shrink away. +50 XP.\n\nThe school keys are made from pieces of the Heartstone itself. Their light burns shadow creatures. In battle against shadows and ghosts, you can now RAISE THE KEYS to blast them with light.\n\nAs you leave, you notice Mr. Whiskerton watching the glowing key very closely. His tail flicks.`,
+  c:s=>[{t:`Open the school map`,go:'map'},{t:`Go back to the Great Hall to rest and shop`,go:'hall'}]},
+/* ================= CLOCKTOWER ================= */
+clock:{t:`The Clocktower`,i:`🕰️`,cp:1,
+  x:s=>`The Clocktower is the tallest tower in Spellhaven. Inside, it's a forest of giant brass gears, all spinning, all ticking. TICK. TOCK. TICK. TOCK. A spiral staircase winds up through the middle.\n\n${s.flags.sprocketDone?'':`From a workshop on the first landing, you hear hammering and grumbling.\n\n`}${s.flags.gear?'':`Halfway up, the bells ring out from the Bell Room, where something big is polishing silverware.\n\n`}${s.flags.star2?'':`The giant pendulum swings back and forth across the middle of the tower. Something golden is stuck to the bottom of it.\n\n`}At the very top, two glowing eyes stare down. Professor Tock, the clockwork owl who teaches Timekeeping.\n\nMr. Whiskerton is perched on a gear, riding it around and around. His shadow on the wall looks much bigger than he is.`,
+  c:s=>[{t:`Visit the workshop`,if:!s.flags.sprocketDone,go:'workshop'},
+    {t:`Climb to the Bell Room`,if:!s.flags.gear,go:'bells',rand:.3,pool:POOL.clock,lurk:'Something ticks out of the gears!'},
+    {t:`Try to grab the thing on the pendulum`,if:!s.flags.star2,go:'pendulum',rand:.3,pool:POOL.clock,lurk:'Something ticks out of the gears!'},
+    {t:`Climb all the way to the top`,go:'tock',tag:'Boss'},
+    {t:`Back to the school map`,go:'map'}]},
+workshop:{t:`Sprocket's Workshop`,i:`🔧`,
+  x:s=>s.flags.gear?`Sprocket the goblin snatches the golden gear out of your hands. "THE GOLDEN GEAR! You beautiful genius!"`
+   :`The workshop is a mess of springs, bolts and half-built robots. A tiny green goblin in giant goggles is hammering on something.\n\n"Oh! A visitor! I'm Sprocket, Spellhaven's artificer. I'd make you something AMAZING, but my forge needs the Golden Gear to run, and the Brass Butler took it up to the Bell Room to polish. He won't give it back. He's VERY polite about it, but he won't."\n\nHe taps his goggles. "Bring me that gear and I'll forge you a weapon covered in magic runes. AND I'll tell you how to beat Professor Tock."`,
+  c:s=>[{t:`Give Sprocket the Golden Gear`,if:!!(s.flags.gear&&!s.flags.sprocketDone),act:s=>{s.flags.sprocketDone=1;s.flags.silver=1;s.flags.windkey=1;award(s,50)},go:'clock',note:`Sprocket's forge roars to life. CLANG CLANG CLANG! He hands you a RUNEFORGED weapon glowing with blue magic runes: +2 damage on every hit! Then he gives you a tiny brass key. "Tock's winding key. Wind her BACKWARDS and she'll go all slow and confused. Heh heh." +50 XP.`},
+    {t:`Back to the staircase`,go:'clock'}]},
+bells:{t:`The Bell Room`,i:`🔔`,
+  x:s=>`Giant bronze bells hang from the ceiling. In the middle of the room, a tall robot in a tuxedo is polishing a golden gear with a cloth. The Brass Butler.\n\n"Good afternoon," it says, without looking up. "This gear belongs in the Bell Room. It will stay in the Bell Room. Thank you for your understanding."`,
+  c:s=>[{t:`"Excuse me, there's a smudge on your tuxedo."`,check:{st:'int',dc:13,pass:s=>{s.flags.gear=1;return{go:'clock',note:`"A SMUDGE?!" The Brass Butler panics and starts scrubbing his tuxedo with the cloth. While he's busy, you slip the Golden Gear into your pack.`}},fail:{fight:'butler',win:s=>{s.flags.gear=1;return{go:'clock',note:`You take the Golden Gear from the Brass Butler's frozen hand.`}},note:`"I am a PERFECTLY polished butler," it says coldly. Its hands turn into frying pans.`}}},
+    {t:`Fight the Brass Butler for the gear`,fight:'butler',win:s=>{s.flags.gear=1;return{go:'clock',note:`You take the Golden Gear from the Brass Butler's frozen hand.`}}},
+    {t:`Back to the staircase`,go:'clock'}]},
+pendulum:{t:`The Great Pendulum`,i:`⏳`,
+  x:s=>`The great pendulum swings across the tower, WHOOSH... WHOOSH... as big as a ship's anchor. Stuck to the bottom of it is a glowing golden feather.\n\nYou'll have to time it just right.`,
+  c:s=>[{t:`Wait for the perfect moment and jump`,check:{st:'dex',dc:13,
+      pass:s=>{s.flags.star2=1;award(s,30);return{go:'clock',note:`WHOOSH... WHOOSH... NOW! You leap, grab the PHOENIX FEATHER, and tumble safely onto the next landing. +30 XP.`}},
+      fail:s=>{const d=dice(2,4);hurt(d);s.flags.star2=1;return{go:'clock',note:`You jump a second too late. The pendulum bonks you across the tower (−${d} HP)... but the feather comes loose and floats down right into your hands. A PHOENIX FEATHER!`}}}},
+    {t:`Back to the staircase`,go:'clock'}]},
+tock:{t:`The Top of the Tower`,i:`🦉`,type:'riddle',en:s=>{if(!s.flags.tockRid)pickRiddle(s)},done:s=>s.flags.tockRid,
+  x:s=>s.flags.tockRid?`Professor Tock ruffles her brass feathers. "Incorrect. DETENTION!"`:`At the top of the tower, inside the giant clock face, perches Professor Tock: a clockwork owl as big as a horse, with gears for eyes and a chalkboard hanging from her neck. The Silver Key dangles from her talon.\n\n"STUDENT! You are TARDY! Class started four hundred years ago!" Her gear-eyes whirr. "However. I am a fair teacher. Answer my POP QUIZ correctly, and you may have the key. Answer WRONG, and it is DETENTION. FOREVER."${s.flags.windkey?`\n\nSprocket's little brass winding key is in your pocket.`:''}`,
+  ok:s=>{s.flags.tockRid=1;s.gold+=20;return{go:'key2',note:`"Correct! A+! Gold star!" Professor Tock drops the Silver Key into your hands, along with 20 gold coins. "For excellent scholarship."`}},
+  bad:s=>{s.flags.tockRid=1;return{fight:s.flags.windkey?'tockslow':'tock',win:'key2',note:s.flags.windkey?`"WRONG! DETEN- huh?" You jam Sprocket's key into her back and wind it backwards. CRRRRK.`:`"WRONG! DETENTION!"`}},
+  c:s=>[{t:`Skip the quiz and fight!`,fight:s.flags.windkey?'tockslow':'tock',win:'key2',note:s.flags.windkey?`You leap onto her back and wind her up BACKWARDS with Sprocket's key. CRRRRK.`:null},{t:`Back down the stairs`,go:'clock'}]},
+key2:{t:`The Silver Key`,i:`🗝️`,en:s=>{if(!s.flags.shard2){s.flags.shard2=1;award(s,50)}},
+  x:s=>`The Silver Key clinks against the Emerald Key, and both of them hum together. The whole Clocktower chimes in harmony, BONNNNG, for the first time since the shadows came. +50 XP.\n\nFrom the window, you see Mr. Whiskerton on the roof of the Great Hall far below. You blink, and he's gone.`,
+  c:s=>[{t:`Open the school map`,go:'map'},{t:`Go back to the Great Hall to rest and shop`,go:'hall'}]},
+/* ================= POTION CELLARS ================= */
+cellar:{t:`The Potion Cellars`,i:`⚗️`,cp:1,
+  x:s=>`Deep under Spellhaven, the Potion Cellars are a maze of stone tunnels, dripping pipes and bubbling cauldrons. Everything smells like a mix of cinnamon, old socks and lightning.\n\nPart of the cellars is flooded with water that glows faintly pink.\n\n${s.flags.hic?'':`In the Brewing Room, every cauldron is bubbling over at once.\n\n`}${s.flags.star3?'':`Down a dark passage, the Forbidden Shelves hold the most dangerous potions in the school. Something glows golden up on the highest shelf.\n\n`}And far below, in the old cistern, something enormous goes "RIBBIT." The walls shake.\n\nMr. Whiskerton sits on a barrel, perfectly dry. Cats don't like water. So how did he get down here?`,
+  c:s=>[{t:`Go into the Brewing Room`,if:!s.flags.hic,go:'brewery',rand:.3,pool:POOL.cellar,lurk:'Something oozes out of the dark!'},
+    {t:`Sneak to the Forbidden Shelves`,if:!s.flags.star3,go:'shelves',rand:.3,pool:POOL.cellar,lurk:'Something oozes out of the dark!'},
+    {t:`Wade down to the old cistern`,go:'cistern',tag:'Boss'},
+    {t:`Take a nap on a sack of dried mushrooms`,if:!s.flags.rest3,act:s=>{s.flags.rest3=1;rest(s)},go:'cellar',note:`They're surprisingly comfy. And they smell like pizza. Health and abilities fully restored!`},
+    {t:`Back to the school map`,go:'map'}]},
+brewery:{t:`The Brewing Room`,i:`🧪`,
+  x:s=>`Every cauldron in the room is bubbling over. Purple, green, orange and glittery potions spill across the floor and run together in the middle of the room.\n\nA recipe book lies open on a table: HICCUP POTION. GUARANTEED TO GIVE ANYONE THE HICCUPS FOR ONE HOUR. EVEN TOADS.\n\nThe puddle in the middle of the room starts to bubble and rise...`,
+  c:s=>{const get=s=>{s.flags.hic=1;award(s,40);return{go:'cellar',note:`You scoop up a bottle of the bubbling Hiccup Potion. Grandmother Grogwart won't know what hit her. +40 XP.`}};return[
+    {t:`Pull the big drain plug before the goo wakes up`,check:{st:'int',dc:14,pass:s=>{const r=get(s);r.note=`You spot the drain plug and yank it. GLUG GLUG GLUG. The goo drains away before it can become anything. `+r.note;return r},fail:{fight:'brewbeast',win:get,note:`Too late! All the potions pour together into one giant monster!`}}},
+    {t:`Fight whatever comes out of that puddle`,fight:'brewbeast',win:get},
+    {t:`Back to the cellar tunnels`,go:'cellar'}]}},
+shelves:{t:`The Forbidden Shelves`,i:`🚫`,
+  x:s=>`The Forbidden Shelves are tall, dusty and covered in warning labels: DO NOT DRINK. DO NOT SNIFF. DO NOT EVEN LOOK AT THIS ONE.\n\nOn the very top shelf, tucked between a potion of "Instant Mustache" and a jar of "Liquid Thunder," glows a golden Phoenix Feather.\n\nThe shadows on the shelves are moving. Slowly. Toward you.`,
+  c:s=>[{t:`Climb the shelves quickly`,check:{st:'dex',dc:s.inv.rope?9:13,
+      pass:s=>{s.flags.star3=1;award(s,30);return{go:'cellar',note:`${s.inv.rope?'Your enchanted rope ties itself to the top shelf and you zip up. ':''}You grab the third PHOENIX FEATHER and jump down before the shadows can reach you. +30 XP.`}},
+      fail:{fight:'shadows',win:s=>{s.flags.star3=1;return{go:'cellar',note:`With the shadows gone, you climb up and take the third PHOENIX FEATHER.`}},note:`The shelf wobbles. A bottle of Instant Mustache smashes. You now have a mustache. And the shadows are attacking!`}}},
+    {t:`Back to the cellar tunnels`,go:'cellar'}]},
+cistern:{t:`The Old Cistern`,i:`🐸`,
+  x:s=>`At the very bottom of the cellars is an underground lake. Lily pads float on the dark water. In the middle, on an island of moss, sits a toad the size of a hippo, wearing a tiny crown and a pearl necklace.\n\nGrandmother Grogwart, Queen of Toads. Around her neck, next to the pearls, hangs a glowing Golden Key.\n\n"RIBBIT. A child. In my bath. How RUDE." She blinks her huge golden eyes. "The shadow-cat promised me all the flies in Spellhaven if I kept this key safe. So I'm going to keep it SAFE."${s.flags.hic?`\n\nThe Hiccup Potion bubbles in your pack.`:''}`,
+  c:s=>[{t:`Pour the Hiccup Potion into her pond`,if:!!s.flags.hic,fight:'grogweak',win:'key3',note:`You pour the potion into the water. Grandmother Grogwart takes a big gulp of pond. "Now, child, prepare to *HIC*! ...Oh no."`},
+    {t:`Battle the Queen of Toads!`,fight:'grogwart',win:'key3',hint:s.flags.hic?null:`Tip: there's a potion recipe in the Brewing Room that might make this much easier.`},
+    {t:`Back to the cellar tunnels`,go:'cellar'}]},
+key3:{t:`The Golden Key`,i:`🗝️`,en:s=>{if(!s.flags.shard3){s.flags.shard3=1;award(s,50)}},
+  x:s=>`You fish the Golden Key out of the pond. The moment it touches the other two keys, all three glow so bright you have to squint, and they twist together into one big shining key. +50 XP.\n\nWait. Grandmother Grogwart said "the shadow-CAT."\n\nYou look around. Mr. Whiskerton is nowhere to be seen.`,
+  c:s=>[{t:`Open the school map`,go:'map'},{t:`Go back to the Great Hall to rest and shop first`,go:'hall'}]},
+/* ================= FINALE ================= */
+vaultdoor:{t:`The Vault Door`,i:`🚪`,cp:1,
+  x:s=>`Under the Great Hall, a spiral staircase winds down into darkness. At the bottom is a round iron door with three keyholes: green, silver and gold.\n\nYou turn the great key. CLICK. CLICK. CLICK. The door groans open.\n\nInside, the shadows on the walls peel off and stand up: a shadow wolf, a shadow dragon, and a shadow bunny. They're shadow puppets, and they look hungry. Especially the bunny.`,
+  c:s=>[{t:`Hold up the glowing key`,check:{st:'wis',dc:13,pass:{go:'frozen',note:`Light blasts out of the key like a lighthouse. The shadow puppets shriek and melt into the floor. Even the bunny.`},fail:{fight:'puppets',win:'frozen',note:`The key flickers, but the shadows duck behind each other. They attack!`}}},
+    {t:`Fight the shadow puppets!`,fight:'puppets',win:'frozen'}]},
+frozen:{t:`The Heartstone Chamber`,i:`💎`,cp:1,en:s=>{if(!s.flags.lastRest){s.flags.lastRest=1;rest(s)}},
+  x:s=>`The chamber is round and quiet. In the middle stands Headmistress Thornquill, frozen inside a block of black crystal, her wand raised. Behind her, on a pedestal, the Heartstone glows faintly, wrapped in chains of shadow.\n\nProfessor Pumble comes puffing down the stairs behind you with a mug of hot cocoa. "I ran! With my bad knee! Here, drink this." It's Nurse Plumtart's Super Cocoa. You feel completely healed.\n\n${starN(s)===3?`His eyes go wide at the three golden feathers in your pack. "All three of Ember's feathers! Then you'll know what to do, when the time comes."`:`"If only we had Ember's three feathers," he sighs. "Well. We'll have to do this the hard way."`}\n\nThen you hear it. A soft, slow purr from the shadows behind the pedestal.${s.flags.ally?`\n\nBristles's bristles stand straight up. "Oh no. I KNEW it. I never trusted that cat."`:''}`,
+  c:s=>[{t:`"Come out, Mr. Whiskerton."`,go:'reveal'}]},
+reveal:{t:`The Hollow Prince`,i:`🐈‍⬛`,
+  x:s=>`Mr. Whiskerton steps out of the shadows, his white bow tie neat as ever. Then he stands up on his back legs. His shadow stretches up the wall, huge and crowned and horned.\n\n"Clever little first-year," he purrs. "Yes. I am the Hollow Prince. The Headmistress found me as a shadow-kitten, all alone, and took me in. She fed me, and gave me a bow tie, and a nice warm chair."\n\nHis eyes glow purple. "But I didn't want a chair. I wanted the HEARTSTONE. All that magic... all MINE. And now you've brought me the keys, so I can unlock its chains. How very kind of you. Meow."`,
+  c:s=>[{t:`Battle Mr. Whiskerton!`,fight:'whisk1',win:'shadowcat'}]},
+shadowcat:{t:`The Great Shadow Cat`,i:`🐾`,cp:1,en:s=>{if(!s.flags.p2){s.flags.p2=1;rest(s)}},
+  x:s=>`Mr. Whiskerton falls back against the pedestal, hissing. Then he grabs the shadow-chains around the Heartstone and pulls them into himself.\n\nHe grows. And grows. And GROWS. Until a cat made of pure shadow fills the whole chamber, tail lashing, eyes like purple moons.\n\nThe key in your hand blazes with light, and warmth floods through you. You are fully healed!${s.flags.ally?' Bristles zooms in front of you. "Stay behind me! ...Actually, I am a broom. YOU stay in front of ME."':''}${starN(s)===3?`\n\nIn your pack, the three Phoenix Feathers start to glow warm and gold, like a sunrise...`:''}`,
+  c:s=>[{t:`Hold up Ember's three Phoenix Feathers`,if:starN(s)===3,act:s=>s.flags.peace=1,go:'victory'},
+    {t:`Fight the Great Shadow Cat!`,fight:'whisk2',win:'victory',hint:`Tip: shadows HATE the key's light. Raise it in the fight!`}]},
+victory:{t:`Hero of Spellhaven`,i:`🏆`,type:'end',en:s=>{s.gold+=500;const w=store.get(WINS)||{};w[s.cls]=(w[s.cls]||0)+1;store.set(WINS,w);store.del(SAVE)},
+  x:s=>`${s.flags.peace?`You hold up the three Phoenix Feathers. They burst into golden flame, warm and gentle, and a beautiful bird made of fire swoops through the chamber: Ember the phoenix!\n\nEmber circles the Great Shadow Cat and sings. The shadow shrinks... and shrinks... and SHRINKS... until all that's left on the floor is a tiny black kitten with a crooked white bow tie, blinking up at you.\n\n"Mew?" he says. He doesn't remember being the Hollow Prince at all. He just remembers being loved.\n\nYou didn't defeat the villain. You gave him a second chance. That's the rarest magic there is.\n\n`:`With one last blast of light, the Great Shadow Cat lets out a sad "mew" and melts away into nothing. All that's left on the floor is a crooked white bow tie.\n\n`}The shadow chains snap. The Heartstone blazes back to life, and the black crystal around the Headmistress shatters. All across the school, the frozen teachers wake up mid-sneeze. The castle sets itself straight with a big happy WHOOMPH.\n\nThat night, Headmistress Thornquill throws the biggest feast in Spellhaven history. She stands and raises her goblet. "To ${s.name}, the first first-year in four hundred years to save the whole school!" Everyone cheers. You get 500 gold, a golden medal, and permission to skip homework for the rest of the year.${s.flags.ally?`\n\nBristles is given a brand-new polish and a velvet stand by the fireplace. She still insists on coming to every one of your classes.`:''}${s.flags.peace?`\n\nThe little black kitten sleeps on the end of your bed every night. You name him Second Chance. He purrs very loudly.`:`\n\nProfessor Pumble says that if you'd found all three Phoenix Feathers, even a shadow might have been saved. Maybe next term...`}\n\nTHE END. (For now.)`},
+};
+
+const $=s=>document.querySelector(s);
+const R=n=>1+Math.floor(Math.random()*n);
+const dice=(c,d,b=0)=>{let t=b;for(let i=0;i<c;i++)t+=R(d);return t};
+const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const SAVE=GAME.key+'_save_v2', WINS=GAME.key+'_wins_v1';
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const STATN={str:'Strength',dex:'Dexterity',int:'Intelligence',wis:'Wisdom'};
+const CL={
+  fighter:{name:'Fighter',i:'🛡️',blurb:'Tough as nails. Big sword, heavy armor, hard to knock down.',hp:14,lv:7,ac:16,st:{str:3,dex:1,int:0,wis:0},
+    wpn:{n:'Longsword',c:1,d:8,s:'str'},sw:'Longsword',sp:{n:'Second Wind',d:'Heal 1d10 + your level',uses:2,k:'heal'}},
+  ranger:{name:'Ranger',i:'🏹',blurb:'Expert tracker and archer. Marks a target and never lets it go.',hp:12,lv:6,ac:14,st:{str:1,dex:3,int:0,wis:1},
+    wpn:{n:'Longbow',c:1,d:8,s:'dex'},sw:'Longbow',sp:{n:'Hunter\'s Mark',d:'Mark the monster and shoot. Every hit this fight does +1d6',uses:2,k:'mark'}},
+  rogue:{name:'Rogue',i:'🗡️',blurb:'Sneaky and quick. Great at tricks, traps and surprise attacks.',hp:11,lv:6,ac:14,st:{str:0,dex:3,int:1,wis:1},
+    wpn:{n:'Shortsword',c:1,d:6,s:'dex'},sw:'Shortsword',sp:{n:'Sneak Attack',d:'Roll twice, keep the best. +2d6 damage on a hit',uses:2,k:'sneak'}},
+  druid:{name:'Druid',i:'🌿',blurb:'Nature magic. Lashes foes with thorns and can turn into a bear!',hp:10,lv:6,ac:13,st:{str:0,dex:1,int:1,wis:3},
+    wpn:{n:'Thorn Whip',c:1,d:8,s:'wis'},sw:'Oak Staff',sp:{n:'Wild Shape: Bear',d:'Become a bear! Gain 2d6 + level bonus HP and +2 damage this fight',uses:2,k:'bear'}},
+  wizard:{name:'Wizard',i:'🔮',blurb:'Fragile but brilliant. Throws fire and magic darts that never miss.',hp:9,lv:5,ac:12,st:{str:-1,dex:1,int:3,wis:1},
+    wpn:{n:'Fire Bolt',c:1,d:10,s:'int'},sw:'Wand',sp:{n:'Magic Missile',d:'3 glowing darts that never miss (1d4+1 each)',uses:3,k:'missile'}},
+  cleric:{name:'Cleric',i:'☀️',blurb:'Holy warrior. Heals wounds and burns monsters with sacred fire.',hp:11,lv:6,ac:15,st:{str:1,dex:0,int:0,wis:3},
+    wpn:{n:'Sacred Flame',c:1,d:8,s:'wis'},sw:'Holy Symbol',sp:{n:'Cure Wounds',d:'Heal 1d8 + 3 + your level',uses:2,k:'cure'}},
+};
+const RACES={
+  human:{name:'Human',i:'🧑',blurb:'Brave and adaptable.',st:{str:1,dex:1,int:1,wis:1},perk:'Versatile: +1 to every ability.'},
+  elf:{name:'Elf',i:'🧝',blurb:'Graceful forest folk with sharp eyes.',st:{dex:2,wis:1},perk:'Keen Senses: +2 extra on Wisdom checks.'},
+  tiefling:{name:'Tiefling',i:'😈',blurb:'Horns, a tail, and fire in the blood.',st:{int:2,wis:1},perk:'Hellish Rebuke: the first time a monster hits you in a fight, flames burn it for 2d6.'},
+  dwarf:{name:'Dwarf',i:'🧔',blurb:'Stout, stubborn, and hard as stone.',st:{str:2,wis:1},perk:'Dwarven Toughness: +3 HP, plus 1 more every level.'},
+  halfling:{name:'Halfling',i:'🧒',blurb:'Small, cheerful, and amazingly lucky.',st:{dex:2,int:1},perk:'Lucky: start with a free lucky charm to reroll a failed check.'},
+  dragonborn:{name:'Dragonborn',i:'🐲',blurb:'Proud dragon folk with scales of bronze.',st:{str:2,wis:1},perk:'Dragon Breath: once per fight, breathe fire for 2d6 + level damage.'},
+};
+const heroStats=(c,r)=>{const o={...CL[c].st};for(const k in RACES[r].st)o[k]+=RACES[r].st[k];return o};
+const silverName=s=>GAME.silver+' '+CL[s.cls].sw;
+
+let S=null, C=null, busy=false, screen='title', cur=[];
+const cls=()=>CL[S.cls], race=()=>RACES[S.race];
+const toHit=()=>S.st[cls().wpn.s]+(S.lvl>=6?4:S.lvl>=3?3:2)+(S.diff==='easy'?2:0);
+const dmgB=()=>S.st[cls().wpn.s]+(S.flags.silver?2:0)+(C&&C.bear?2:0);
+const wpnName=()=>S.flags.silver?silverName(S):cls().wpn.n;
+function hurt(n){S.hp=Math.max(1,S.hp-n)}
+function heal(n){const b=S.hp;S.hp=Math.min(S.max,S.hp+n);return S.hp-b}
+function rest(s){s.hp=s.max;s.uses=CL[s.cls].sp.uses}
+const LV=GAME.lv||[0,100,300,600,1000];const LVMAX=LV.length;
+function gainXP(n){S.xp+=n;let out='';while(S.lvl<LVMAX&&S.xp>=LV[S.lvl]){S.lvl++;const g=cls().lv+(S.race==='dwarf'?1:0);S.max+=g;S.hp=S.max;S.uses=cls().sp.uses;
+  out+=`<div class="lvup">LEVEL UP! You are now level ${S.lvl}. +${g} max HP${S.lvl===3||S.lvl===6?', and your attacks get more accurate':''}. Health and abilities restored!</div>`}return out}
+function pickRiddle(s){let used=s.flags.used||[];let av=RIDDLES.map((_,i)=>i).filter(i=>!used.includes(i));if(!av.length){used=[];av=RIDDLES.map((_,i)=>i)}
+  const i=pick(av);used.push(i);s.flags.used=used;s.flags.rq=i;s.flags.ro=shuffle([RIDDLES[i][1],...RIDDLES[i][2]])}
+
+/* ---------- FLOW ---------- */
+function save(){if(S&&S.node!=='victory')store.set(SAVE,S)}
+function makeCp(){S.cp=null;S.cp=JSON.stringify(S)}
+function restoreCp(){const cp=S.cp;S=JSON.parse(cp);S.cp=cp;rest(S);S.mode='story';S.note='Everything went dark... then a warm voice whispered, "Not yet, hero." You wake up at your last safe spot, fully healed. Let\'s try that again!';C=null;busy=false;save();render()}
+function go(t,note){
+  if(typeof t==='function')t=t(S);
+  if(t&&typeof t==='object'){if(t.fight)return startCombat(t.fight,t.win,t.first,t.note||note);note=t.note||note;t=t.go}
+  S.note=note||'';S.node=t;S.mode='story';const n=N[t];if(n.en)n.en(S);
+  if(n.cp)makeCp();save();render();window.scrollTo(0,0);
+  if(S.flags.pendingLv){const l=S.flags.pendingLv;S.flags.pendingLv='';msg('Level up!',l,'Awesome!')}
+}
+function choose(i){
+  const ch=cur[i];if(!ch||busy)return;
+  if(ch.cost){if(S.gold<ch.cost)return;S.gold-=ch.cost}
+  if(ch.act)ch.act(S);
+  if(ch.check)return doCheck(ch);
+  if(ch.rand&&Math.random()<ch.rand)return startCombat(pick(ch.pool||MINOR),ch.go,0,ch.lurk||'Something lurks in the tunnel ahead!');
+  if(ch.fight)return go(ch);
+  go(ch.go,ch.note);
+}
+function checkBonus(st){return S.st[st]+(S.race==='elf'&&st==='wis'?2:0)}
+function doCheck(ch){const k=ch.check;
+  rollD20({kind:'check',title:`${STATN[k.st]} check`,sub:ch.t,bonus:checkBonus(k.st),blabel:k.st.toUpperCase(),target:k.dc,tlabel:'needed'},ok=>go(ok?k.pass:k.fail))}
+
+/* ---------- DICE OVERLAY ---------- */
+const D20=`<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,3 93,27 93,73 50,97 7,73 7,27" fill="var(--torch)" stroke="var(--dieline)" stroke-width="3"/><polygon points="50,24 79,70 21,70" fill="var(--torch2)" stroke="var(--dieline)" stroke-width="2"/><g stroke="var(--dieline)" stroke-width="2"><line x1="50" y1="3" x2="50" y2="24"/><line x1="93" y1="27" x2="79" y2="70"/><line x1="7" y1="27" x2="21" y2="70"/><line x1="93" y1="73" x2="79" y2="70"/><line x1="7" y1="73" x2="21" y2="70"/><line x1="50" y1="97" x2="79" y2="70"/><line x1="50" y1="97" x2="21" y2="70"/><line x1="7" y1="27" x2="50" y2="24"/><line x1="93" y1="27" x2="50" y2="24"/></g></svg>`;
+function openOv(html){$('#ovbox').innerHTML=html;$('#ov').hidden=false}
+function closeOv(){$('#ov').hidden=true}
+function msg(title,body,btn,cb){openOv(`<h3>${title}</h3><div class="body">${body}</div><div class="btns"><button class="big" id="ovOk">${btn||'Continue'}</button></div>`);
+  $('#ovOk').onclick=()=>{closeOv();cb&&cb()};$('#ovOk').focus()}
+function rollD20(o,cb){
+  openOv(`<h3>${o.title}</h3><div class="sub">${o.sub||''}</div>
+   <div class="die" id="die">${D20}<span class="num" id="dn">20</span></div>
+   <div class="res" id="dres">${o.kind==='check'?`Roll a d20 and add your ${o.blabel} bonus (${sign(o.bonus)}). You need ${o.target} or more.`:''}</div>
+   <div class="verdict" id="dv"></div><div class="btns" id="db"></div>`);
+  const db=$('#db');
+  const spin=()=>{
+    db.innerHTML='';$('#dv').textContent='';$('#dv').className='verdict';
+    const die=$('#die');die.className='die spin';
+    const r1=R(20),r2=o.adv?R(20):null,nat=r2?Math.max(r1,r2):r1;
+    const dur=REDUCED?150:850;const t0=performance.now();
+    const tick=()=>{if(performance.now()-t0<dur){$('#dn').textContent=R(20);setTimeout(tick,55)}else land()};
+    const land=()=>{
+      $('#dn').textContent=nat;die.className='die land'+(nat===20?' crit':nat===1?' fumble':'');
+      const tot=nat+o.bonus;
+      const ok=o.kind==='check'?(nat===20||tot>=o.target):(nat===20||(nat!==1&&tot>=o.target));
+      $('#dres').innerHTML=`${r2?`You rolled ${r1} and ${r2}, keeping ${nat}.<br>`:''}${nat} ${sign(o.bonus)} ${o.blabel} = <b>${tot}</b> &nbsp;·&nbsp; ${o.tlabel} ${o.target}`;
+      const v=$('#dv');
+      if(nat===20){v.textContent=o.kind==='check'?'Natural 20!':'Critical hit!';v.classList.add('crit')}
+      else if(nat===1&&o.kind!=='check'){v.textContent='Oops! Natural 1';v.classList.add('bad')}
+      else{v.textContent=ok?(o.kind==='check'?'Success!':'Hit!'):(o.kind==='check'?'Failed!':'Miss!');v.classList.add(ok?'ok':'bad')}
+      if(o.auto){let done=false;const fin=()=>{if(done)return;done=true;closeOv();cb(ok,nat)};
+        db.innerHTML=`<button class="ghost" id="dgo">Continue</button>`;$('#dgo').onclick=fin;setTimeout(fin,REDUCED?900:1300);return}
+      const canLuck=!ok&&S.inv.luck>0;
+      db.innerHTML=(canLuck?`<button class="big" id="dluck">Use your ${GAME.luck} (reroll)</button>`:'')+`<button class="${canLuck?'ghost':'big'}" id="dgo">Continue</button>`;
+      $('#dgo').onclick=()=>{closeOv();cb(ok,nat)};$('#dgo').focus();
+      if($('#dluck'))$('#dluck').onclick=()=>{S.inv.luck--;$('#dres').textContent='Your lucky charm glows... roll again!';spin()};
+    };
+    tick();
+  };
+  if(o.kind==='check'){db.innerHTML=`<button class="big" id="droll">Roll the d20!</button>`;$('#droll').onclick=spin;$('#droll').focus()}else spin();
+}
+
+/* ---------- COMBAT ---------- */
+function startCombat(id,win,first,note){
+  const b=MON[id],easy=S.diff==='easy',hp=easy?Math.ceil(b.hp*.8):b.hp;
+  C={id,m:{...b,hp,max:hp,atk:b.atk-(easy?1:0)},win,from:S.node,round:1,log:[],lan:false,hit:false,thp:0,bear:false,mark:false,breathUsed:false,rebuked:false};
+  if(note)C.log.unshift({c:'n',t:note});C.log.unshift({c:'n',t:b.intro});
+  if(first){const d=dice(cls().wpn.c,cls().wpn.d,dmgB());C.m.hp-=d;C.log.unshift({c:'p',t:`Free hit! You strike first for ${d} damage.`})}
+  S.mode='combat';busy=false;render();window.scrollTo(0,0);
+}
+const log=(c,t)=>C.log.unshift({c,t});
+function hitFoe(n){C.m.hp-=n;C.hit=true}
+function attack(kind){
+  if(busy)return;busy=true;const w=cls().wpn,sneak=kind==='sneak';if(sneak)S.uses--;render();
+  rollD20({kind:'atk',title:sneak?'Sneak Attack!':(C.bear?'Bear Swipe!':wpnName()),sub:`vs ${C.m.n}`,bonus:toHit(),blabel:'',target:C.m.ac,tlabel:'Armor',adv:sneak,auto:1},(ok,nat)=>{
+    if(ok){const cm=nat===20?2:1;let d=dice(w.c*cm,w.d,dmgB()),ex=[];
+      if(sneak){const s=dice(2*cm,6);d+=s;ex.push(`${s} sneak`)}
+      if(C.mark){const s=dice(cm,6);d+=s;ex.push(`${s} from Hunter's Mark`)}
+      hitFoe(d);log('p',`${nat===20?'CRITICAL HIT! ':''}${C.bear?'Your giant bear claws hit':'Your '+wpnName()+' hits'} the ${C.m.n} for ${d} damage${ex.length?` (${ex.join(', ')})`:''}!`)}
+    else log('p',nat===1?pick(['You trip over your own feet. Miss!','Your weapon slips out of your hand for a second. Miss!','You sneeze at the worst possible moment. Miss!']):`You miss the ${C.m.n}!`);
+    after();
+  });
+}
+function special(){
+  if(busy||S.uses<1)return;const sp=cls().sp;
+  if(sp.k==='sneak')return attack('sneak');
+  if(sp.k==='mark'){if(C.mark)return;S.uses--;C.mark=true;log('p',`You fix your eyes on the ${C.m.n}. It's MARKED. It can't hide from you now!`);return attack('atk')}
+  busy=true;S.uses--;
+  if(sp.k==='bear'){if(C.bear){busy=false;S.uses++;return}const t=dice(2,6,S.lvl);C.thp+=t;C.bear=true;log('h',`You drop to all fours, fur bursts out, and you ROAR! You're a giant bear: +${t} bonus HP and +2 damage this fight.`)}
+  else if(sp.k==='missile'){const a=[dice(1,4,1),dice(1,4,1),dice(1,4,1)],t=a[0]+a[1]+a[2];hitFoe(t);log('p',`Three glowing darts zip from your fingers: ${a.join(' + ')} = ${t} damage!`)}
+  else{const n=sp.k==='heal'?dice(1,10,S.lvl):dice(1,8,3+S.lvl);const g=heal(n);log('h',sp.k==='heal'?`You catch your breath and power through. +${g} HP!`:`Healing light flows over your wounds. +${g} HP!`)}
+  after();
+}
+function potion(){if(busy||S.inv.potion<1)return;busy=true;S.inv.potion--;const g=heal(dice(2,4,2));log('h',`${GAME.sip||'Glug glug. The potion tastes like cherries.'} +${g} HP!`);after()}
+function relic(){if(busy||C.lan)return;busy=true;C.lan=true;const d=dice(3,8,2);hitFoe(d);log('p',`${GAME.relic.log} The ${C.m.n} shrieks: ${d} damage!`);after()}
+function dbreath(){if(busy||C.breathUsed)return;busy=true;C.breathUsed=true;const d=dice(2,6,S.lvl);hitFoe(d);log('p',`You take a deep breath and blast a cone of dragon fire! ${d} damage!`);after()}
+function flee(){if(busy||C.m.boss)return;busy=true;render();
+  rollD20({kind:'atk',title:'Run away!',sub:'Dexterity check',bonus:S.st.dex,blabel:'DEX',target:12,tlabel:'needed',auto:1},ok=>{
+    if(ok){const f=C.from;C=null;busy=false;go(f,'You run for it and get away! Phew.');return}
+    log('n','You try to run, but you can\'t get away!');after()})}
+function after(){
+  render();
+  if(C.m.hp<=0)return setTimeout(winFight,550);
+  setTimeout(()=>{
+    if(S.flags.ally){const d=dice(1,4,1+(GAME.allyScale?Math.floor(S.lvl/2):0));hitFoe(d);log('a',pick(GAME.ally.lines).replace('{d}',d));
+      if(C.m.hp<=0){render();return setTimeout(winFight,550)}}
+    foeTurn();C.round++;busy=false;render();
+    if(C.m.hp<=0)return setTimeout(winFight,550);
+    if(S.hp<=0)setTimeout(lose,600);
+  },650);
+}
+function hurtP(d){
+  if(C.thp>0){const a=Math.min(C.thp,d);C.thp-=a;d-=a;if(C.thp<=0&&C.bear){C.bear=false;log('n','POOF! Your bear form wears off and you turn back into yourself.')}}
+  S.hp-=d;
+}
+function foeTurn(){
+  const m=C.m;const before=S.hp+C.thp;let hit=false;
+  if(m.breath&&C.round%3===0){const r=R(20),sv=r+S.st.dex;let d=dice(m.bd||3,6);const ok=r===20||sv>=13;if(ok)d=Math.floor(d/2);hurtP(d);hit=true;
+    log('m',`${m.bt} You dive for cover (${r}${sign(S.st.dex)} = ${sv} vs 13) ${ok?'and only get grazed':'but it catches you'}: ${d} damage!`)}
+  else{const r=R(20),tot=r+m.atk;
+    if(r===20||(r!==1&&tot>=S.ac)){const d=dice(m.dmg[0]*(r===20?2:1),m.dmg[1],m.dmg[2]);hurtP(d);hit=true;log('m',`${r===20?'Critical! ':''}The ${m.n} ${m.v} you for ${d} damage!`)}
+    else log('n',`The ${m.n} ${m.v} you, but misses! (rolled ${tot} vs your Armor ${S.ac})`);
+    if(m.breath&&C.round%3===2)log('n',m.tele)}
+  if(hit&&S.race==='tiefling'&&!C.rebuked&&S.hp>0){C.rebuked=true;const d=dice(2,6);hitFoe(d);log('p',`Hellish Rebuke! Your eyes flash red and flames burst around the ${m.n}: ${d} damage!`)}
+  if(S.hp+C.thp<before){document.body.classList.remove('ouch');void document.body.offsetWidth;document.body.classList.add('ouch')}
+}
+function winFight(){
+  const m=C.m;S.kills[C.id]=(S.kills[C.id]||0)+1;S.gold+=m.gold;const lv=gainXP(m.xp);busy=false;
+  msg('Victory!',`<p>${m.bye}</p><p><b>+${m.xp} XP</b>${m.gold?` &nbsp;·&nbsp; <b>+${m.gold} gold</b>`:''}</p>${lv}`,'Continue',()=>{const w=C.win;C=null;go(w)});
+}
+function lose(){busy=true;msg('You have fallen...','<p>The world spins, and everything goes dark.</p><p>But heroes don\'t give up that easily.</p>','Rise again',()=>restoreCp())}
+
+/* ---------- RENDER ---------- */
+const paras=t=>t.split('\n\n').map(p=>`<p>${p}</p>`).join('');
+function renderBar(){
+  const b=$('#bar');if(!S||screen!=='game'){b.hidden=true;return}b.hidden=false;const c=cls();
+  const nx=S.lvl<LVMAX?LV[S.lvl]:S.xp,pv=LV[S.lvl-1],xpP=S.lvl<LVMAX?Math.round((S.xp-pv)/(nx-pv)*100):100;
+  const thp=C&&C.thp>0?` <span class="thp">+${C.thp} bear</span>`:'';
+  b.innerHTML=`<div class="bar-in"><button class="who" id="sheetBtn" aria-label="Open hero sheet"><span class="ico">${C&&C.bear?'🐻':c.i}</span><span><b>${S.name}</b><small>Lv ${S.lvl} ${race().name} ${c.name}</small></span></button>
+   <div class="vitals"><div class="vit-row"><span>Health${thp}</span><span>${Math.max(0,S.hp)} / ${S.max}</span></div><div class="track"><i style="width:${Math.max(0,S.hp)/S.max*100}%"></i></div>
+   <div class="track xp" title="Experience"><i style="width:${xpP}%"></i></div></div>
+   <div class="purse"><span class="g">${S.gold} gold</span><span>🧪 ${S.inv.potion}</span></div></div>`;
+  $('#sheetBtn').onclick=sheet;
+}
+function render(){
+  renderBar();const m=$('#main');
+  if(screen==='title')return renderTitle(m);
+  if(screen==='create')return renderCreate(m);
+  if(S.mode==='combat')return renderCombat(m);
+  renderNode(m);
+}
+function renderNode(m){
+  const n=N[S.node];let h=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">${n.i}</div><h2>${n.t}</h2></div>`;
+  if(S.note)h+=`<div class="note"><span>What happened</span><p>${S.note}</p></div>`;
+  h+=paras(n.x(S));
+  if(n.type==='shop')h+=`<div class="shop">${SHOP.map((it,i)=>{const own=S.inv[it.k],full=it.max&&own>=it.max;
+    return `<div class="item"><div><b>${it.n}${own?` <small>(you have ${own})</small>`:''}</b><small>${it.d}</small></div><button class="buy" data-buy="${i}" ${full||S.gold<it.p?'disabled':''}>${full?'Owned':it.p+' gold'}</button></div>`}).join('')}</div>`;
+  const q=n.type==='riddle'?(n.q||RIDDLES[S.flags.rq]):null;
+  if(q&&!(n.done&&n.done(S)))h+=`<div class="riddle"><q>${q[0]}</q><div class="opts">${S.flags.ro.map((o,i)=>`<button class="ch" data-r="${i}"><span class="arr">›</span><span class="lab">${o}</span></button>`).join('')}</div></div>`;
+  if(n.type==='end'){const k=Object.values(S.kills).reduce((a,b)=>a+b,0);h+=`<div class="summary"><div><b>${S.lvl}</b><small>Level</small></div><div><b>${k}</b><small>Monsters beaten</small></div><div><b>${S.gold}</b><small>Gold</small></div></div>`}
+  h+='</article>';
+  cur=n.c?n.c(S).filter(c=>c.if!==false):[];
+  if(cur.length){h+=`<div class="choices">${cur.map((c,i)=>{let tag='';
+    if(c.check)tag=`<span class="tag chk">${c.check.st.toUpperCase()} ${c.check.dc}</span>`;else if(c.fight)tag=`<span class="tag bat">Battle</span>`;else if(c.cost)tag=`<span class="tag gold">${c.cost} gold</span>`;else if(c.tag)tag=`<span class="tag bat">${c.tag}</span>`;
+    return `<button class="ch" data-c="${i}" ${c.cost&&S.gold<c.cost?'disabled':''}><span class="arr">›</span><span class="lab">${c.t}</span>${tag}</button>`}).join('')}</div>`;
+    const hint=cur.find(c=>c.hint);if(hint)h+=`<div class="hint">${hint.hint}</div>`}
+  if(n.type==='end')h+=`<div class="choices"><button class="big" id="again">Play again with a new hero</button></div><p class="hint">Can you win with all six classes? Try a different path too. There are secrets you haven't found yet.</p>`;
+  m.innerHTML=h;
+  m.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>choose(+b.dataset.c));
+  m.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=SHOP[+b.dataset.buy];if(S.gold<it.p)return;S.gold-=it.p;S.inv[it.k]++;S.note=`You bought: ${it.n}.`;save();render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const ok=S.flags.ro[+b.dataset.r]===q[1];go(ok?n.ok:n.bad,ok?'':`The answer was: ${q[1]}.`)});
+  if($('#again'))$('#again').onclick=()=>{S=null;screen='create';render()};
+}
+function renderCombat(m){
+  const f=C.m,c=cls(),sp=c.sp,w=c.wpn,d=busy;
+  const spOff=d||S.uses<1||(sp.k==='mark'&&C.mark)||(sp.k==='bear'&&C.bear);
+  let h=`<article class="card"><div class="foe" id="foe"><div class="foe-ico" aria-hidden="true">${f.i}</div><h2>${f.n}</h2>
+   <div class="track"><i style="width:${Math.max(0,f.hp)/f.max*100}%"></i></div><div class="foe-meta"><span>${Math.max(0,f.hp)} / ${f.max} HP</span><span>Armor ${f.ac}</span><span>Round ${C.round}</span></div>
+   ${C.mark||C.bear?`<div class="status">${C.mark?'<span>Marked</span>':''}${C.bear?'<span>You are a bear</span>':''}</div>`:''}</div>
+   <div class="acts">`;
+  if(S.flags.lantern&&f.lantern&&!C.lan)h+=`<button class="act lan" id="aL" ${d?'disabled':''}><b>${GAME.relic.btn}</b><small>${GAME.relic.desc}</small></button>`;
+  h+=`<button class="act main" id="aA" ${d?'disabled':''}><b>Attack: ${C.bear?'Bear Claws':wpnName()}</b><small>d20 ${sign(toHit())} to hit · ${w.c}d${w.d}${sign(dmgB())} damage${C.mark?' +1d6':''}</small></button>
+   <button class="act" id="aS" ${spOff?'disabled':''}><b>${sp.n}</b><small>${sp.d} · ${S.uses} left</small></button>
+   <button class="act" id="aP" ${d||S.inv.potion<1||S.hp>=S.max?'disabled':''}><b>Healing Potion</b><small>Heal 2d4+2 · ${S.inv.potion} left</small></button>
+   ${S.race==='dragonborn'?`<button class="act" id="aB" ${d||C.breathUsed?'disabled':''}><b>Dragon Breath</b><small>2d6${sign(S.lvl)} fire damage · ${C.breathUsed?'used':'once per fight'}</small></button>`:''}
+   <button class="act" id="aR" ${d||f.boss?'disabled':''}><b>Run away</b><small>${f.boss?'You can\'t run from a boss!':'Dexterity check, need 12'}</small></button>
+   </div><div class="log" aria-live="polite">${C.log.slice(0,6).map(l=>`<div class="${l.c}">${l.t}</div>`).join('')}</div></article>`;
+  m.innerHTML=h;
+  if(C.hit){C.hit=false;$('#foe').classList.add('hit')}
+  $('#aA').onclick=()=>attack('atk');$('#aS').onclick=special;$('#aP').onclick=potion;$('#aR').onclick=flee;
+  if($('#aL'))$('#aL').onclick=relic;if($('#aB'))$('#aB').onclick=dbreath;
+}
+function sheet(){
+  const c=cls(),items=[];if(S.inv.potion)items.push(`${S.inv.potion} Healing Potion${S.inv.potion>1?'s':''}`);if(S.inv.rope)items.push(SHOP.find(x=>x.k==='rope').n);if(S.inv.luck)items.push(GAME.luck);
+  GAME.items.forEach(([f,l])=>{if(S.flags[f])items.push(l)});
+  const k=Object.entries(S.kills).map(([id,n])=>`${MON[id].n}${n>1?' ×'+n:''}`).join(', ')||'None yet';
+  msg(`${S.name}`,`<div style="text-align:center;color:var(--mute);font-weight:700">Level ${S.lvl} ${race().name} ${c.name} · ${S.xp} XP${S.lvl<LVMAX?` (next level at ${LV[S.lvl]})`:''}</div>
+   <div class="sheet-stats">${Object.keys(STATN).map(s=>`<div><b>${sign(S.st[s])}</b><small>${s.toUpperCase()}</small></div>`).join('')}</div>
+   <div class="kv"><div><span>Health</span><b>${S.hp} / ${S.max}</b></div><div><span>Armor</span><b>${S.ac}</b></div><div><span>Weapon</span><b>${wpnName()} (${c.wpn.c}d${c.wpn.d}${sign(dmgB())})</b></div>
+   <div><span>${c.sp.n}</span><b>${S.uses} / ${c.sp.uses} left</b></div><div><span>${race().name} power</span><b>${race().perk}</b></div><div><span>Gold</span><b>${S.gold}</b></div><div><span>Items</span><b>${items.join(', ')||'Nothing'}</b></div>
+   ${S.flags.ally?`<div><span>Companion</span><b>${GAME.ally.name}</b></div>`:''}<div><span>Monsters beaten</span><b>${k}</b></div></div>`,'Back to the adventure');
+}
+function renderTitle(m){
+  const w=store.get(WINS)||{},sv=store.get(SAVE);
+  m.innerHTML=`<div class="title"><div class="lantern" aria-hidden="true">${GAME.icon}</div><h1>${GAME.title}</h1><div class="tag-line">${GAME.tagline}</div>
+   <div class="menu">${sv?`<button class="big" id="cont">Continue: ${sv.name} the ${RACES[sv.race].name} ${CL[sv.cls].name}</button><button class="ghost" id="nw">Start a new adventure</button>`:`<button class="big" id="nw">Start a new adventure</button>`}</div></div>
+   <div class="trophies"><h3>Classes that beat the game</h3><div class="tro">${Object.entries(CL).map(([k,c])=>`<span class="${w[k]?'won':''}"><i>${c.i}</i>${c.name}</span>`).join('')}</div></div>
+   <details><summary>How to play</summary><ul>
+   <li>Read what happens, then tap a choice to decide what your hero does.</li>
+   <li>Choices with a blue tag like <b>DEX 13</b> are checks. Roll a 20-sided die (d20) and add your bonus. Get 13 or more to succeed. A natural 20 always works!</li>
+   <li>In battle, roll to hit. You need to match or beat the monster's Armor number.</li>
+   <li>Your race gives you a special power, and your class gives you another. Try different combos!</li>
+   <li>Win battles to earn XP and level up. Gold buys potions at the shop.</li>
+   <li>If you fall, you'll wake up at the last safe spot. Your game saves itself as you go.</li>
+   <li>Tap your hero's name at the top to see your hero sheet.</li></ul></details>`;
+  $('#nw').onclick=()=>{screen='create';render()};
+  if($('#cont'))$('#cont').onclick=()=>{S=sv;screen='game';S.mode='story';render()};
+}
+let pickC='fighter',pickR='human',pickD='normal',pickN='';
+function renderCreate(m){
+  const st=heroStats(pickC,pickR),hp=CL[pickC].hp+(pickR==='dwarf'?3:0);
+  m.innerHTML=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">📜</div><h2>Create your hero</h2></div>
+   <label class="f" for="hn">Hero name</label><input type="text" id="hn" maxlength="16" placeholder="Leave blank for a random name" value="${pickN}">
+   <label class="f">Choose your race</label><div class="grid races">${Object.entries(RACES).map(([k,r])=>`<button class="cls ${k===pickR?'sel':''}" data-r="${k}"><span class="ci">${r.i}</span><b>${r.name}</b><small>${r.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${RACES[pickR].name} power</b> ${RACES[pickR].perk}</div>
+   <label class="f">Choose your class</label><div class="grid">${Object.entries(CL).map(([k,c])=>`<button class="cls ${k===pickC?'sel':''}" data-k="${k}"><span class="ci">${c.i}</span><b>${c.name}</b><small>${c.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${CL[pickC].sp.n}</b> ${CL[pickC].sp.d}.</div>
+   <div class="preview"><div class="pv-name">${RACES[pickR].name} ${CL[pickC].name}</div><div class="pv-st">
+     <span><em>HP</em> ${hp}</span><span><em>Armor</em> ${CL[pickC].ac}</span>${Object.keys(STATN).map(s=>`<span><em>${s.toUpperCase()}</em> ${sign(st[s])}</span>`).join('')}</div></div>
+   <label class="f">Difficulty</label><div class="seg"><button data-d="normal" class="${pickD==='normal'?'sel':''}">Normal<small>Real D&amp;D danger</small></button><button data-d="easy" class="${pickD==='easy'?'sel':''}">Easy<small>Weaker monsters, better aim</small></button></div>
+   <div class="choices"><button class="big" id="go">Begin the adventure</button><button class="ghost" id="bk">Back</button></div></article>`;
+  $('#hn').oninput=e=>pickN=e.target.value;
+  m.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{pickC=b.dataset.k;render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{pickR=b.dataset.r;render()});
+  m.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{pickD=b.dataset.d;render()});
+  $('#bk').onclick=()=>{screen='title';render()};
+  $('#go').onclick=()=>{
+    const n=(pickN||'').replace(/[^\p{L}\p{N} '\-]/gu,'').trim().slice(0,16)||pick(['Brannoc','Kestrel','Thorne','Zephyr','Rook','Talon','Juno','Ash','Wren','Cassius']);
+    const c=CL[pickC];
+    S={name:n,cls:pickC,race:pickR,diff:pickD,lvl:1,xp:0,hp,max:hp,ac:c.ac,st:heroStats(pickC,pickR),gold:20,inv:{potion:1,rope:0,luck:pickR==='halfling'?1:0},uses:c.sp.uses,flags:{},kills:{},node:GAME.start,note:'',mode:'story',cp:null};
+    pickN='';screen='game';go(GAME.start);
+  };
+}
+render();
+
+</script>
+<a href="../index.html#dnd" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:15;font:700 13px/1 Nunito,system-ui,sans-serif;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 12px;text-decoration:none;opacity:.85">All games</a>
+</body>
+</html>

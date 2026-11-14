@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Kraken&#39;s Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-size:14px;font-family:system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Layout: one centered column (max 680px). Sticky hero bar, story card, big stacked choices, dice tray modal. Single dark theme by choice. */
+:root{--bg:#0d1a22;--panel:#13262f;--panel2:#1a323d;--line:#2b4a57;--ink:#eef6f4;--mute:#9bb5b8;
+  --torch:#f4b860;--torch2:#ffe0a8;--blood:#ef6a5a;--mana:#6fd3e0;--leaf:#7ad19a;--dieline:#5a3a10;--barbg:rgba(13,26,34,.94);
+  --btnink:#2a1a05;--notebg:#183544;--noteline:#3f7a8c;--selbg:#1d3d4a;--lan1:#3a3a26;--lan2:#26281c;--badge:#1d3a47;--glow:244,184,96;
+  --f-disp:'IM Fell English SC','Luminari',Georgia,serif;
+  --f-body:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;color-scheme:dark}
+
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:17px;line-height:1.55;min-height:100vh;
+  background:radial-gradient(ellipse 90% 50% at 50% -8%, rgba(var(--glow),.16), transparent 70%),var(--bg);}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--torch2);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+h1,h2,h3{font-family:var(--f-disp);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0}
+
+/* hero bar */
+#bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--barbg);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar-in{max-width:680px;margin:0 auto;display:flex;gap:12px;align-items:center;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.who{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;text-align:left;min-width:0}
+.who .ico{font-size:22px}
+.who b{display:block;font-size:15px;line-height:1.1;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who small{color:var(--mute);font-size:12px;font-weight:700}
+.vitals{flex:1;min-width:0}
+.vit-row{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.track{height:10px;background:#0c0f1a;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.track i{display:block;height:100%;background:linear-gradient(90deg,#b8322a,var(--blood));transition:width .4s}
+.track.xp{height:5px;margin-top:4px;border:0}
+.track.xp i{background:var(--mana)}
+.purse{display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.purse .g{color:var(--torch2)}
+.ouch #bar{animation:ouch .45s}
+@keyframes ouch{0%,100%{background:var(--barbg)}30%{background:rgba(160,40,34,.75)}}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.scene-head{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.badge{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:radial-gradient(circle at 50% 40%,var(--badge),#1a1a22);border:2px solid var(--torch);box-shadow:0 0 18px rgba(var(--glow),.3)}
+.scene-head h2{font-size:30px;color:var(--torch2);line-height:1.1}
+.card p{margin:0 0 12px;max-width:62ch}
+.card p:last-child{margin-bottom:0}
+.note{background:var(--notebg);border:1px solid var(--noteline);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.note span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--torch)}
+.note p{margin:2px 0 0;font-weight:600}
+.lvup{margin-top:10px;padding:10px 12px;border-radius:10px;background:#1b2c40;border:1px solid var(--mana);color:#cfe6ff;font-weight:700}
+
+.choices{display:grid;gap:10px;margin-top:16px}
+.ch{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-weight:700;font-size:17px;transition:border-color .15s,transform .1s}
+.ch:hover:not(:disabled){border-color:var(--torch)}
+.ch:active:not(:disabled){transform:scale(.985)}
+.ch:disabled{opacity:.45;cursor:not-allowed}
+.ch .arr{color:var(--torch);font-size:20px;line-height:1}
+.ch .lab{flex:1;min-width:0}
+.tag{flex:none;font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.tag.chk{color:var(--mana)} .tag.bat{color:var(--blood)} .tag.gold{color:var(--torch2)} .tag.done{color:var(--leaf)}
+.hint{color:var(--mute);font-size:14px;margin-top:10px}
+
+/* shop & riddle */
+.shop{display:grid;gap:10px;margin-top:14px}
+.item{display:flex;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.item div{flex:1;min-width:0}
+.item b{display:block}
+.item small{color:var(--mute);font-size:14px}
+.buy{background:var(--torch);color:var(--btnink);border:0;border-radius:10px;padding:8px 12px;font-weight:800;white-space:nowrap}
+.buy:disabled{background:var(--line);color:var(--mute);cursor:not-allowed}
+.riddle{margin-top:14px;padding:16px;border-radius:14px;background:#151a2b;border:1px dashed var(--torch)}
+.riddle q{display:block;font-family:var(--f-disp);font-size:26px;color:var(--torch2);quotes:none;line-height:1.2;margin-bottom:12px}
+.riddle .opts{display:grid;gap:8px}
+
+/* combat */
+.foe{text-align:center}
+.foe-ico{font-size:76px;line-height:1.1;display:inline-block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+.foe.hit .foe-ico{animation:shake .45s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px) rotate(-6deg)}40%{transform:translateX(10px) rotate(5deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.foe h2{font-size:30px;color:var(--torch2);margin:4px 0 10px}
+.foe .track{height:14px;max-width:360px;margin:0 auto}
+.foe-meta{display:flex;justify-content:center;gap:16px;margin-top:6px;font-size:14px;font-weight:800;color:var(--mute);font-variant-numeric:tabular-nums}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.act{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left;min-width:0}
+.act b{display:block;font-size:16px}
+.act small{display:block;color:var(--mute);font-size:13px;line-height:1.3;margin-top:2px}
+.act.main{border-color:var(--torch);background:var(--selbg)}
+.act.lan{grid-column:1/-1;border-color:var(--torch2);background:linear-gradient(90deg,var(--lan1),var(--lan2));animation:glow 1.6s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 22px rgba(255,216,137,.35)}}
+.act:hover:not(:disabled){border-color:var(--torch2)}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.log{margin-top:16px;display:grid;gap:6px;font-size:15px}
+.log div{padding:8px 12px;border-radius:10px;background:#161b2b}
+.log div:first-child{background:#20263a;font-weight:700}
+.log .p{color:var(--torch2)} .log .m{color:#ff9a90} .log .a,.log .h{color:#9be3ad} .log .n{color:var(--mute)}
+
+/* overlay */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(6,8,14,.78);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ovbox{width:100%;max-width:420px;max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--torch);border-radius:20px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ovbox h3{font-size:30px;color:var(--torch2)}
+.ovbox .sub{color:var(--mute);margin:4px 0 6px}
+.ovbox .body{text-align:left;margin-top:10px}
+.die{position:relative;width:140px;height:140px;margin:10px auto}
+.die svg{width:100%;height:100%}
+.die .num{position:absolute;inset:0;display:grid;place-items:center;padding-top:12px;font-family:var(--f-disp);font-size:44px;color:var(--btnink)}
+.die.spin svg{animation:spin .85s cubic-bezier(.2,.7,.3,1)}
+@keyframes spin{from{transform:rotate(0) scale(.7)}to{transform:rotate(720deg) scale(1)}}
+.die.land{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.15)}}
+.die.crit svg polygon:first-child{fill:#ffd889}
+.die.crit{filter:drop-shadow(0 0 18px rgba(255,216,137,.9))}
+.die.fumble svg polygon:first-child{fill:#e2574c}
+.res{font-variant-numeric:tabular-nums;font-weight:700;min-height:1.5em}
+.verdict{font-family:var(--f-disp);font-size:34px;line-height:1.1;min-height:1.1em;margin:4px 0}
+.verdict.ok{color:var(--leaf)} .verdict.bad{color:var(--blood)} .verdict.crit{color:var(--torch2)}
+.btns{display:grid;gap:8px;margin-top:14px}
+.big{background:var(--torch);color:var(--btnink);border:0;border-radius:14px;padding:14px 18px;font-weight:800;font-size:18px}
+.big:hover{background:var(--torch2)}
+.ghost{background:transparent;border:2px solid var(--line);border-radius:14px;padding:12px;font-weight:700}
+.ghost:hover{border-color:var(--torch)}
+
+/* title & creation */
+.title{text-align:center;padding-block:28px 8px}
+.lantern{font-size:72px;display:inline-block;animation:flick 2.4s infinite;filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}
+@keyframes flick{0%,100%{filter:drop-shadow(0 0 26px rgba(var(--glow),.7))}45%{filter:drop-shadow(0 0 14px rgba(var(--glow),.45))}55%{filter:drop-shadow(0 0 32px rgba(255,216,137,.8))}}
+.title h1{font-size:clamp(46px,12vw,78px);line-height:.95;color:var(--torch2);text-shadow:0 4px 0 var(--dieline),0 0 30px rgba(var(--glow),.35)}
+.title .tag-line{color:var(--mute);font-weight:700;margin:10px 0 22px}
+.menu{display:grid;gap:10px;max-width:360px;margin:0 auto}
+.trophies{margin-top:28px;text-align:center}
+.trophies h3{font-family:var(--f-body);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.tro{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.tro span{width:64px;padding:8px 0;border-radius:12px;border:1px dashed var(--line);font-size:12px;font-weight:800;color:var(--mute)}
+.tro span i{display:block;font-style:normal;font-size:24px;filter:grayscale(1);opacity:.35}
+.tro span.won{border:1px solid var(--torch);color:var(--torch2);background:var(--notebg)}
+.tro span.won i{filter:none;opacity:1}
+details{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+summary{font-weight:800;cursor:pointer}
+details ul{margin:10px 0 0;padding-left:20px}
+details li{margin-bottom:6px}
+label.f{display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
+input[type=text]{width:100%;background:#0f1320;border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:20px;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cls{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.cls.sel{border-color:var(--torch);background:var(--selbg);box-shadow:0 0 0 3px rgba(var(--glow),.2)}
+.cls .ci{font-size:28px}
+.cls b{display:block;font-family:var(--f-disp);font-weight:400;font-size:24px;color:var(--torch2);line-height:1.1}
+.cls small{display:block;color:var(--mute);font-size:13px;line-height:1.35;margin-top:2px}
+.cls .st{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.cls .st em{font-style:normal;color:var(--mute)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:10px;font-weight:700;text-align:left}
+.seg button small{display:block;color:var(--mute);font-weight:600;font-size:13px}
+.seg button.sel{border-color:var(--torch);background:var(--selbg)}
+.sheet-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.sheet-stats div{background:var(--panel2);border-radius:10px;padding:8px 4px;text-align:center}
+.sheet-stats b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.sheet-stats small{font-size:11px;font-weight:800;color:var(--mute);letter-spacing:.08em}
+.kv{display:grid;gap:6px;font-size:15px}
+.kv div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.kv span{color:var(--mute)}
+.kv b{text-align:right}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.summary div{background:var(--panel2);border-radius:12px;padding:10px 6px;text-align:center}
+.summary b{display:block;font-size:24px;color:var(--torch2);font-variant-numeric:tabular-nums}
+.summary small{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
+@media (max-width:420px){.acts{grid-template-columns:1fr}.scene-head h2{font-size:26px}.sheet-stats{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+[hidden]{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.grid{grid-template-columns:1fr 1fr}}
+.perk{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px dashed var(--line);font-size:15px}
+.perk b{color:var(--torch2);margin-right:4px}
+.preview{margin-top:18px;padding:14px;border-radius:14px;background:var(--panel2);border:1px solid var(--torch)}
+.pv-name{font-family:var(--f-disp);font-size:26px;color:var(--torch2);line-height:1.1}
+.pv-st{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.pv-st em{font-style:normal;color:var(--mute);font-size:12px;margin-right:3px}
+.status{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.status span{font-size:12px;font-weight:800;letter-spacing:.05em;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--mana);color:var(--mana)}
+.thp{color:var(--mana)}
+.who small{white-space:nowrap}
+</style>
+</head>
+<body>
+<header id="bar" hidden></header>
+<main class="wrap" id="main"></main>
+<div class="ov" id="ov" hidden><div class="ovbox" id="ovbox"></div></div>
+<script>
+const GAME={key:'krakencompass',title:"The Kraken's Compass",tagline:'A swashbuckling Dungeons &amp; Dragons-style pirate quest. Three islands, one ghost ship, and a Kraken. About an hour of adventure.',icon:'🧭',start:'harbor',silver:'Moonsilver',luck:'Lucky Doubloon',allyScale:1,lv:[0,120,300,550,850,1200,1650],sip:'Glug glug. Tastes like coconut!',
+ relic:{btn:'Raise the Compass',desc:'3d8+2 silver light damage. Ghosts and dark magic HATE it! Once per fight.',log:'You raise the Kraken\'s Compass and silver light blazes across the waves!'},
+ ally:{name:'Admiral Feathers the parrot',lines:['Admiral Feathers dive-bombs it, beak first: {d} damage!','"FOR THE ROYAL NAVY!" Admiral Feathers pecks it on the nose: {d} damage!','Admiral Feathers flaps in its face and squawks insults: {d} damage!']},
+ items:[['shard1','The Needle'],['shard2','The Glass'],['shard3','The Dial'],['star1','Sea Pearl'],['star2','Sea Pearl'],['star3','Sea Pearl'],['scale','Mermaid Scale Charm (+1 Armor)'],['mango','Golden Mangoes'],['shell','Princess Coralie\'s voice shell'],['egg','Dragon turtle egg']]};
+const MON={
+  /* Saltmere & Monkey Isle */
+  rats:{n:`Bilge Rat Pirates`,i:`🏴‍☠️`,hp:12,ac:11,atk:3,dmg:[1,6,1],xp:60,gold:12,v:`swing their rusty cutlasses at`,intro:`"Arr! Hand over yer gold, landlubber!" The pirates draw their rusty swords.`,bye:`The Bilge Rats leap off the dock with a SPLASH and swim away, yelling "We'll be back! Probably!"`},
+  crab:{n:`Giant Crab`,i:`🦀`,hp:10,ac:12,atk:3,dmg:[1,6,1],xp:30,gold:1,v:`pinches`,intro:`A crab as big as a wheelbarrow scuttles sideways out of the sand, snapping its claws.`,bye:`The crab scuttles away sideways, grumbling in Crab.`},
+  monkeys:{n:`Howler Monkey Gang`,i:`🐒`,hp:11,ac:12,atk:3,dmg:[1,4,2],xp:35,gold:2,v:`throw coconuts at`,intro:`A gang of monkeys drops out of the trees, howling and waving coconuts.`,bye:`The monkeys run off, still howling. One of them steals your hat on the way out. Then gives it back.`},
+  python:{n:`Jungle Python`,i:`🐍`,hp:12,ac:11,atk:3,dmg:[1,6,1],xp:40,gold:0,v:`squeezes`,intro:`A snake as thick as a tree trunk unwinds from a branch. "Hello, ssssnack."`,bye:`The python slithers off to find something less pointy to eat.`},
+  bananas:{n:`King Bananas the Great Ape`,i:`🦍`,hp:24,ac:12,atk:4,dmg:[1,8,1],xp:200,gold:15,boss:1,v:`pounds his giant fists at`,intro:`"OOH OOH AAH AAH!" King Bananas beats his chest so hard that coconuts fall out of every tree on the island.`,bye:`King Bananas sits down with a huff, crosses his arms, and tosses you the Needle of the compass. Then he eats a banana, very angrily.`},
+  bananasweak:{n:`King Bananas the Great Ape`,i:`🦍`,hp:17,ac:12,atk:4,dmg:[1,6,1],xp:200,gold:15,boss:1,v:`swings a lazy fist at`,intro:`King Bananas is so full of Golden Mangoes that he can barely stand up. He burps. "Ooh... ooh..."`,bye:`King Bananas flops onto his back, too full to fight. He tosses you the Needle of the compass and starts snoring.`},
+  /* Shipwreck Reef */
+  eels:{n:`Electric Eels`,i:`⚡`,hp:16,ac:13,atk:5,dmg:[2,4,1],xp:70,gold:2,v:`zap`,intro:`Three glowing eels wriggle out of the coral, crackling with electricity. BZZZT!`,bye:`The eels short-circuit and wiggle away, their hair (they don't have hair) standing on end.`},
+  shark:{n:`Reef Shark`,i:`🦈`,hp:18,ac:12,atk:5,dmg:[1,8,2],xp:70,gold:0,v:`chomps at`,intro:`Dun-dun. Dun-dun. DUN-DUN-DUN-DUN. A shark circles you, grinning.`,bye:`The shark decides you taste like seaweed and swims off.`},
+  drowned:{n:`Drowned Pirate`,i:`💀`,hp:20,ac:13,atk:5,dmg:[1,8,2],xp:80,gold:8,lantern:1,v:`slashes a soggy sword at`,intro:`A skeleton in a rotted pirate coat floats up from a sunken ship. "Glub glub, matey."`,bye:`The drowned pirate falls apart into a pile of bones and seaweed. "Glub," it says, sadly.`},
+  clackjaw:{n:`Old Clackjaw the Crab King`,i:`🦀`,hp:30,ac:15,atk:5,dmg:[2,6,1],xp:150,gold:20,v:`snaps his huge golden claw at`,intro:`A crab the size of a carriage, wearing a crown made from a bucket, rises from the sand. "WHO DISTURBS THE KING?"`,bye:`Old Clackjaw backs into his cave. "You may pass. But the bucket stays with ME."`},
+  hag:{n:`Mother Brine the Sea Hag`,i:`🧜‍♀️`,hp:38,ac:14,atk:6,dmg:[2,4,2],xp:300,gold:30,boss:1,breath:1,
+    bt:`Mother Brine spins her staff and summons a roaring WHIRLPOOL!`,tele:`Mother Brine starts stirring the water with her staff... it's starting to spin!`,v:`slaps you with a slimy seaweed whip`,intro:`"Heh heh heh. Pretty little compass glass. Pretty little hero. I'll keep BOTH!"`,bye:`Mother Brine shrieks, turns into a puff of green bubbles, and pops. The Glass of the compass drops into your hands.`},
+  hagweak:{n:`Mother Brine the Sea Hag`,i:`🧜‍♀️`,hp:28,ac:13,atk:5,dmg:[2,4,1],xp:300,gold:30,boss:1,breath:1,bd:1,
+    bt:`Mother Brine tries to summon a whirlpool, but without the stolen song, it's just a little swirl.`,tele:`Mother Brine tries to sing a spell... it comes out as a croak!`,v:`slaps you with a slimy seaweed whip`,intro:`"My SONG! You gave the song back to that fish-girl! Now I'll have to do this the hard way!"`,bye:`Mother Brine shrieks, turns into a puff of green bubbles, and pops. The Glass of the compass drops into your hands.`},
+  /* Smoketooth Isle */
+  magcrabs:{n:`Magma Crabs`,i:`🔥`,hp:20,ac:14,atk:6,dmg:[2,4,2],xp:80,gold:3,v:`pinch with red-hot claws at`,intro:`Crabs with shells of glowing lava scuttle out of a crack. Everything they touch sizzles.`,bye:`The magma crabs cool down, turn grey, and scuttle off to sulk.`},
+  imps:{n:`Fire Imps`,i:`😈`,hp:18,ac:13,atk:6,dmg:[2,4,2],xp:80,gold:4,v:`throw fireballs at`,intro:`A gang of tiny fire imps cackles and juggles fireballs. "Catch!"`,bye:`The imps fizzle out like birthday candles. "Pfft."`},
+  obsidian:{n:`Obsidian Golem`,i:`🗿`,hp:40,ac:16,atk:6,dmg:[2,6,3],xp:200,gold:0,v:`slams a glassy black fist at`,intro:`A giant made of shiny black volcano glass steps out of the rock wall. Its eyes glow like lava.`,bye:`The Obsidian Golem cracks down the middle and crumbles into a pile of shiny black pebbles.`},
+  turtle:{n:`Grandfather Ashshell the Dragon Turtle`,i:`🐢`,hp:48,ac:15,atk:7,dmg:[2,6,2],xp:350,gold:40,boss:1,breath:1,
+    bt:`Grandfather Ashshell breathes a cloud of scalding STEAM!`,tele:`Grandfather Ashshell's nostrils start to puff and whistle like a teakettle...`,v:`snaps his beak at`,intro:`"For four hundred years I have guarded the Dial. I will not hand it to the first sprout who comes knocking!"`,bye:`Grandfather Ashshell pulls his head into his shell. A slow, rumbly voice says: "Well fought, sprout. Take the Dial. And go away. I'm napping."`},
+  /* Finale */
+  ghostcrew:{n:`Blackwake's Ghost Crew`,i:`👻`,hp:30,ac:14,atk:7,dmg:[1,10,3],xp:150,gold:10,lantern:1,v:`slash their ghostly cutlasses at`,intro:`A crowd of see-through pirates swings across on ropes made of fog. "YO HO HOOOOO!"`,bye:`The ghost crew wails and fades into mist. One of them waves goodbye. Weird.`},
+  blackwake:{n:`Captain Blackwake`,i:`☠️`,hp:45,ac:15,atk:7,dmg:[2,6,3],xp:300,gold:0,boss:1,lantern:1,breath:1,
+    bt:`Captain Blackwake roars "FIRE!" and his ghost cannons blast a BROADSIDE!`,tele:`Blackwake's ghost cannons swing around to point at you...`,v:`slashes his ghostly cutlass at`,intro:`"So ye brought me the compass! How THOUGHTFUL! Now hand it over, or walk the plank!"`,bye:`Blackwake staggers back against the mast. "Ye haven't won yet, whelp! KRAKEN! RISE!"`},
+  kraken:{n:`The Kraken`,i:`🐙`,hp:60,ac:15,atk:7,dmg:[2,8,3],xp:500,gold:0,boss:1,lantern:1,breath:1,
+    bt:`The Kraken swings ALL EIGHT tentacles across the deck at once!`,tele:`The Kraken pulls its tentacles back like a giant spring...`,v:`slams a huge tentacle at`,intro:`The sea bursts open, and a squid the size of an island rises up, eyes glowing with Blackwake's purple magic.`,bye:`The compass blazes with light. The purple glow fades from the Kraken's eyes, and it sinks back beneath the waves with a long, tired sigh.`},
+};
+const MINOR=['crab','monkeys','python'];
+const POOL={isle:['crab','monkeys','python'],reef:['eels','shark','drowned'],fire:['magcrabs','imps','magcrabs']};
+const RIDDLES=[
+  [`What has a bed but never sleeps, and a mouth but never eats?`,`A river`,[`A pirate`,`A shark`]],
+  [`What can go up a chimney down, but can't go down a chimney up?`,`An umbrella`,[`A parrot`,`Smoke`]],
+  [`What has a head and a tail, but no body?`,`A coin`,[`A snake`,`A comet`]],
+  [`The more of me you take, the more you leave behind. What am I?`,`Footsteps`,[`Treasure`,`Cookies`]],
+  [`I'm full of holes but I can still hold water. What am I?`,`A sponge`,[`A net`,`A bucket`]],
+  [`What gets wetter the more it dries?`,`A towel`,[`A sponge`,`The ocean`]],
+  [`What has an eye but cannot see?`,`A needle`,[`A cyclops`,`A pirate with an eyepatch`]],
+  [`What kind of tree can you carry in your hand?`,`A palm`,[`A coconut tree`,`A bonsai`]],
+  [`What has hands but can't clap?`,`A clock`,[`A statue`,`A glove`]],
+  [`What has many keys but can't open a single lock?`,`A piano`,[`A jail guard`,`A treasure map`]],
+  [`What runs all around a beach but never moves?`,`The shore`,[`A crab`,`The tide`]],
+  [`What has to be broken before you can use it?`,`An egg`,[`A promise`,`A sword`]],
+];
+const SHOP=[
+  {k:'potion',n:`Healing Potion`,d:`Heals 2d4+2 HP. Tastes like coconut. Works in battle too.`,p:10},
+  {k:'rope',n:`Ship's Rope`,d:`Fifty feet of tarred rope. Every pirate needs one.`,p:5,max:1},
+  {k:'luck',n:`Lucky Doubloon`,d:`Reroll one failed check. Used up after.`,p:12,max:1},
+];
+
+const shardN=s=>['shard1','shard2','shard3'].filter(k=>s.flags[k]).length;
+const starN=s=>['star1','star2','star3'].filter(k=>s.flags[k]).length;
+const award=(s,n)=>{s.flags.pendingLv=(s.flags.pendingLv||'')+gainXP(n)};
+const N={
+/* ================= SALTMERE ================= */
+harbor:{t:`The Ghost Ship`,i:`⚓`,cp:1,
+  x:s=>`The harbor town of Saltmere is usually the happiest port on the Glimmering Sea. Tonight, nobody is singing.\n\nA green fog rolls in off the water, and through it sails a ship made of black, rotting wood, with tattered sails that glow like moonlight. A ghost ship. On its deck stands a captain with a long black coat, a hook for a hand, and eyes like purple fire.\n\n"CITIZENS OF SALTMERE!" his voice booms across the water. "I am CAPTAIN BLACKWAKE! I seek the KRAKEN'S COMPASS! Whoever holds it commands the Kraken itself! When I find it, I'll sink every ship on the sea and the whole ocean will be MINE! MWAHAHAHA!" The ghost ship fades into the fog.\n\nA woman with a wooden leg, a huge feathered hat and a sword on each hip stomps up to you. "Name's Captain Mags Rook. Long ago, Admiral Hornbuckle broke that compass into three pieces and hid them: the Needle on Monkey Isle, the Glass at Shipwreck Reef, and the Dial on Smoketooth Isle. We need to find them before Blackwake does. My ship's ready. You in, ${s.name}?"`,
+  c:s=>[{t:`"I'm in. Let's find that compass!"`,go:'town',note:`Mags grins and slaps you on the back so hard you nearly fall in the harbor. "Ha! I like you. Get supplies, then meet me at the Soggy Biscuit."`}]},
+town:{t:`Saltmere Harbor`,i:`🏘️`,cp:1,
+  x:s=>`Saltmere's docks bustle with fishermen, sailors, and seagulls trying to steal everyone's lunch. Lanterns swing on ropes over the boardwalk.\n\nSalty Sal's Tavern is full of sailors telling tall tales. Barnacle Bill's Bargain Barrel sells "everything a pirate needs and some things they don't." The Crow's Nest Inn rents hammocks for the night. And at the end of the pier bobs Captain Mags's ship, the Soggy Biscuit.${shardN(s)?`\n\nYou carry ${shardN(s)} of the 3 compass pieces.`:''}`,
+  c:s=>[{t:`Listen to the sailors at Salty Sal's Tavern`,go:'tavern'},
+    {t:`Shop at Barnacle Bill's Bargain Barrel`,go:'shop'},
+    {t:`Sleep at the Crow's Nest Inn`,cost:5,act:s=>rest(s),go:'town',note:`You swing gently in a hammock and dream about treasure. Health and abilities fully restored!`,if:s.hp<s.max||s.uses<CL[s.cls].sp.uses},
+    {t:`Board the Soggy Biscuit`,go:s.flags.docks?'ship':'docks'}]},
+tavern:{t:`Salty Sal's Tavern`,i:`🍺`,en:s=>{s.flags.tv=(s.flags.tv||0)+1;if(s.flags.tv===1)s.inv.potion++},
+  x:s=>s.flags.tv>1?`Salty Sal wipes the bar with a rag that is somehow dirtier than the bar. "Remember what I told ye: mangoes for the ape, a song for the mermaid, an egg for the turtle. And if ye find any Sea Pearls, keep 'em close."${starN(s)?`\n\nShe peeks at your pouch. "Ooh! ${starN(s)} of the 3 Sea Pearls! Ye're a lucky one."`:''}`
+  :`Salty Sal runs the tavern. She has tattoos of anchors up both arms and a laugh like a foghorn. She slides you a free Healing Potion. "On the house, hero. Ye'll need it."\n\nThe old sailors lean in close.\n\n"On Monkey Isle," says one, "King Bananas the ape guards the Needle. He's mean, but he can't resist golden mangoes. Eats 'em till he can't move."\n\n"At Shipwreck Reef," says another, "a sea hag stole the singing voice of a mermaid princess. Get it back and the mermaids will help ye."\n\n"And on Smoketooth Isle," says Sal, "old Grandfather Ashshell the dragon turtle guards the Dial. Rumor says fire imps stole one of his eggs."\n\nSal lowers her voice. "One more thing. Legend says the Kraken wasn't always angry. Three Sea Pearls, hidden on those three islands, can calm the beast forever. If ye find 'em... bring 'em along."`,
+  c:s=>[{t:`Back to the harbor`,go:'town'}]},
+shop:{t:`Barnacle Bill's Bargain Barrel`,i:`🛢️`,type:'shop',
+  x:s=>`Barnacle Bill is covered in actual barnacles. Nobody knows how. His shop is a giant barrel turned on its side, stuffed with ropes, potions, maps, and a stuffed swordfish named Gregory.\n\n"Welcome, welcome! Everything's a bargain! Except Gregory. Gregory is not for sale."`,
+  c:s=>[{t:`Back to the harbor`,go:'town'}]},
+docks:{t:`Trouble at the Pier`,i:`🏴‍☠️`,en:s=>s.flags.docks=1,
+  x:s=>`You're halfway down the pier when a gang of scruffy pirates blocks your path. They're wearing T-shirts that say BILGE RATS in drippy letters.\n\n"Oi! Blackwake's payin' good gold for anyone who stops you lot," says the leader. He has exactly three teeth. "So, uh... consider yerself STOPPED!"`,
+  c:s=>[{t:`Fight the Bilge Rats!`,fight:'rats',win:'ship'},
+    {t:`"Blackwake's a GHOST. How's he gonna pay you? Ghost money?"`,check:{st:'int',dc:12,pass:{go:'ship',note:`The pirates look at each other. "...Ghost money?" "Can you even spend ghost money?" "I don't think you can spend ghost money." They wander off, arguing. You stroll onto the ship.`},fail:{fight:'rats',win:'ship',note:`"Ghost money spends just fine!" says the leader, who has clearly never thought about this. "GET 'EM!"`}}},
+    {t:`Push them all into the harbor`,check:{st:'str',dc:13,pass:{go:'ship',note:`You charge down the pier like a bowling ball. SPLASH. SPLASH. SPLASH. Strike! Mags applauds from the ship.`},fail:{fight:'rats',win:'ship',note:`You push the first pirate. He doesn't move. He pushes you back. Time to fight.`}}}]},
+ship:{t:`Aboard the Soggy Biscuit`,i:`⛵`,cp:1,
+  x:s=>{const n=shardN(s);return `The Soggy Biscuit creaks and rocks on the waves. It's a small ship with patched sails and a figurehead shaped like a biscuit. The crew is three sailors, a cook named Pots, and a cat who thinks she's the captain.\n\nCaptain Mags unrolls the sea chart. ${n===0?`"First stop: MONKEY ISLE, where the Needle is hidden. Watch out for coconuts."`:n===1?`"One piece down! Next: SHIPWRECK REEF. Hope ye can hold yer breath."`:n===2?`"Two pieces! Last one's on SMOKETOOTH ISLE. Bring sunscreen. It's a volcano."`:`The three pieces of the compass glow in your hands. Mags goes pale. "Then it's time. We sail for BLACKWAKE'S GHOST SHIP. Batten down the hatches, crew!"`}\n\nCompass pieces: ${n} of 3 · Sea Pearls: ${starN(s)} of 3`},
+  c:s=>[{t:`Sail to Monkey Isle`,if:!s.flags.shard1,go:'beach'},
+    {t:`Sail to Shipwreck Reef`,if:!!(s.flags.shard1&&!s.flags.shard2),go:'reef'},
+    {t:`Sail to Smoketooth Isle`,if:!!(s.flags.shard2&&!s.flags.shard3),go:'smoke'},
+    {t:`Hunt down Blackwake's ghost ship`,if:shardN(s)===3,go:'fog',tag:'Final quest'},
+    {t:`Sail back to Saltmere`,go:'town'}]},
+/* ================= MONKEY ISLE ================= */
+beach:{t:`Monkey Isle`,i:`🏝️`,cp:1,
+  x:s=>`The Soggy Biscuit drops anchor in a turquoise bay. Monkey Isle is a jungle of palm trees, vines and noise: hooting, howling, and the steady THUNK... THUNK... of coconuts falling on things.\n\nA path leads uphill to a crumbling stone temple shaped like a giant monkey head. That must be King Bananas's throne.\n\n${s.flags.mango?'':`On the cliffs to the east, a tree glows with golden fruit. `}${s.flags.ally?'':`From the monkey village in the treetops comes a voice yelling "UNHAND ME, YOU HAIRY HOOLIGANS!" `}${s.flags.star1?'':`And down on the rocks, a tide pool shimmers with something pearly.`}`,
+  c:s=>[{t:`Climb to the glowing tree on the cliffs`,if:!s.flags.mango,go:'grove',rand:.3,pool:POOL.isle,lurk:'Something jumps out of the jungle!'},
+    {t:`Follow the yelling to the monkey village`,if:!s.flags.ally,go:'village',rand:.3,pool:POOL.isle,lurk:'Something jumps out of the jungle!'},
+    {t:`Check the shimmering tide pool`,if:!s.flags.star1,go:'pool1'},
+    {t:`March up to the Monkey Temple`,go:'temple',tag:'Boss'},
+    {t:`Row back to the Soggy Biscuit`,go:'ship'}]},
+grove:{t:`The Golden Mango Grove`,i:`🥭`,
+  x:s=>`On top of the cliff stands a single enormous tree. Its mangoes shine like real gold and smell like sunshine and candy.\n\nThe best ones hang high up, at the end of a long branch. And wrapped around the trunk, fast asleep, is a very large python.`,
+  c:s=>[{t:`Climb up quietly and grab the mangoes`,check:{st:'dex',dc:s.inv.rope?9:13,
+      pass:s=>{s.flags.mango=1;award(s,30);return{go:'beach',note:`${s.inv.rope?'You loop your rope over a branch and swing up like a pro. ':''}You fill your pack with Golden Mangoes without waking the snake. +30 XP.`}},
+      fail:{fight:'python',win:s=>{s.flags.mango=1;return{go:'beach',note:`With the python gone, you fill your pack with Golden Mangoes.`}},note:`A branch snaps. One big yellow eye opens. "Ssssssomebody's ssstealing..."`}}},
+    {t:`Wake up the python and fight it`,fight:'python',win:s=>{s.flags.mango=1;return{go:'beach',note:`With the python gone, you fill your pack with Golden Mangoes.`}}},
+    {t:`Head back to the beach`,go:'beach'}]},
+village:{t:`The Monkey Village`,i:`🐒`,
+  x:s=>`High in the treetops, rope bridges connect a dozen tree houses. Monkeys are everywhere, dancing, drumming on coconuts, and throwing things at each other.\n\nIn the middle hangs a bamboo cage. Inside is a large, very fluffy, very offended green parrot wearing a tiny admiral's hat.\n\n"I am ADMIRAL FEATHERS of the Royal Navy!" he squawks. "These primates have kidnapped me! They want me to teach them to TALK! Do you know how hard it is to teach a monkey to talk? IMPOSSIBLE!"`,
+  c:s=>{const free=s=>{s.flags.ally=1;award(s,40);return{go:'beach',note:`Admiral Feathers flaps onto your shoulder. "Splendid work, sailor! I shall accompany you. I'm an excellent fighter. And an even better complainer." Admiral Feathers will now fight beside you! +40 XP.`}};return[
+    {t:`Sneak across the rope bridges to the cage`,check:{st:'dex',dc:13,pass:free,fail:{fight:'monkeys',win:free,note:`The rope bridge wobbles. Every monkey in the village turns around. Uh oh.`}}},
+    {t:`Distract them with a silly dance`,check:{st:'wis',dc:12,pass:s=>{const r=free(s);r.note=`You do the silliest dance of your life. The monkeys LOVE it. They all start copying you, and while they're busy, you open the cage. `+r.note;return r},fail:{fight:'monkeys',win:free,note:`Your dance is so bad that the monkeys are personally offended.`}}},
+    {t:`Fight your way to the cage`,fight:'monkeys',win:free},
+    {t:`Head back to the beach`,go:'beach'}]}},
+pool1:{t:`The Tide Pool`,i:`🐚`,
+  x:s=>`In a rocky pool, the water is crystal clear. At the bottom sits a giant clam as big as a bathtub. Its shell is open just a crack, and inside something glows soft and white.\n\nA Sea Pearl!\n\nWhenever you reach toward it, the clam snaps shut. SNAP!`,
+  c:s=>[{t:`Wait for the clam to yawn`,check:{st:'int',dc:12,
+      pass:s=>{s.flags.star1=1;award(s,30);return{go:'beach',note:`You notice the clam yawns every time a wave splashes in. You wait for a big wave... the clam yawns... and you snatch the SEA PEARL! +30 XP.`}},
+      fail:{fight:'crab',win:s=>{s.flags.star1=1;return{go:'beach',note:`While you fought the crab, the clam opened up to watch. You grab the SEA PEARL!`}},note:`While you wait, a giant crab sneaks up behind you. It wants the pearl too!`}}},
+    {t:`Head back to the beach`,go:'beach'}]},
+temple:{t:`The Monkey Temple`,i:`🛕`,
+  x:s=>`The temple is full of banana peels. Thousands of them. Maybe millions. On a throne made of coconuts sits King Bananas, a gorilla the size of a small house, wearing a crown made from a pineapple.\n\nAround his neck, on a vine, hangs a golden needle that glows and spins on its own: the Needle of the Kraken's Compass.\n\n"OOH OOH! WHO COMES TO KING BANANAS?" He thumps his chest. "NO TOUCH SHINY NEEDLE!"${s.flags.mango?`\n\nHis nose twitches. He's sniffing your pack. The Golden Mangoes...`:''}`,
+  c:s=>[{t:`Toss him the Golden Mangoes`,if:!!s.flags.mango,fight:'bananasweak',win:'needle',note:`King Bananas gobbles all the mangoes in four seconds flat. Then he groans and holds his tummy. He still wants to fight, but he's moving VERY slowly now.`},
+    {t:`Challenge him to a chest-beating contest`,check:{st:'str',dc:15,pass:{go:'needle',note:`You beat your chest. He beats his chest. You beat your chest LOUDER. You yell "OOH OOH AAH AAH!" King Bananas is so impressed he bows and hands you the Needle. You are now an honorary monkey.`},
+      fail:{fight:s.flags.mango?'bananasweak':'bananas',win:'needle',note:`Your chest-beating sounds like a sad little drum. King Bananas laughs, then attacks.`}}},
+    {t:`Fight King Bananas!`,fight:'bananas',win:'needle'},
+    {t:`Back out of the temple`,go:'beach'}]},
+needle:{t:`The Needle`,i:`🧭`,en:s=>{if(!s.flags.shard1){s.flags.shard1=1;s.flags.lantern=1;award(s,50)}},
+  x:s=>`You hold the Needle of the Kraken's Compass. It's warm, and it spins slowly, pointing out to sea. When you hold it up, it glows with a bright silver light. +50 XP.\n\nMags whistles when you get back to the ship. "That's one! And look at that glow. Ghosts and dead things can't stand that light."\n\nIn battle against ghosts and undead, you can now RAISE THE COMPASS to blast them with silver light.`,
+  c:s=>[{t:`Back to the ship`,go:'ship'},{t:`Sail home to Saltmere to rest and shop`,go:'town'}]},
+/* ================= SHIPWRECK REEF ================= */
+reef:{t:`Shipwreck Reef`,i:`🪸`,cp:1,en:s=>s.flags.reefv=(s.flags.reefv||0)+1,
+  x:s=>`${s.flags.reefv===1?`Mags drops anchor over a reef so full of old shipwrecks that the water looks like a ship graveyard. She hands you a round glass helmet with a hose on top. "Bubble helmet. Breathe normal. Don't sneeze."\n\nYou put on the helmet. You look like a goldfish in a bowl.${s.flags.ally?' Admiral Feathers laughs so hard he falls off your shoulder.':''}\n\n`:''}Under the waves, Shipwreck Reef glows with pink and orange coral. Fish dart everywhere.\n\nTo the north, soft singing comes from a coral palace: the mermaid grotto. Except the singing sounds sad, and a little off-key.${s.flags.silver&&s.flags.star2?'':`\n\nTo the south lies the giant wreck of an old navy galleon, tipped on its side.`}${s.flags.shell?'':`\n\nIn a cave to the east, something huge and red clacks its claws.`}\n\nAnd to the west, in a cave of black rock, a green light flickers. That must be the sea hag's lair.`,
+  c:s=>[{t:`Swim to the mermaid grotto`,go:'grotto'},
+    {t:`Explore the sunken galleon`,if:!(s.flags.silver&&s.flags.star2),go:'galleon',rand:.3,pool:POOL.reef,lurk:'Something swims out of the gloom!'},
+    {t:`Visit the clacking cave`,if:!s.flags.shell,go:'clack',rand:.3,pool:POOL.reef,lurk:'Something swims out of the gloom!'},
+    {t:`Swim into the sea hag's lair`,go:'haglair',tag:'Boss'},
+    {t:`Swim back up to the ship`,go:'ship'}]},
+grotto:{t:`The Mermaid Grotto`,i:`🧜`,
+  x:s=>s.flags.voice?`Princess Coralie sings as you swim in, and the whole grotto glows brighter. "Our hero! Be careful in the hag's lair. Without my song, her magic is only half as strong!"`
+   :`The coral palace is beautiful, but sad. Mermaids drift around quietly. On a throne made of seashells sits Princess Coralie, the youngest mermaid princess. She opens her mouth to speak, but only a tiny squeak comes out.\n\nA mermaid guard explains. "Mother Brine, the sea hag, stole the princess's singing voice and locked it in a magic shell. She gave the shell to Old Clackjaw the Crab King to guard. Without her song, the hag's whirlpool magic is twice as strong."\n\nCoralie looks at you with big hopeful eyes. She mouths the word: "Please?"${s.flags.shell?`\n\nThe magic shell in your pack is humming.`:''}`,
+  c:s=>[{t:`Give Princess Coralie the magic shell`,if:!!(s.flags.shell&&!s.flags.voice),act:s=>{s.flags.voice=1;s.flags.scale=1;s.ac+=1;s.inv.potion++;award(s,60)},go:'grotto',note:`Coralie opens the shell, and her voice floats out like a ribbon of light and back into her throat. She sings one note so beautiful that every fish in the reef stops to listen. "THANK YOU!" She gives you a shimmering Mermaid Scale Charm (+1 Armor) and a Healing Potion. +60 XP.`},
+    {t:`Swim back to the middle of the reef`,go:'reef'}]},
+galleon:{t:`The Sunken Galleon`,i:`🚢`,
+  x:s=>`The old navy galleon lies on its side, covered in barnacles. Fish swim in and out of the cannon holes. Through the broken hull you can see two rooms still standing.\n\n${s.flags.silver?'':`The armory, where a sword-shaped glow shines through the gloom. Something in there is moving, though. Something with bones.\n\n`}${s.flags.star2?'':`The captain's cabin, with a big iron chest bolted to the floor. The chest has a lock shaped like a ship's wheel.`}`,
+  c:s=>[{t:`Sneak into the armory`,if:!s.flags.silver,check:{st:'dex',dc:13,
+      pass:s=>{s.flags.silver=1;award(s,30);return{go:'galleon',note:`You float silently past a snoozing skeleton and grab the glowing weapon. It's made of MOONSILVER, which never rusts and shines underwater. +2 damage on every hit! +30 XP.`}},
+      fail:{fight:'drowned',win:s=>{s.flags.silver=1;return{go:'galleon',note:`With the drowned pirate gone, you take the glowing weapon from the rack. It's made of MOONSILVER: +2 damage on every hit!`}},note:`Your helmet clonks against a cannon. CLONNNG. A skeleton turns around.`}}},
+    {t:`Spin the ship's wheel lock`,if:!s.flags.star2,check:{st:'int',dc:13,
+      pass:s=>{s.flags.star2=1;s.gold+=15;award(s,30);return{go:'galleon',note:`Carved into the wall is the admiral's motto: "Port, then Starboard, then Port again." Left, right, left. CLICK! Inside the chest: 15 gold and a glowing SEA PEARL! +30 XP.`}},
+      fail:s=>{const d=dice(1,6);hurt(d);s.flags.star2=1;return{go:'galleon',note:`Wrong way! A spring-loaded boxing glove punches out of the chest (−${d} HP). Who builds these things? But the lid pops open: inside is a glowing SEA PEARL!`}}}},
+    {t:`Swim back to the middle of the reef`,go:'reef'}]},
+clack:{t:`Clackjaw's Cave`,i:`🦀`,
+  x:s=>`The cave is piled high with shiny junk: spoons, bottle caps, a trumpet, half a bicycle. On top of the pile sits Old Clackjaw the Crab King, a crab as big as a carriage, wearing a bucket as a crown.\n\nIn his giant claw he holds a spiral shell that hums a sad tune. The princess's voice!\n\n"Mine," says Clackjaw. "All shiny things are MINE."`,
+  c:s=>[{t:`Trade him your shiniest coins for the shell`,cost:15,act:s=>{s.flags.shell=1},go:'reef',note:`Clackjaw's eyes go wide. "SO SHINY!" He snatches the coins and tosses you the shell. Easy!`},
+    {t:`Compliment his magnificent bucket crown`,check:{st:'wis',dc:13,pass:s=>{s.flags.shell=1;return{go:'reef',note:`"Nobody ever notices the bucket," Clackjaw sniffs, deeply moved. He gives you the shell as a thank-you.`}},fail:{fight:'clackjaw',win:s=>{s.flags.shell=1;return{go:'reef',note:`Clackjaw drops the humming shell as he retreats. You grab it!`}},note:`"Are you making fun of my BUCKET?!"`}}},
+    {t:`Fight the Crab King for it`,fight:'clackjaw',win:s=>{s.flags.shell=1;return{go:'reef',note:`Clackjaw drops the humming shell as he retreats. You grab it!`}}},
+    {t:`Swim back to the middle of the reef`,go:'reef'}]},
+haglair:{t:`The Sea Hag's Lair`,i:`🌀`,
+  x:s=>`The lair is a cave of black rock lit by green jellyfish lanterns. Bubbling cauldrons line the walls. Everything smells like old fish soup.\n\nMother Brine, the sea hag, floats in the middle. She has seaweed hair, a nose like a barnacle, and long, long fingernails. Hanging from her necklace is a round disk of glowing glass: the Glass of the Kraken's Compass.\n\n"Heh heh heh. A visitor! How lovely. I haven't had a snack in AGES."${s.flags.voice?`\n\nShe sniffs the water and frowns. "Wait... why can I hear that mermaid brat singing again?"`:''}`,
+  c:s=>[{t:`Battle the sea hag!`,fight:s.flags.voice?'hagweak':'hag',win:'glass',hint:s.flags.voice?null:`Tip: the hag's magic is twice as strong while she has the princess's voice. Help the mermaids first.`},
+    {t:`Swim back to the middle of the reef`,go:'reef'}]},
+glass:{t:`The Glass`,i:`🔮`,en:s=>{if(!s.flags.shard2){s.flags.shard2=1;award(s,50)}},
+  x:s=>`The Glass of the compass clicks onto the Needle like it was always meant to be there. Through it, the Needle glows even brighter. +50 XP.\n\nWhen you swim back past the grotto, the mermaids throw you a party with sea-cucumber cake. (It tastes exactly like you'd expect.)${s.flags.ally?' Admiral Feathers refuses to eat it and complains for twenty minutes.':''}`,
+  c:s=>[{t:`Back to the ship`,go:'ship'},{t:`Sail home to Saltmere to rest and shop`,go:'town'}]},
+/* ================= SMOKETOOTH ISLE ================= */
+smoke:{t:`Smoketooth Isle`,i:`🌋`,cp:1,
+  x:s=>`Smoketooth Isle is one giant volcano poking out of the sea, with a ring of black sand beach around the bottom. Smoke puffs from the top like the island is breathing. The ground is warm. The air smells like burnt toast.\n\nA steep trail winds up toward the crater, where Grandfather Ashshell the dragon turtle lives. Halfway up, a huge black statue stands in front of a gate.\n\n${s.flags.egg?'':`Off to the side, you see a campfire with tiny cackling figures dancing around it. Fire imps! And they're poking at something big and round and speckled.\n\n`}${s.flags.star3?'':`Near the beach, steam rises from a bubbling hot spring.`}`,
+  c:s=>[{t:`Sneak toward the fire imp camp`,if:!s.flags.egg,go:'impcamp',rand:.3,pool:POOL.fire,lurk:'Something leaps out of the smoke!'},
+    {t:`Visit the bubbling hot spring`,go:'spring'},
+    {t:`Climb the trail toward the crater`,go:s.flags.golemDone?'summit':'golemgate',tag:'Boss'},
+    {t:`Row back to the Soggy Biscuit`,go:'ship'}]},
+impcamp:{t:`The Imp Camp`,i:`🔥`,
+  x:s=>`A dozen fire imps, each the size of a cat, are dancing around a campfire singing "Roast the egg! Roast the egg! We're gonna roast the EGG!"\n\nIn the middle of the fire sits a huge speckled egg, bigger than a watermelon. It's a dragon turtle egg! It wobbles nervously.`,
+  c:s=>{const save=s=>{s.flags.egg=1;award(s,40);return{go:'smoke',note:`You carry the warm, wobbly egg back down the trail. Something inside knocks twice, like it's saying thank you. +40 XP.`}};return[
+    {t:`Grab the egg and run!`,check:{st:'dex',dc:13,pass:save,fail:{fight:'imps',win:save,note:`An imp spots you. "THIEF! EGG THIEF!" (Says the imp who stole an egg.)`}}},
+    {t:`Kick sand on their fire`,check:{st:'str',dc:12,pass:s=>{const r=save(s);r.note=`You kick a huge wave of black sand over the fire. FWOOSH. The imps flicker, panic, and flee. `+r.note;return r},fail:{fight:'imps',win:save,note:`You kick the sand, but most of it lands in your own boots. The imps laugh and attack.`}}},
+    {t:`Charge the imps!`,fight:'imps',win:save},
+    {t:`Back to the beach`,go:'smoke'}]}},
+spring:{t:`The Hot Spring`,i:`♨️`,
+  x:s=>`A pool of steaming blue water bubbles between the rocks. It's warm, but not too hot. Perfect for soaking.\n\n${s.flags.star3?`It's quiet and peaceful now.`:`Deep at the bottom, something white and round glows through the bubbles.`}`,
+  c:s=>[{t:`Dive to the bottom for the glowing thing`,if:!s.flags.star3,check:{st:'str',dc:12,
+      pass:s=>{s.flags.star3=1;award(s,30);return{go:'spring',note:`You hold your breath, dive deep, and grab it: a third SEA PEARL! +30 XP.`}},
+      fail:s=>{const d=dice(1,4);hurt(d);s.flags.star3=1;return{go:'spring',note:`The water's hotter at the bottom! You grab the glowing thing and shoot back up like a cork, a bit pink (−${d} HP). It's a SEA PEARL!`}}}},
+    {t:`Soak in the warm water`,if:!s.flags.soak,act:s=>{s.flags.soak=1;rest(s)},go:'spring',note:`Ahhhhh. All your aches melt away. Health and abilities fully restored!`},
+    {t:`Back to the beach`,go:'smoke'}]},
+golemgate:{t:`The Obsidian Gate`,i:`🗿`,
+  x:s=>`Halfway up the volcano, the trail passes through a gate carved into the black rock. In front of it stands a statue of polished black volcano glass, three times taller than you.\n\nWords are carved over the gate: SPEAK THE ANSWER, OR FACE THE GUARDIAN. Below that is a riddle:\n\n"I have no voice, but I can roar. I have no legs, but I climb the shore. I'm here and gone, then back once more. What am I?"`,
+  c:s=>[{t:`"A wave!"`,act:s=>{s.flags.golemDone=1;award(s,40)},go:'summit',note:`The gate rumbles open. The statue doesn't move. Brains beat brawn! +40 XP.`},
+    {t:`"A lion!"`,fight:'obsidian',win:s=>{s.flags.golemDone=1;return{go:'summit'}},note:`The statue's eyes glow red. Wrong answer.`},
+    {t:`"A volcano!"`,fight:'obsidian',win:s=>{s.flags.golemDone=1;return{go:'summit'}},note:`The statue's eyes glow red. Wrong answer.`},
+    {t:`Back down to the beach`,go:'smoke'}]},
+summit:{t:`The Crater's Edge`,i:`🐢`,
+  x:s=>`At the top of the volcano, steam swirls around a lake of glowing orange lava. On a rock in the middle lies an enormous turtle with a shell like a mountain, covered in spikes and old moss. Grandfather Ashshell, the dragon turtle.\n\nHe opens one ancient eye. Hanging from a chain around his neck is a bronze disk covered in stars and numbers: the Dial of the Kraken's Compass.\n\n"Hmmph. Another treasure hunter. I've eaten treasure hunters for breakfast, sprout. Literally. They're crunchy."${s.flags.egg?`\n\nThen he sees the speckled egg in your arms. Both of his eyes snap wide open.`:''}`,
+  c:s=>[{t:`Give Grandfather Ashshell his egg`,if:!!s.flags.egg,act:s=>{s.flags.peaceTurtle=1;s.gold+=40;award(s,150)},go:'dial',note:`The old turtle's eyes fill with tears. He takes the egg gently in his giant mouth and tucks it under his chin. "My grandchild... you saved my grandchild." He lifts the chain from his neck and gives you the Dial, plus a pile of gold from his nest. "Take it, hero. You've earned it a thousand times over." +150 XP.`},
+    {t:`Battle the dragon turtle!`,fight:'turtle',win:'dial'},
+    {t:`Back down to the beach`,go:'smoke'}]},
+dial:{t:`The Kraken's Compass`,i:`🧭`,en:s=>{if(!s.flags.shard3){s.flags.shard3=1;award(s,50)}},
+  x:s=>`You press the Dial onto the Glass and Needle. CLICK. All three pieces glow, spin, and snap together into a beautiful bronze compass. The KRAKEN'S COMPASS! +50 XP.\n\nThe needle doesn't point north. It points straight out to sea, toward a dark patch of green fog on the horizon. Blackwake's ship.\n\nBack on the Soggy Biscuit, Mags grips the wheel. "Well, crew. This is it."`,
+  c:s=>[{t:`Back to the ship`,go:'ship'},{t:`Sail home to Saltmere to rest and shop first`,go:'town'}]},
+/* ================= FINALE ================= */
+fog:{t:`Into the Green Fog`,i:`🌫️`,cp:1,
+  x:s=>`The Soggy Biscuit sails into the green fog. It gets cold. It gets quiet. Even the cat stops meowing.\n\nThen, with a groan like a giant door creaking open, the ghost ship looms out of the mist right beside you. Its black sails flap with no wind. Purple lanterns swing from its masts.\n\nGhostly pirates swing across on ropes made of fog, howling "YO HO HOOOOO!"\n\n"BOARDERS!" yells Mags, drawing both swords.`,
+  c:s=>[{t:`Hold up the glowing compass`,check:{st:'wis',dc:13,pass:{go:'deck',note:`You raise the Kraken's Compass. Silver light bursts across both ships. The ghost crew screams and vanishes into the fog. Mags whoops. "Now THAT'S a trick!"`},fail:{fight:'ghostcrew',win:'deck',note:`The compass flickers, but the ghosts pull their hats down over their eyes. Clever ghosts. Fight!`}}},
+    {t:`Fight the ghost crew!`,fight:'ghostcrew',win:'deck'}]},
+deck:{t:`The Deck of the Black Wake`,i:`🏴‍☠️`,
+  x:s=>`You swing across to the ghost ship. Its deck is slimy and covered in seaweed. Bones hang from the rigging like wind chimes.\n\nA ghost in a little round hat is mopping the deck, even though mopping a ghost ship is pointless. He sighs. "Name's Mister Gloom. First mate. Been mopping this deck for three hundred years. It never gets clean."\n\nHe leans on his mop. "The Captain's in his cabin. He's got the Kraken under his spell, you know. If he gets that compass, the whole sea is doomed. Honestly? I just want to retire."`,
+  c:s=>[{t:`"Help me stop him, and you can retire."`,check:{st:'wis',dc:12,pass:s=>{s.inv.potion+=2;return{go:'cabin',note:`Mister Gloom smiles for the first time in three hundred years. He hands you two dusty Healing Potions from his pocket. "The captain's weak spot is his pride. Good luck, matey." Then he puts down his mop forever.`}},fail:{go:'cabin',note:`"Retire? Me? Ha. I'll believe it when I see it." He goes back to mopping. You head for the cabin.`}}},
+    {t:`Head straight for the captain's cabin`,go:'cabin'}]},
+cabin:{t:`The Last Calm`,i:`🕯️`,cp:1,en:s=>{if(!s.flags.lastRest){s.flags.lastRest=1;rest(s)}},
+  x:s=>`Outside the captain's cabin door, Mags catches up with you. She's out of breath, her hat is crooked, and she's grinning.\n\n"Crew's holding the Biscuit. Here." She pours a canteen of fresh water over your head. It's cold, and somehow it washes away every bruise and scratch. "Mermaid water. Coralie gave it to me. You're fully healed."\n\n${starN(s)===3?`She sees the three Sea Pearls glowing in your pouch. "All three pearls! Sal was right about you. When the Kraken comes... you'll know what to do."`:`"Wish we had those Sea Pearls Sal talked about," she mutters. "Guess we'll do this the hard way."`}${s.flags.ally?`\n\nAdmiral Feathers puffs up. "Fear not, sailor. I shall be BRAVE. Mostly."`:''}`,
+  c:s=>[{t:`Kick open the cabin door`,go:'captain'}]},
+captain:{t:`Captain Blackwake`,i:`☠️`,
+  x:s=>`The cabin is full of treasure that turns to dust when you touch it. Captain Blackwake stands at a big window, looking out at the dark sea.\n\n"I was a merchant once, ye know," he says without turning around. "Honest. Poor. Then I found the Kraken's Compass, and the Kraken did whatever I said. I had ALL the gold in the sea. But it was never enough. Never enough."\n\nHe turns. His purple eyes blaze. "So the admiral broke my compass, and I sank to the bottom. Three hundred years I waited. And now YOU have brought it back to me. GIVE. IT. HERE!"`,
+  c:s=>[{t:`Battle Captain Blackwake!`,fight:'blackwake',win:'krakenrise'}]},
+krakenrise:{t:`The Kraken Rises`,i:`🐙`,cp:1,en:s=>{if(!s.flags.p2){s.flags.p2=1;rest(s)}},
+  x:s=>`Blackwake falls, but he raises his hook and screams "KRAKEN! DESTROY THEM!"\n\nThe sea explodes. Water crashes over the deck. Rising out of the waves is a squid the size of an island, with tentacles as thick as tree trunks and two huge eyes glowing with Blackwake's purple magic.\n\nThe compass in your hand blazes with light, and warmth floods through you. You are fully healed!${s.flags.ally?' Admiral Feathers screams. Then he salutes. "Steady, sailor!"':''}${starN(s)===3?`\n\nIn your pouch, the three Sea Pearls start to glow and hum, like they're singing to the Kraken...`:''}`,
+  c:s=>[{t:`Hold out the three Sea Pearls to the Kraken`,if:starN(s)===3,act:s=>s.flags.peace=1,go:'victory'},
+    {t:`Fight the Kraken!`,fight:'kraken',win:'victory',hint:`Tip: the compass's light breaks Blackwake's dark magic. Raise it in the fight!`}]},
+victory:{t:`Legend of the Glimmering Sea`,i:`🏆`,type:'end',en:s=>{s.gold+=500;const w=store.get(WINS)||{};w[s.cls]=(w[s.cls]||0)+1;store.set(WINS,w);store.del(SAVE)},
+  x:s=>`${s.flags.peace?`You hold up the three Sea Pearls. They float out of your hands and drift toward the Kraken, glowing brighter and brighter, singing a song older than the ocean.\n\nThe purple glow in the Kraken's eyes flickers... and goes out. Its huge eyes turn a gentle sea-green. It blinks at you. Then it very carefully reaches out ONE tentacle and pats you on the head.\n\nBlackwake howls as his curse shatters. His ghostly body turns to mist, and for just a moment, you see an ordinary, tired old sailor. "Thank you," he whispers. Then he's gone, finally at peace.\n\nYou didn't beat the Kraken. You FREED it. That's the rarest kind of legend there is.\n\n`:`With one last mighty heave, the compass's silver light breaks Blackwake's spell. The Kraken shudders, its eyes turn a gentle green, and it sinks peacefully back into the deep. Blackwake's ghost ship crumbles into driftwood and drifts away.\n\n`}The Soggy Biscuit sails home to Saltmere at sunrise. The whole town is on the docks, cheering. Salty Sal throws a feast. Barnacle Bill gives you Gregory the stuffed swordfish (he insists). The mayor hands you a chest of 500 gold.\n\nCaptain Mags takes off her giant feathered hat and puts it on your head. "Ye've got salt in yer blood, ${s.name}. There's always a spot for ye on the Soggy Biscuit."${s.flags.ally?`\n\nAdmiral Feathers is awarded the Medal of Extreme Bravery. He has not stopped talking about it.`:''}${s.flags.peace?`\n\nAnd every year after that, on the anniversary of your adventure, the Kraken rises out of the bay and waves hello. Kids come from all over to see it.`:`\n\nSal says that if you'd found all three Sea Pearls, the Kraken might have become your friend. Maybe on your next voyage...`}\n\nTHE END. (For now.)`},
+};
+
+const $=s=>document.querySelector(s);
+const R=n=>1+Math.floor(Math.random()*n);
+const dice=(c,d,b=0)=>{let t=b;for(let i=0;i<c;i++)t+=R(d);return t};
+const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const SAVE=GAME.key+'_save_v2', WINS=GAME.key+'_wins_v1';
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const STATN={str:'Strength',dex:'Dexterity',int:'Intelligence',wis:'Wisdom'};
+const CL={
+  fighter:{name:'Fighter',i:'🛡️',blurb:'Tough as nails. Big sword, heavy armor, hard to knock down.',hp:14,lv:7,ac:16,st:{str:3,dex:1,int:0,wis:0},
+    wpn:{n:'Longsword',c:1,d:8,s:'str'},sw:'Longsword',sp:{n:'Second Wind',d:'Heal 1d10 + your level',uses:2,k:'heal'}},
+  ranger:{name:'Ranger',i:'🏹',blurb:'Expert tracker and archer. Marks a target and never lets it go.',hp:12,lv:6,ac:14,st:{str:1,dex:3,int:0,wis:1},
+    wpn:{n:'Longbow',c:1,d:8,s:'dex'},sw:'Longbow',sp:{n:'Hunter\'s Mark',d:'Mark the monster and shoot. Every hit this fight does +1d6',uses:2,k:'mark'}},
+  rogue:{name:'Rogue',i:'🗡️',blurb:'Sneaky and quick. Great at tricks, traps and surprise attacks.',hp:11,lv:6,ac:14,st:{str:0,dex:3,int:1,wis:1},
+    wpn:{n:'Shortsword',c:1,d:6,s:'dex'},sw:'Shortsword',sp:{n:'Sneak Attack',d:'Roll twice, keep the best. +2d6 damage on a hit',uses:2,k:'sneak'}},
+  druid:{name:'Druid',i:'🌿',blurb:'Nature magic. Lashes foes with thorns and can turn into a bear!',hp:10,lv:6,ac:13,st:{str:0,dex:1,int:1,wis:3},
+    wpn:{n:'Thorn Whip',c:1,d:8,s:'wis'},sw:'Oak Staff',sp:{n:'Wild Shape: Bear',d:'Become a bear! Gain 2d6 + level bonus HP and +2 damage this fight',uses:2,k:'bear'}},
+  wizard:{name:'Wizard',i:'🔮',blurb:'Fragile but brilliant. Throws fire and magic darts that never miss.',hp:9,lv:5,ac:12,st:{str:-1,dex:1,int:3,wis:1},
+    wpn:{n:'Fire Bolt',c:1,d:10,s:'int'},sw:'Wand',sp:{n:'Magic Missile',d:'3 glowing darts that never miss (1d4+1 each)',uses:3,k:'missile'}},
+  cleric:{name:'Cleric',i:'☀️',blurb:'Holy warrior. Heals wounds and burns monsters with sacred fire.',hp:11,lv:6,ac:15,st:{str:1,dex:0,int:0,wis:3},
+    wpn:{n:'Sacred Flame',c:1,d:8,s:'wis'},sw:'Holy Symbol',sp:{n:'Cure Wounds',d:'Heal 1d8 + 3 + your level',uses:2,k:'cure'}},
+};
+const RACES={
+  human:{name:'Human',i:'🧑',blurb:'Brave and adaptable.',st:{str:1,dex:1,int:1,wis:1},perk:'Versatile: +1 to every ability.'},
+  elf:{name:'Elf',i:'🧝',blurb:'Graceful forest folk with sharp eyes.',st:{dex:2,wis:1},perk:'Keen Senses: +2 extra on Wisdom checks.'},
+  tiefling:{name:'Tiefling',i:'😈',blurb:'Horns, a tail, and fire in the blood.',st:{int:2,wis:1},perk:'Hellish Rebuke: the first time a monster hits you in a fight, flames burn it for 2d6.'},
+  dwarf:{name:'Dwarf',i:'🧔',blurb:'Stout, stubborn, and hard as stone.',st:{str:2,wis:1},perk:'Dwarven Toughness: +3 HP, plus 1 more every level.'},
+  halfling:{name:'Halfling',i:'🧒',blurb:'Small, cheerful, and amazingly lucky.',st:{dex:2,int:1},perk:'Lucky: start with a free lucky charm to reroll a failed check.'},
+  dragonborn:{name:'Dragonborn',i:'🐲',blurb:'Proud dragon folk with scales of bronze.',st:{str:2,wis:1},perk:'Dragon Breath: once per fight, breathe fire for 2d6 + level damage.'},
+};
+const heroStats=(c,r)=>{const o={...CL[c].st};for(const k in RACES[r].st)o[k]+=RACES[r].st[k];return o};
+const silverName=s=>GAME.silver+' '+CL[s.cls].sw;
+
+let S=null, C=null, busy=false, screen='title', cur=[];
+const cls=()=>CL[S.cls], race=()=>RACES[S.race];
+const toHit=()=>S.st[cls().wpn.s]+(S.lvl>=6?4:S.lvl>=3?3:2)+(S.diff==='easy'?2:0);
+const dmgB=()=>S.st[cls().wpn.s]+(S.flags.silver?2:0)+(C&&C.bear?2:0);
+const wpnName=()=>S.flags.silver?silverName(S):cls().wpn.n;
+function hurt(n){S.hp=Math.max(1,S.hp-n)}
+function heal(n){const b=S.hp;S.hp=Math.min(S.max,S.hp+n);return S.hp-b}
+function rest(s){s.hp=s.max;s.uses=CL[s.cls].sp.uses}
+const LV=GAME.lv||[0,100,300,600,1000];const LVMAX=LV.length;
+function gainXP(n){S.xp+=n;let out='';while(S.lvl<LVMAX&&S.xp>=LV[S.lvl]){S.lvl++;const g=cls().lv+(S.race==='dwarf'?1:0);S.max+=g;S.hp=S.max;S.uses=cls().sp.uses;
+  out+=`<div class="lvup">LEVEL UP! You are now level ${S.lvl}. +${g} max HP${S.lvl===3||S.lvl===6?', and your attacks get more accurate':''}. Health and abilities restored!</div>`}return out}
+function pickRiddle(s){let used=s.flags.used||[];let av=RIDDLES.map((_,i)=>i).filter(i=>!used.includes(i));if(!av.length){used=[];av=RIDDLES.map((_,i)=>i)}
+  const i=pick(av);used.push(i);s.flags.used=used;s.flags.rq=i;s.flags.ro=shuffle([RIDDLES[i][1],...RIDDLES[i][2]])}
+
+/* ---------- FLOW ---------- */
+function save(){if(S&&S.node!=='victory')store.set(SAVE,S)}
+function makeCp(){S.cp=null;S.cp=JSON.stringify(S)}
+function restoreCp(){const cp=S.cp;S=JSON.parse(cp);S.cp=cp;rest(S);S.mode='story';S.note='Everything went dark... then a warm voice whispered, "Not yet, hero." You wake up at your last safe spot, fully healed. Let\'s try that again!';C=null;busy=false;save();render()}
+function go(t,note){
+  if(typeof t==='function')t=t(S);
+  if(t&&typeof t==='object'){if(t.fight)return startCombat(t.fight,t.win,t.first,t.note||note);note=t.note||note;t=t.go}
+  S.note=note||'';S.node=t;S.mode='story';const n=N[t];if(n.en)n.en(S);
+  if(n.cp)makeCp();save();render();window.scrollTo(0,0);
+  if(S.flags.pendingLv){const l=S.flags.pendingLv;S.flags.pendingLv='';msg('Level up!',l,'Awesome!')}
+}
+function choose(i){
+  const ch=cur[i];if(!ch||busy)return;
+  if(ch.cost){if(S.gold<ch.cost)return;S.gold-=ch.cost}
+  if(ch.act)ch.act(S);
+  if(ch.check)return doCheck(ch);
+  if(ch.rand&&Math.random()<ch.rand)return startCombat(pick(ch.pool||MINOR),ch.go,0,ch.lurk||'Something lurks in the tunnel ahead!');
+  if(ch.fight)return go(ch);
+  go(ch.go,ch.note);
+}
+function checkBonus(st){return S.st[st]+(S.race==='elf'&&st==='wis'?2:0)}
+function doCheck(ch){const k=ch.check;
+  rollD20({kind:'check',title:`${STATN[k.st]} check`,sub:ch.t,bonus:checkBonus(k.st),blabel:k.st.toUpperCase(),target:k.dc,tlabel:'needed'},ok=>go(ok?k.pass:k.fail))}
+
+/* ---------- DICE OVERLAY ---------- */
+const D20=`<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,3 93,27 93,73 50,97 7,73 7,27" fill="var(--torch)" stroke="var(--dieline)" stroke-width="3"/><polygon points="50,24 79,70 21,70" fill="var(--torch2)" stroke="var(--dieline)" stroke-width="2"/><g stroke="var(--dieline)" stroke-width="2"><line x1="50" y1="3" x2="50" y2="24"/><line x1="93" y1="27" x2="79" y2="70"/><line x1="7" y1="27" x2="21" y2="70"/><line x1="93" y1="73" x2="79" y2="70"/><line x1="7" y1="73" x2="21" y2="70"/><line x1="50" y1="97" x2="79" y2="70"/><line x1="50" y1="97" x2="21" y2="70"/><line x1="7" y1="27" x2="50" y2="24"/><line x1="93" y1="27" x2="50" y2="24"/></g></svg>`;
+function openOv(html){$('#ovbox').innerHTML=html;$('#ov').hidden=false}
+function closeOv(){$('#ov').hidden=true}
+function msg(title,body,btn,cb){openOv(`<h3>${title}</h3><div class="body">${body}</div><div class="btns"><button class="big" id="ovOk">${btn||'Continue'}</button></div>`);
+  $('#ovOk').onclick=()=>{closeOv();cb&&cb()};$('#ovOk').focus()}
+function rollD20(o,cb){
+  openOv(`<h3>${o.title}</h3><div class="sub">${o.sub||''}</div>
+   <div class="die" id="die">${D20}<span class="num" id="dn">20</span></div>
+   <div class="res" id="dres">${o.kind==='check'?`Roll a d20 and add your ${o.blabel} bonus (${sign(o.bonus)}). You need ${o.target} or more.`:''}</div>
+   <div class="verdict" id="dv"></div><div class="btns" id="db"></div>`);
+  const db=$('#db');
+  const spin=()=>{
+    db.innerHTML='';$('#dv').textContent='';$('#dv').className='verdict';
+    const die=$('#die');die.className='die spin';
+    const r1=R(20),r2=o.adv?R(20):null,nat=r2?Math.max(r1,r2):r1;
+    const dur=REDUCED?150:850;const t0=performance.now();
+    const tick=()=>{if(performance.now()-t0<dur){$('#dn').textContent=R(20);setTimeout(tick,55)}else land()};
+    const land=()=>{
+      $('#dn').textContent=nat;die.className='die land'+(nat===20?' crit':nat===1?' fumble':'');
+      const tot=nat+o.bonus;
+      const ok=o.kind==='check'?(nat===20||tot>=o.target):(nat===20||(nat!==1&&tot>=o.target));
+      $('#dres').innerHTML=`${r2?`You rolled ${r1} and ${r2}, keeping ${nat}.<br>`:''}${nat} ${sign(o.bonus)} ${o.blabel} = <b>${tot}</b> &nbsp;·&nbsp; ${o.tlabel} ${o.target}`;
+      const v=$('#dv');
+      if(nat===20){v.textContent=o.kind==='check'?'Natural 20!':'Critical hit!';v.classList.add('crit')}
+      else if(nat===1&&o.kind!=='check'){v.textContent='Oops! Natural 1';v.classList.add('bad')}
+      else{v.textContent=ok?(o.kind==='check'?'Success!':'Hit!'):(o.kind==='check'?'Failed!':'Miss!');v.classList.add(ok?'ok':'bad')}
+      if(o.auto){let done=false;const fin=()=>{if(done)return;done=true;closeOv();cb(ok,nat)};
+        db.innerHTML=`<button class="ghost" id="dgo">Continue</button>`;$('#dgo').onclick=fin;setTimeout(fin,REDUCED?900:1300);return}
+      const canLuck=!ok&&S.inv.luck>0;
+      db.innerHTML=(canLuck?`<button class="big" id="dluck">Use your ${GAME.luck} (reroll)</button>`:'')+`<button class="${canLuck?'ghost':'big'}" id="dgo">Continue</button>`;
+      $('#dgo').onclick=()=>{closeOv();cb(ok,nat)};$('#dgo').focus();
+      if($('#dluck'))$('#dluck').onclick=()=>{S.inv.luck--;$('#dres').textContent='Your lucky charm glows... roll again!';spin()};
+    };
+    tick();
+  };
+  if(o.kind==='check'){db.innerHTML=`<button class="big" id="droll">Roll the d20!</button>`;$('#droll').onclick=spin;$('#droll').focus()}else spin();
+}
+
+/* ---------- COMBAT ---------- */
+function startCombat(id,win,first,note){
+  const b=MON[id],easy=S.diff==='easy',hp=easy?Math.ceil(b.hp*.8):b.hp;
+  C={id,m:{...b,hp,max:hp,atk:b.atk-(easy?1:0)},win,from:S.node,round:1,log:[],lan:false,hit:false,thp:0,bear:false,mark:false,breathUsed:false,rebuked:false};
+  if(note)C.log.unshift({c:'n',t:note});C.log.unshift({c:'n',t:b.intro});
+  if(first){const d=dice(cls().wpn.c,cls().wpn.d,dmgB());C.m.hp-=d;C.log.unshift({c:'p',t:`Free hit! You strike first for ${d} damage.`})}
+  S.mode='combat';busy=false;render();window.scrollTo(0,0);
+}
+const log=(c,t)=>C.log.unshift({c,t});
+function hitFoe(n){C.m.hp-=n;C.hit=true}
+function attack(kind){
+  if(busy)return;busy=true;const w=cls().wpn,sneak=kind==='sneak';if(sneak)S.uses--;render();
+  rollD20({kind:'atk',title:sneak?'Sneak Attack!':(C.bear?'Bear Swipe!':wpnName()),sub:`vs ${C.m.n}`,bonus:toHit(),blabel:'',target:C.m.ac,tlabel:'Armor',adv:sneak,auto:1},(ok,nat)=>{
+    if(ok){const cm=nat===20?2:1;let d=dice(w.c*cm,w.d,dmgB()),ex=[];
+      if(sneak){const s=dice(2*cm,6);d+=s;ex.push(`${s} sneak`)}
+      if(C.mark){const s=dice(cm,6);d+=s;ex.push(`${s} from Hunter's Mark`)}
+      hitFoe(d);log('p',`${nat===20?'CRITICAL HIT! ':''}${C.bear?'Your giant bear claws hit':'Your '+wpnName()+' hits'} the ${C.m.n} for ${d} damage${ex.length?` (${ex.join(', ')})`:''}!`)}
+    else log('p',nat===1?pick(['You trip over your own feet. Miss!','Your weapon slips out of your hand for a second. Miss!','You sneeze at the worst possible moment. Miss!']):`You miss the ${C.m.n}!`);
+    after();
+  });
+}
+function special(){
+  if(busy||S.uses<1)return;const sp=cls().sp;
+  if(sp.k==='sneak')return attack('sneak');
+  if(sp.k==='mark'){if(C.mark)return;S.uses--;C.mark=true;log('p',`You fix your eyes on the ${C.m.n}. It's MARKED. It can't hide from you now!`);return attack('atk')}
+  busy=true;S.uses--;
+  if(sp.k==='bear'){if(C.bear){busy=false;S.uses++;return}const t=dice(2,6,S.lvl);C.thp+=t;C.bear=true;log('h',`You drop to all fours, fur bursts out, and you ROAR! You're a giant bear: +${t} bonus HP and +2 damage this fight.`)}
+  else if(sp.k==='missile'){const a=[dice(1,4,1),dice(1,4,1),dice(1,4,1)],t=a[0]+a[1]+a[2];hitFoe(t);log('p',`Three glowing darts zip from your fingers: ${a.join(' + ')} = ${t} damage!`)}
+  else{const n=sp.k==='heal'?dice(1,10,S.lvl):dice(1,8,3+S.lvl);const g=heal(n);log('h',sp.k==='heal'?`You catch your breath and power through. +${g} HP!`:`Healing light flows over your wounds. +${g} HP!`)}
+  after();
+}
+function potion(){if(busy||S.inv.potion<1)return;busy=true;S.inv.potion--;const g=heal(dice(2,4,2));log('h',`${GAME.sip||'Glug glug. The potion tastes like cherries.'} +${g} HP!`);after()}
+function relic(){if(busy||C.lan)return;busy=true;C.lan=true;const d=dice(3,8,2);hitFoe(d);log('p',`${GAME.relic.log} The ${C.m.n} shrieks: ${d} damage!`);after()}
+function dbreath(){if(busy||C.breathUsed)return;busy=true;C.breathUsed=true;const d=dice(2,6,S.lvl);hitFoe(d);log('p',`You take a deep breath and blast a cone of dragon fire! ${d} damage!`);after()}
+function flee(){if(busy||C.m.boss)return;busy=true;render();
+  rollD20({kind:'atk',title:'Run away!',sub:'Dexterity check',bonus:S.st.dex,blabel:'DEX',target:12,tlabel:'needed',auto:1},ok=>{
+    if(ok){const f=C.from;C=null;busy=false;go(f,'You run for it and get away! Phew.');return}
+    log('n','You try to run, but you can\'t get away!');after()})}
+function after(){
+  render();
+  if(C.m.hp<=0)return setTimeout(winFight,550);
+  setTimeout(()=>{
+    if(S.flags.ally){const d=dice(1,4,1+(GAME.allyScale?Math.floor(S.lvl/2):0));hitFoe(d);log('a',pick(GAME.ally.lines).replace('{d}',d));
+      if(C.m.hp<=0){render();return setTimeout(winFight,550)}}
+    foeTurn();C.round++;busy=false;render();
+    if(C.m.hp<=0)return setTimeout(winFight,550);
+    if(S.hp<=0)setTimeout(lose,600);
+  },650);
+}
+function hurtP(d){
+  if(C.thp>0){const a=Math.min(C.thp,d);C.thp-=a;d-=a;if(C.thp<=0&&C.bear){C.bear=false;log('n','POOF! Your bear form wears off and you turn back into yourself.')}}
+  S.hp-=d;
+}
+function foeTurn(){
+  const m=C.m;const before=S.hp+C.thp;let hit=false;
+  if(m.breath&&C.round%3===0){const r=R(20),sv=r+S.st.dex;let d=dice(m.bd||3,6);const ok=r===20||sv>=13;if(ok)d=Math.floor(d/2);hurtP(d);hit=true;
+    log('m',`${m.bt} You dive for cover (${r}${sign(S.st.dex)} = ${sv} vs 13) ${ok?'and only get grazed':'but it catches you'}: ${d} damage!`)}
+  else{const r=R(20),tot=r+m.atk;
+    if(r===20||(r!==1&&tot>=S.ac)){const d=dice(m.dmg[0]*(r===20?2:1),m.dmg[1],m.dmg[2]);hurtP(d);hit=true;log('m',`${r===20?'Critical! ':''}The ${m.n} ${m.v} you for ${d} damage!`)}
+    else log('n',`The ${m.n} ${m.v} you, but misses! (rolled ${tot} vs your Armor ${S.ac})`);
+    if(m.breath&&C.round%3===2)log('n',m.tele)}
+  if(hit&&S.race==='tiefling'&&!C.rebuked&&S.hp>0){C.rebuked=true;const d=dice(2,6);hitFoe(d);log('p',`Hellish Rebuke! Your eyes flash red and flames burst around the ${m.n}: ${d} damage!`)}
+  if(S.hp+C.thp<before){document.body.classList.remove('ouch');void document.body.offsetWidth;document.body.classList.add('ouch')}
+}
+function winFight(){
+  const m=C.m;S.kills[C.id]=(S.kills[C.id]||0)+1;S.gold+=m.gold;const lv=gainXP(m.xp);busy=false;
+  msg('Victory!',`<p>${m.bye}</p><p><b>+${m.xp} XP</b>${m.gold?` &nbsp;·&nbsp; <b>+${m.gold} gold</b>`:''}</p>${lv}`,'Continue',()=>{const w=C.win;C=null;go(w)});
+}
+function lose(){busy=true;msg('You have fallen...','<p>The world spins, and everything goes dark.</p><p>But heroes don\'t give up that easily.</p>','Rise again',()=>restoreCp())}
+
+/* ---------- RENDER ---------- */
+const paras=t=>t.split('\n\n').map(p=>`<p>${p}</p>`).join('');
+function renderBar(){
+  const b=$('#bar');if(!S||screen!=='game'){b.hidden=true;return}b.hidden=false;const c=cls();
+  const nx=S.lvl<LVMAX?LV[S.lvl]:S.xp,pv=LV[S.lvl-1],xpP=S.lvl<LVMAX?Math.round((S.xp-pv)/(nx-pv)*100):100;
+  const thp=C&&C.thp>0?` <span class="thp">+${C.thp} bear</span>`:'';
+  b.innerHTML=`<div class="bar-in"><button class="who" id="sheetBtn" aria-label="Open hero sheet"><span class="ico">${C&&C.bear?'🐻':c.i}</span><span><b>${S.name}</b><small>Lv ${S.lvl} ${race().name} ${c.name}</small></span></button>
+   <div class="vitals"><div class="vit-row"><span>Health${thp}</span><span>${Math.max(0,S.hp)} / ${S.max}</span></div><div class="track"><i style="width:${Math.max(0,S.hp)/S.max*100}%"></i></div>
+   <div class="track xp" title="Experience"><i style="width:${xpP}%"></i></div></div>
+   <div class="purse"><span class="g">${S.gold} gold</span><span>🧪 ${S.inv.potion}</span></div></div>`;
+  $('#sheetBtn').onclick=sheet;
+}
+function render(){
+  renderBar();const m=$('#main');
+  if(screen==='title')return renderTitle(m);
+  if(screen==='create')return renderCreate(m);
+  if(S.mode==='combat')return renderCombat(m);
+  renderNode(m);
+}
+function renderNode(m){
+  const n=N[S.node];let h=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">${n.i}</div><h2>${n.t}</h2></div>`;
+  if(S.note)h+=`<div class="note"><span>What happened</span><p>${S.note}</p></div>`;
+  h+=paras(n.x(S));
+  if(n.type==='shop')h+=`<div class="shop">${SHOP.map((it,i)=>{const own=S.inv[it.k],full=it.max&&own>=it.max;
+    return `<div class="item"><div><b>${it.n}${own?` <small>(you have ${own})</small>`:''}</b><small>${it.d}</small></div><button class="buy" data-buy="${i}" ${full||S.gold<it.p?'disabled':''}>${full?'Owned':it.p+' gold'}</button></div>`}).join('')}</div>`;
+  const q=n.type==='riddle'?(n.q||RIDDLES[S.flags.rq]):null;
+  if(q&&!(n.done&&n.done(S)))h+=`<div class="riddle"><q>${q[0]}</q><div class="opts">${S.flags.ro.map((o,i)=>`<button class="ch" data-r="${i}"><span class="arr">›</span><span class="lab">${o}</span></button>`).join('')}</div></div>`;
+  if(n.type==='end'){const k=Object.values(S.kills).reduce((a,b)=>a+b,0);h+=`<div class="summary"><div><b>${S.lvl}</b><small>Level</small></div><div><b>${k}</b><small>Monsters beaten</small></div><div><b>${S.gold}</b><small>Gold</small></div></div>`}
+  h+='</article>';
+  cur=n.c?n.c(S).filter(c=>c.if!==false):[];
+  if(cur.length){h+=`<div class="choices">${cur.map((c,i)=>{let tag='';
+    if(c.check)tag=`<span class="tag chk">${c.check.st.toUpperCase()} ${c.check.dc}</span>`;else if(c.fight)tag=`<span class="tag bat">Battle</span>`;else if(c.cost)tag=`<span class="tag gold">${c.cost} gold</span>`;else if(c.tag)tag=`<span class="tag bat">${c.tag}</span>`;
+    return `<button class="ch" data-c="${i}" ${c.cost&&S.gold<c.cost?'disabled':''}><span class="arr">›</span><span class="lab">${c.t}</span>${tag}</button>`}).join('')}</div>`;
+    const hint=cur.find(c=>c.hint);if(hint)h+=`<div class="hint">${hint.hint}</div>`}
+  if(n.type==='end')h+=`<div class="choices"><button class="big" id="again">Play again with a new hero</button></div><p class="hint">Can you win with all six classes? Try a different path too. There are secrets you haven't found yet.</p>`;
+  m.innerHTML=h;
+  m.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>choose(+b.dataset.c));
+  m.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=SHOP[+b.dataset.buy];if(S.gold<it.p)return;S.gold-=it.p;S.inv[it.k]++;S.note=`You bought: ${it.n}.`;save();render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const ok=S.flags.ro[+b.dataset.r]===q[1];go(ok?n.ok:n.bad,ok?'':`The answer was: ${q[1]}.`)});
+  if($('#again'))$('#again').onclick=()=>{S=null;screen='create';render()};
+}
+function renderCombat(m){
+  const f=C.m,c=cls(),sp=c.sp,w=c.wpn,d=busy;
+  const spOff=d||S.uses<1||(sp.k==='mark'&&C.mark)||(sp.k==='bear'&&C.bear);
+  let h=`<article class="card"><div class="foe" id="foe"><div class="foe-ico" aria-hidden="true">${f.i}</div><h2>${f.n}</h2>
+   <div class="track"><i style="width:${Math.max(0,f.hp)/f.max*100}%"></i></div><div class="foe-meta"><span>${Math.max(0,f.hp)} / ${f.max} HP</span><span>Armor ${f.ac}</span><span>Round ${C.round}</span></div>
+   ${C.mark||C.bear?`<div class="status">${C.mark?'<span>Marked</span>':''}${C.bear?'<span>You are a bear</span>':''}</div>`:''}</div>
+   <div class="acts">`;
+  if(S.flags.lantern&&f.lantern&&!C.lan)h+=`<button class="act lan" id="aL" ${d?'disabled':''}><b>${GAME.relic.btn}</b><small>${GAME.relic.desc}</small></button>`;
+  h+=`<button class="act main" id="aA" ${d?'disabled':''}><b>Attack: ${C.bear?'Bear Claws':wpnName()}</b><small>d20 ${sign(toHit())} to hit · ${w.c}d${w.d}${sign(dmgB())} damage${C.mark?' +1d6':''}</small></button>
+   <button class="act" id="aS" ${spOff?'disabled':''}><b>${sp.n}</b><small>${sp.d} · ${S.uses} left</small></button>
+   <button class="act" id="aP" ${d||S.inv.potion<1||S.hp>=S.max?'disabled':''}><b>Healing Potion</b><small>Heal 2d4+2 · ${S.inv.potion} left</small></button>
+   ${S.race==='dragonborn'?`<button class="act" id="aB" ${d||C.breathUsed?'disabled':''}><b>Dragon Breath</b><small>2d6${sign(S.lvl)} fire damage · ${C.breathUsed?'used':'once per fight'}</small></button>`:''}
+   <button class="act" id="aR" ${d||f.boss?'disabled':''}><b>Run away</b><small>${f.boss?'You can\'t run from a boss!':'Dexterity check, need 12'}</small></button>
+   </div><div class="log" aria-live="polite">${C.log.slice(0,6).map(l=>`<div class="${l.c}">${l.t}</div>`).join('')}</div></article>`;
+  m.innerHTML=h;
+  if(C.hit){C.hit=false;$('#foe').classList.add('hit')}
+  $('#aA').onclick=()=>attack('atk');$('#aS').onclick=special;$('#aP').onclick=potion;$('#aR').onclick=flee;
+  if($('#aL'))$('#aL').onclick=relic;if($('#aB'))$('#aB').onclick=dbreath;
+}
+function sheet(){
+  const c=cls(),items=[];if(S.inv.potion)items.push(`${S.inv.potion} Healing Potion${S.inv.potion>1?'s':''}`);if(S.inv.rope)items.push(SHOP.find(x=>x.k==='rope').n);if(S.inv.luck)items.push(GAME.luck);
+  GAME.items.forEach(([f,l])=>{if(S.flags[f])items.push(l)});
+  const k=Object.entries(S.kills).map(([id,n])=>`${MON[id].n}${n>1?' ×'+n:''}`).join(', ')||'None yet';
+  msg(`${S.name}`,`<div style="text-align:center;color:var(--mute);font-weight:700">Level ${S.lvl} ${race().name} ${c.name} · ${S.xp} XP${S.lvl<LVMAX?` (next level at ${LV[S.lvl]})`:''}</div>
+   <div class="sheet-stats">${Object.keys(STATN).map(s=>`<div><b>${sign(S.st[s])}</b><small>${s.toUpperCase()}</small></div>`).join('')}</div>
+   <div class="kv"><div><span>Health</span><b>${S.hp} / ${S.max}</b></div><div><span>Armor</span><b>${S.ac}</b></div><div><span>Weapon</span><b>${wpnName()} (${c.wpn.c}d${c.wpn.d}${sign(dmgB())})</b></div>
+   <div><span>${c.sp.n}</span><b>${S.uses} / ${c.sp.uses} left</b></div><div><span>${race().name} power</span><b>${race().perk}</b></div><div><span>Gold</span><b>${S.gold}</b></div><div><span>Items</span><b>${items.join(', ')||'Nothing'}</b></div>
+   ${S.flags.ally?`<div><span>Companion</span><b>${GAME.ally.name}</b></div>`:''}<div><span>Monsters beaten</span><b>${k}</b></div></div>`,'Back to the adventure');
+}
+function renderTitle(m){
+  const w=store.get(WINS)||{},sv=store.get(SAVE);
+  m.innerHTML=`<div class="title"><div class="lantern" aria-hidden="true">${GAME.icon}</div><h1>${GAME.title}</h1><div class="tag-line">${GAME.tagline}</div>
+   <div class="menu">${sv?`<button class="big" id="cont">Continue: ${sv.name} the ${RACES[sv.race].name} ${CL[sv.cls].name}</button><button class="ghost" id="nw">Start a new adventure</button>`:`<button class="big" id="nw">Start a new adventure</button>`}</div></div>
+   <div class="trophies"><h3>Classes that beat the game</h3><div class="tro">${Object.entries(CL).map(([k,c])=>`<span class="${w[k]?'won':''}"><i>${c.i}</i>${c.name}</span>`).join('')}</div></div>
+   <details><summary>How to play</summary><ul>
+   <li>Read what happens, then tap a choice to decide what your hero does.</li>
+   <li>Choices with a blue tag like <b>DEX 13</b> are checks. Roll a 20-sided die (d20) and add your bonus. Get 13 or more to succeed. A natural 20 always works!</li>
+   <li>In battle, roll to hit. You need to match or beat the monster's Armor number.</li>
+   <li>Your race gives you a special power, and your class gives you another. Try different combos!</li>
+   <li>Win battles to earn XP and level up. Gold buys potions at the shop.</li>
+   <li>If you fall, you'll wake up at the last safe spot. Your game saves itself as you go.</li>
+   <li>Tap your hero's name at the top to see your hero sheet.</li></ul></details>`;
+  $('#nw').onclick=()=>{screen='create';render()};
+  if($('#cont'))$('#cont').onclick=()=>{S=sv;screen='game';S.mode='story';render()};
+}
+let pickC='fighter',pickR='human',pickD='normal',pickN='';
+function renderCreate(m){
+  const st=heroStats(pickC,pickR),hp=CL[pickC].hp+(pickR==='dwarf'?3:0);
+  m.innerHTML=`<article class="card"><div class="scene-head"><div class="badge" aria-hidden="true">📜</div><h2>Create your hero</h2></div>
+   <label class="f" for="hn">Hero name</label><input type="text" id="hn" maxlength="16" placeholder="Leave blank for a random name" value="${pickN}">
+   <label class="f">Choose your race</label><div class="grid races">${Object.entries(RACES).map(([k,r])=>`<button class="cls ${k===pickR?'sel':''}" data-r="${k}"><span class="ci">${r.i}</span><b>${r.name}</b><small>${r.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${RACES[pickR].name} power</b> ${RACES[pickR].perk}</div>
+   <label class="f">Choose your class</label><div class="grid">${Object.entries(CL).map(([k,c])=>`<button class="cls ${k===pickC?'sel':''}" data-k="${k}"><span class="ci">${c.i}</span><b>${c.name}</b><small>${c.blurb}</small></button>`).join('')}</div>
+   <div class="perk"><b>${CL[pickC].sp.n}</b> ${CL[pickC].sp.d}.</div>
+   <div class="preview"><div class="pv-name">${RACES[pickR].name} ${CL[pickC].name}</div><div class="pv-st">
+     <span><em>HP</em> ${hp}</span><span><em>Armor</em> ${CL[pickC].ac}</span>${Object.keys(STATN).map(s=>`<span><em>${s.toUpperCase()}</em> ${sign(st[s])}</span>`).join('')}</div></div>
+   <label class="f">Difficulty</label><div class="seg"><button data-d="normal" class="${pickD==='normal'?'sel':''}">Normal<small>Real D&amp;D danger</small></button><button data-d="easy" class="${pickD==='easy'?'sel':''}">Easy<small>Weaker monsters, better aim</small></button></div>
+   <div class="choices"><button class="big" id="go">Begin the adventure</button><button class="ghost" id="bk">Back</button></div></article>`;
+  $('#hn').oninput=e=>pickN=e.target.value;
+  m.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{pickC=b.dataset.k;render()});
+  m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{pickR=b.dataset.r;render()});
+  m.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{pickD=b.dataset.d;render()});
+  $('#bk').onclick=()=>{screen='title';render()};
+  $('#go').onclick=()=>{
+    const n=(pickN||'').replace(/[^\p{L}\p{N} '\-]/gu,'').trim().slice(0,16)||pick(['Brannoc','Kestrel','Thorne','Zephyr','Rook','Talon','Juno','Ash','Wren','Cassius']);
+    const c=CL[pickC];
+    S={name:n,cls:pickC,race:pickR,diff:pickD,lvl:1,xp:0,hp,max:hp,ac:c.ac,st:heroStats(pickC,pickR),gold:20,inv:{potion:1,rope:0,luck:pickR==='halfling'?1:0},uses:c.sp.uses,flags:{},kills:{},node:GAME.start,note:'',mode:'story',cp:null};
+    pickN='';screen='game';go(GAME.start);
+  };
+}
+render();
+
+</script>
+<a href="../index.html#dnd" style="position:fixed;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:15;font:700 13px/1 Nunito,system-ui,sans-serif;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 12px;text-decoration:none;opacity:.85">All games</a>
+</body>
+</html>
